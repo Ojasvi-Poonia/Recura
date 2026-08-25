@@ -181,10 +181,23 @@ def test_razorpay_cooldown_suppresses_retry_now():
     assert all(o >= NOW + timedelta(hours=24) for o in offsets)
 
 
-def test_funds_gets_a_salary_aligned_candidate():
-    """section 5: timing is a first-class decision dimension."""
-    hints = [p.get("reason_hint") for _, p in candidate_actions(mk_ctx())]
+def test_funds_gets_a_salary_aligned_candidate_inside_the_horizon():
+    """section 5: timing is a first-class decision dimension.
+
+    Offered only when the salary window actually falls inside the 21-day episode - an
+    action we could never take is not a candidate, and scheduling past the horizon was
+    silently expiring episodes.
+    """
+    early = mk_ctx()
+    early = DecisionContext(**{**early.__dict__, "now": NOW.replace(day=25)})
+    hints = [p.get("reason_hint") for _, p in candidate_actions(early)]
     assert "aligned to salary-cycle replenishment" in hints
+
+
+def test_salary_candidate_is_suppressed_beyond_the_episode_horizon():
+    far = DecisionContext(**{**mk_ctx().__dict__, "now": NOW.replace(day=2)})
+    hints = [p.get("reason_hint") for _, p in candidate_actions(far)]
+    assert "aligned to salary-cycle replenishment" not in hints
 
 
 def test_downtime_generates_a_wait_candidate():

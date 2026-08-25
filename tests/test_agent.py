@@ -227,13 +227,26 @@ def test_no_action_cell_keeps_learning():
     assert any(v["n"] > 0 for v in no_action_cells.values())
 
 
-def test_merchant_daily_budget_carries_across_episodes():
-    """Previously per-episode, so a 500-action budget never bound on 7,992 events."""
+def test_merchant_budget_accumulates_within_a_day_across_episodes():
+    """Previously per-episode, so a 500-action budget never bound on 7,992 events.
+
+    The contract is per merchant per DAY: actions from different episodes landing on
+    the same virtual day must accumulate against one budget.
+    """
     agent = mk_agent()
-    agent.run_episode(mk_event(event_id="a"), "treatment", never)
-    after_first = agent._merchant_actions
-    agent.run_episode(mk_event(event_id="b"), "treatment", never)
-    assert agent._merchant_actions > after_first
+    agent._roll_merchant_day(NOW)
+    agent._merchant_actions = 7
+    agent._roll_merchant_day(NOW)                     # same day -> preserved
+    assert agent._merchant_actions == 7
+    agent._roll_merchant_day(NOW + timedelta(days=1))  # new day -> reset
+    assert agent._merchant_actions == 0
+
+
+def test_merchant_actions_are_counted_at_all():
+    agent = mk_agent()
+    result = agent.run_episode(mk_event(), "treatment", never)
+    if result.actions_taken:
+        assert agent._merchant_actions >= 1
 
 
 def test_merchant_counters_reset_on_a_new_virtual_day():
@@ -259,3 +272,62 @@ def test_agent_does_not_repeat_a_refused_action():
         mk_event(reason="payment_risk_check_failed"), "treatment", never)
     # Retrying a RISK_DECLINE is forbidden; it must not consume every decision slot.
     assert result.actions_blocked < MAX_DECISIONS
+
+
+def test_holdout_gets_the_same_number_of_opportunities_as_treatment():
+    """Fair comparison: observing the control once while treatment is observed five
+    times hands treatment extra draws on the same probability. Our placebo control
+    caught that as +18.57pp of pure repeated sampling."""
+    seen = []
+
+    def counting(action, at, hours, prior, seq):
+        seen.append(seq)
+        return (False, False)
+
+    mk_agent().run_episode(mk_event(), "holdout", counting)
+    assert len(seen) == MAX_DECISIONS
+
+
+def test_holdout_still_takes_no_action_and_spends_nothing():
+    calls = []
+
+    def record(action, at, hours, prior, seq):
+        calls.append(action)
+        return (False, False)
+
+    result = mk_agent().run_episode(mk_event(), "holdout", record)
+    assert all(a is ActionType.NO_ACTION for a in calls)
+    assert result.cost_paise == 0 and result.contacts == 0
+
+
+def test_both_arms_get_the_same_number_of_draws():
+    """The core fairness property of the whole benchmark.
+
+    Treatment and holdout must each get one recovery opportunity per step. Any
+    asymmetry shows up as lift that is pure repeated sampling - which is exactly what
+    eval/validate.py's placebo control exists to detect.
+    """
+    def counter(store):
+        def observe(action, at, hours, prior, seq):
+            store.append(seq)
+            return (False, False)
+        return observe
+
+    t_draws, h_draws = [], []
+    mk_agent().run_episode(mk_event(), "treatment", counter(t_draws))
+    mk_agent().run_episode(mk_event(), "holdout", counter(h_draws))
+    assert len(t_draws) == len(h_draws) == MAX_DECISIONS
+
+
+def test_blocked_steps_still_give_the_customer_a_chance():
+    """The contract stops US, not the customer."""
+    draws = []
+
+    def observe(action, at, hours, prior, seq):
+        draws.append(action)
+        return (False, False)
+
+    # Retrying a risk decline is forbidden, so this episode accumulates blocks.
+    mk_agent().run_episode(mk_event(reason="payment_risk_check_failed"),
+                           "treatment", observe)
+    assert len(draws) == MAX_DECISIONS
