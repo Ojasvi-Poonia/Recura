@@ -1,0 +1,116 @@
+reason,contexts,description,razorpay_guidance
+already_declined,emandate_registration,Bank already declined an identical mandate registration; NPCI blocks duplicate retries.,Retry after 24 hours.
+amount_less_than_minimum_amount,bad_request,Payment amount is below the bank's fixed minimum/fee threshold.,Raise amount above the bank minimum.
+authentication_failed,bad_request|emandate_registration|gateway,3DS/OTP authentication failed - customer cancelled at the OTP screen or entered wrong details.,Customer must re-authenticate correctly.
+authorisation_declined_by_psp,gateway,UPI PSP app rejected the authorisation request; often PSP downtime or a VPA problem.,"Recheck VPA and retry, or switch PSP app."
+bank_account_invalid,bad_request|emandate_registration|emandate_subsequent,Bank account is not valid - closed by the customer or the bank.,Use a valid account or another method; re-register mandate.
+bank_account_validation_failed,bad_request|emandate_registration|emandate_subsequent,Third-party validation of the supplied bank account details failed.,Verify account details and retry.
+bank_cutoff_in_progress,gateway,"Bank core-banking cutoff window in progress - a periodic, scheduled bank event.",Retry after the cutoff window.
+bank_not_available,gateway,Bank unavailable due to downtime or a technical issue.,Retry later.
+bank_not_enabled,bad_request,Selected bank is not enabled on the merchant account.,Merchant must ask Razorpay to enable the bank.
+bank_technical_error,bad_request|emandate_registration|emandate_subsequent|gateway,Issuing/destination bank core banking system hit a technical error during processing.,Retry later or use another bank account.
+beneficiary_account_does_not_exist,gateway,Beneficiary account does not exist.,Contact Razorpay.
+beneficiary_account_dormant,gateway,Beneficiary account is dormant.,Contact Razorpay.
+capture_failed,bad_request,Payment capture step failed.,Contact Razorpay.
+card_declined,gateway,Issuer declined the card without a more specific reason.,Retry with a different card or method.
+card_expired,bad_request|emandate_registration,Card has passed its expiry date.,Customer must use a valid card.
+card_network_not_enabled,bad_request,Card network (Visa/Mastercard/etc.) not enabled for the merchant.,Merchant must ask Razorpay to enable the network.
+card_not_enrolled,bad_request,Card is not enrolled for this payment method.,Enrol the card or use another.
+card_number_invalid,bad_request|emandate_registration,Card number does not match any valid BIN/IIN.,Customer must enter a valid card number.
+card_type_invalid,bad_request,Card type is not valid for this transaction.,Use a supported card type.
+collect_on_mcc_blocked,gateway,UPI Collect is blocked for this merchant category code.,Contact Razorpay.
+collect_request_pending,gateway,A UPI collect request is already pending for this transaction.,Wait for the pending request to resolve.
+compliance_violation,bad_request,Payment violates a compliance requirement.,Ensure the payment meets compliance rules.
+credit_failed,gateway,Credit processing failed.,Retry or use another method.
+credit_limit_exceeded,gateway,Customer's credit limit has been exceeded.,Reduce amount or use another method.
+credit_limit_expired,gateway,Customer's credit limit has expired.,Renew limit or use another method.
+credit_limit_inactive,gateway,Customer's credit limit is inactive.,Activate limit or use another method.
+credit_limit_not_approved,gateway,Customer's credit limit is not approved.,Get limit approved or use another method.
+credit_not_permitted,gateway,Credit transactions are not permitted for this customer.,Use another payment method.
+debit_declined,gateway,Debit transaction declined by the issuer.,Retry with another method.
+debit_instrument_blocked,bad_request|emandate_registration|emandate_subsequent|gateway,Card or account is blocked by the issuer or by the customer.,Use a different instrument; customer may need to contact their bank.
+debit_instrument_inactive,emandate_registration|emandate_subsequent|gateway,Card or account is inactive or frozen; withdrawals temporarily blocked.,Activate the instrument or contact the bank.
+deemed_transaction,gateway,Transaction is deemed and cannot be processed.,Contact Razorpay.
+duplicate_refund_id,bad_request,A refund with this ID already exists.,Use a unique refund ID.
+duplicate_request,bad_request|emandate_registration,An identical payment request was already sent; the gateway blocks duplicates.,Retry after ~30 minutes.
+duplicate_rrn_found,gateway,Duplicate retrieval reference number detected.,Retry as a new transaction.
+emi_greater_than_max_amount,bad_request,EMI amount exceeds the maximum allowed.,Reduce amount or use another method.
+emi_plan_unavailable,bad_request,Requested EMI plan is unavailable.,Choose a different plan or method.
+funds_blocked_by_mandate,gateway,Funds are locked by an existing mandate on the account.,Release the mandate or use another account.
+gateway_technical_error,emandate_registration|emandate_subsequent|gateway,Gateway server hit a technical error while processing the payment.,Retry after some time.
+incorrect_atm_pin,bad_request,Incorrect ATM PIN entered.,Customer must enter the correct PIN.
+incorrect_card_details,bad_request,Incorrect card details entered.,Customer must correct the card details.
+incorrect_card_expiry_date,bad_request|emandate_registration,Incorrect card expiry date entered.,Customer must enter the correct expiry date.
+incorrect_cardholder_name,bad_request,Incorrect cardholder name entered.,Customer must correct the cardholder name.
+incorrect_cvv,bad_request|emandate_registration,Incorrect CVV entered.,Customer must retry with the correct CVV.
+incorrect_ifsc,emandate_subsequent,Stored bank IFSC code is no longer valid.,Customer must re-register the mandate.
+incorrect_otp,bad_request|emandate_registration,Incorrect OTP entered.,Customer must retry with the correct OTP.
+incorrect_pin,bad_request|emandate_registration,Incorrect PIN entered.,Customer must retry with the correct PIN.
+input_validation_failed,bad_request|emandate_subsequent,Payment request contained wrong or malformed parameters.,Merchant must fix the request parameters.
+insufficient_funds,bad_request|emandate_registration|emandate_subsequent,Account does not hold enough balance to complete the payment.,"Retry once the customer has funds, or use another method."
+international_transaction_not_allowed,bad_request,International transactions are not permitted on this instrument.,Use a domestic method or enable international.
+invalid_amount,bad_request|emandate_subsequent,Amount or currency in the request is unsupported or malformed.,Merchant must fix the amount field.
+invalid_currency,bad_request,Currency passed is unsupported or invalid.,Use a supported currency code.
+invalid_device,bad_request,Device used is invalid for this transaction.,Use a valid device.
+invalid_email,bad_request,Email address provided is invalid.,Provide a valid email address.
+invalid_mobile_number,bad_request,Mobile number provided is invalid.,Provide a valid mobile number.
+invalid_order_id,bad_request,Order ID is missing or invalid; it is mandatory for every payment.,Pass a correct order ID.
+invalid_request,bad_request,Request is malformed.,Check the request format and retry.
+invalid_response_from_gateway,gateway,Gateway returned a malformed response.,Retry the transaction.
+invalid_user_details,bad_request,User details provided are invalid.,Provide valid user details.
+invalid_vpa,bad_request|gateway,Customer entered an incorrect UPI VPA.,Customer must correct the VPA.
+issuer_technical_error,gateway,Card issuer hit a technical error.,Retry later or use another card.
+joint_account_not_allowed,emandate_registration,Mandate attempted on a joint account; banks usually require sole-ownership accounts.,Retry with a different account.
+live_mode_not_enabled,bad_request,Test-mode keys used against live mode.,Merchant must use live keys.
+mandate_creation_declined,gateway,Mandate creation declined.,Retry mandate creation or use another method.
+mandate_creation_expired,gateway,Mandate creation request expired.,Retry mandate creation.
+mandate_creation_failed,gateway,Mandate creation failed.,Retry mandate creation or use another method.
+mandate_creation_timeout,gateway,Mandate creation timed out.,Retry mandate creation.
+mandate_not_active,emandate_subsequent,Registered mandate is no longer active; cancelled by customer or bank.,Customer must re-register the mandate.
+mcc_amount_limit_exceeded,gateway,Amount limit for this merchant category code exceeded.,Reduce the amount or contact Razorpay.
+merchant_not_activated,bad_request,Merchant account is not activated.,Merchant must contact Razorpay.
+mismatch_in_transaction_details,bad_request,Transaction details do not match across the request.,Correct the transaction details.
+mobile_number_invalid,bad_request,Mobile number is invalid.,Provide a valid mobile number.
+order_already_paid,bad_request,Order already has a successful payment; only one is allowed per order ID.,Check order status before retrying; use a fresh order ID.
+order_amount_mismatch,bad_request,Amount in the order differs from the amount in the payment request.,Pass the same amount in both requests.
+order_payment_method_mismatch,bad_request,Method in the order differs from the method in the payment request.,Do not pass method on order creation.
+otp_attempts_exceeded,bad_request|emandate_registration,OTP retry limit exceeded; issuer may temporarily block the card.,Retry later or use another method.
+otp_expired,bad_request,OTP has expired.,Request a fresh OTP.
+payment_amount_tampered,gateway,Payment amount was altered in transit.,Retry with the correct amount.
+payment_cancelled,bad_request|emandate_registration|emandate_subsequent|gateway,Customer explicitly cancelled the payment or instructed their bank to cancel.,Customer must retry to complete the payment.
+payment_collect_request_expired,gateway,UPI collect request expired before the customer approved it.,Customer must retry the payment.
+payment_declined,emandate_subsequent|gateway,Bank or gateway declined for business/technical reasons not communicated to Razorpay.,Retry later or use another method.
+payment_declined_due_to_high_traffic,gateway,Gateway declined due to high traffic load.,Retry after some time.
+payment_failed,bad_request|emandate_registration|emandate_subsequent|gateway,Bank or wallet gateway failed the payment with no specific error code returned.,Retry with a different payment method.
+payment_mandate_not_active,emandate_subsequent,Mandate is registered but not yet activated at the bank.,Retry after some time.
+payment_method_not_enabled,bad_request,Selected payment method is not enabled on the merchant account.,Merchant must ask Razorpay to enable the method.
+payment_pending,gateway,Payment is pending and not yet complete.,Wait for resolution or retry.
+payment_pending_approval,bad_request|emandate_registration,Payment awaits approval under a maker-checker or bank approval flow.,Wait for approval or retry later.
+payment_risk_check_failed,bad_request|emandate_registration|gateway,"Declined by a risk check at Razorpay, the gateway, or the issuer; source indicates which.",Do not retry the same instrument; inform or escalate.
+payment_session_expired,gateway,Payment session expired.,Start a new payment session.
+payment_timed_out,bad_request|emandate_registration|emandate_subsequent|gateway,"Customer did not complete within the window, or no gateway response was received.",Retry and complete within the time window.
+pin_attempts_exceeded,bad_request,PIN retry limit exceeded.,Wait and retry later.
+pin_not_set,bad_request,No PIN is set for the payment method.,Customer must set a PIN.
+psp_app_not_available,gateway,"UPI PSP app unavailable, typically PSP downtime.",Retry with another PSP app.
+psp_app_not_supported,gateway,UPI app is not supported or is blacklisted.,Use another PSP app.
+psp_not_available,gateway,PSP is not available.,Retry with another PSP.
+psp_not_registered,gateway,PSP is not registered.,Register with a PSP or use another.
+record_not_found,bad_request,Requested record was not found.,Check the identifiers and retry.
+recurring_payment_not_enabled,bad_request,Recurring payments are not enabled on the account.,Merchant must enable recurring payments.
+refund_limit_crossed,bad_request,Refund limit crossed.,Contact Razorpay.
+reqauth_mandate_not_acknowledged,gateway,Mandate authentication request was not acknowledged.,Customer must acknowledge the mandate.
+request_timed_out,gateway,Request timed out.,Retry the request.
+server_error,bad_request|emandate_registration|emandate_subsequent|gateway,Technical error on Razorpay's servers.,Retry after some time.
+transaction_daily_count_exceeded,gateway,Daily transaction count limit exceeded.,Wait for the next day or use another method.
+transaction_daily_limit_exceeded,bad_request|gateway,Customer exceeded the daily transaction limit set on the card.,Use another instrument or wait 24 hours.
+transaction_frequency_limit_exceeded,bad_request|gateway,NPCI per-day frequency limit exhausted by the customer.,Use another payment method.
+transaction_limit_exceeded,bad_request|emandate_registration|emandate_subsequent,Customer exceeded the per-transaction credit/debit limit on the instrument.,Customer must raise their limit or use another method.
+transaction_on_vpa_restricted,bad_request,Transactions on this VPA are temporarily or permanently blocked by the PSP.,Customer must use a different UPI ID.
+upi_app_technical_error,bad_request,Technical error at the customer's UPI PSP.,"Retry, or try a different UPI app."
+upi_autopay_not_supported_on_psp,bad_request,UPI Autopay not supported on this PSP.,Use another PSP app.
+upi_collect_not_enabled,bad_request,UPI Collect flow not enabled on the merchant account.,Merchant must enable collect flow.
+upi_intent_not_enabled,bad_request,UPI Intent flow not enabled on the merchant account.,Merchant must enable intent flow.
+user_not_eligible,bad_request|gateway,Customer failed a credit eligibility check (poor score or insufficient documents).,Use a different payment method.
+user_not_registered_for_netbanking,bad_request|emandate_registration,Customer's bank account is not registered for netbanking.,Customer must register for netbanking.
+verification_failed,bad_request,Payment verification via the status-check API failed.,Temporary - customer must retry.
+vpa_resolution_failed,gateway,UPI network could not resolve/validate the VPA.,Use a different account or method.
