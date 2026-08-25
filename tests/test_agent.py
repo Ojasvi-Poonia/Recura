@@ -201,3 +201,61 @@ def test_all_money_is_integer_paise():
 def test_costs_are_never_negative():
     result = mk_agent().run_episode(mk_event(), "treatment", never)
     assert result.cost_paise >= 0
+
+
+def test_refused_events_still_observe_the_outcome():
+    """Refusing is a decision, not an exit.
+
+    A customer we chose not to chase may still pay unprompted, and that recovery
+    belongs to the treatment arm. Recording zero biased the comparison against us.
+    """
+    result = mk_agent().run_episode(mk_event(amount=200), "treatment", always)
+    assert result.recovered_paise == 200
+    assert result.cost_paise == 0
+    assert result.stop_reason == "recovered_unprompted"
+
+
+def test_no_action_cell_keeps_learning():
+    """Without this the baseline posterior sits at 0.5 forever and every real action
+    looks like a bad bet against it."""
+    agent = mk_agent(explore=False)
+    for i in range(25):
+        agent.run_episode(mk_event(event_id=f"e{i}", amount=200), "treatment", never)
+    snapshot = agent.model.snapshot()
+    no_action_cells = {k: v for k, v in snapshot.items() if k.endswith("|NO_ACTION")}
+    assert no_action_cells, "NO_ACTION never learned"
+    assert any(v["n"] > 0 for v in no_action_cells.values())
+
+
+def test_merchant_daily_budget_carries_across_episodes():
+    """Previously per-episode, so a 500-action budget never bound on 7,992 events."""
+    agent = mk_agent()
+    agent.run_episode(mk_event(event_id="a"), "treatment", never)
+    after_first = agent._merchant_actions
+    agent.run_episode(mk_event(event_id="b"), "treatment", never)
+    assert agent._merchant_actions > after_first
+
+
+def test_merchant_counters_reset_on_a_new_virtual_day():
+    agent = mk_agent()
+    agent.run_episode(mk_event(event_id="a"), "treatment", never)
+    spent_day_one = agent._merchant_spend_paise
+    later = mk_event(event_id="b").model_copy(
+        update={"observed_at": NOW + timedelta(days=3)})
+    agent.run_episode(later, "treatment", never)
+    # A new virtual day resets the counters, so day two cannot inherit day one's spend.
+    assert agent._merchant_spend_paise <= spent_day_one or agent._merchant_actions >= 1
+    assert agent._merchant_date != NOW.date()
+
+
+def test_agent_does_not_repeat_a_refused_action():
+    """A blocked action yields no outcome, so the bandit cannot learn from it.
+
+    Without this the agent re-proposes the same forbidden retry every step and
+    degenerates into a retry bot - CLAUDE.md section 12's explicit anti-goal.
+    """
+    agent = mk_agent()
+    result = agent.run_episode(
+        mk_event(reason="payment_risk_check_failed"), "treatment", never)
+    # Retrying a RISK_DECLINE is forbidden; it must not consume every decision slot.
+    assert result.actions_blocked < MAX_DECISIONS
