@@ -23,6 +23,24 @@ section 5 actually wants. The argmax ranking is unchanged; only the zero point m
 Both the absolute and incremental figures are logged so the ledger shows the working.
 
 Action space is (type, time, channel) - timing is a first-class dimension (section 5).
+
+HORIZON DISCOUNTING - why a naive increment overvalues every action
+-------------------------------------------------------------------
+An episode has several decision points. If we score an action as if this were the
+customer's last chance, we credit it with recoveries that would have happened anyway at
+a later step, and the agent buys interventions it does not need.
+
+Over `k` remaining opportunities, with baseline per-step probability `b`:
+
+    P(recover eventually | never act)        = 1 - (1-b)^k
+    P(recover eventually | act now, then not) = 1 - (1-p)(1-b)^(k-1)
+    true increment                            = (1-b)^(k-1) * (p - b)
+
+So the honest value of acting now is the naive increment discounted by (1-b)^(k-1) -
+the chance the customer does NOT recover on their own in the meantime. At b=0.26 with
+four further chances that factor is 0.30: a naive scorer overstates every intervention
+by roughly 3x. This is what was driving 2,264 human escalations, 97% of all spend, for
+a lift of under 5 points.
 """
 
 from __future__ import annotations
@@ -71,6 +89,7 @@ class DecisionContext:
     downtime_clears_in_h: float = 0.0
     attempts_made: int = 0
     market: Market = field(default_factory=get_market)
+    steps_remaining: int = 1   # decision points left in this episode, including now
 
 
 def _next_salary_window(now: datetime) -> datetime:
@@ -186,8 +205,11 @@ def score_candidates(
         direct = direct_cost_paise(action, Channel(channel) if channel else None)
         attention = attention_cost_paise(action, contacts)
 
-        # Incremental gross value: what acting buys us OVER doing nothing.
-        incremental_gross = int(round((p - p_no_action) * amount * margin))
+        # Incremental gross value: what acting buys us OVER doing nothing, discounted
+        # by the chance the customer recovers unaided before the episode ends.
+        horizon_discount = (1.0 - p_no_action) ** max(0, ctx.steps_remaining - 1)
+        incremental_gross = int(round(
+            (p - p_no_action) * horizon_discount * amount * margin))
         scored.append(CandidateEV(
             action=action,
             params={k: (v.isoformat() if isinstance(v, datetime) else v)

@@ -94,6 +94,7 @@ class EpisodeResult:
     escalated: bool = False
     opted_out: bool = False
     contacts: int = 0
+    broken_promises: int = 0
     llm_consulted: int = 0
     llm_fallbacks: int = 0
     stop_reason: str = "exhausted"
@@ -128,11 +129,18 @@ class Agent:
     _merchant_spend_paise: int = 0
     _merchant_escalations: int = 0
 
+    # Promise-to-pay window, in hours, opened when a nudge lands without immediate
+    # payment. The customer has effectively said "I will pay" by engaging; if the
+    # window closes unpaid that is a BROKEN promise, which policy.yaml treats as
+    # grounds for escalation. This is a named Track 03 direction and the policy rule
+    # for it existed from day one with nothing to trigger it.
+    promise_window_hours: float = 48.0
+
     # ---- step 2: DIAGNOSE -------------------------------------------------
 
     def _diagnose(self, event: RiskEvent) -> Diagnosis:
         """Steps 1-2: TRIAGE and DIAGNOSE. Returns a DISTRIBUTION, not a label."""
-        mapping = classify(event.razorpay_error)
+        mapping = classify(event.razorpay_error, event.source_type)
 
         if not self.use_taxonomy:  # ablation 2: every failure treated identically
             return Diagnosis(((FailureClass.UNKNOWN, 1.0),),
@@ -155,7 +163,8 @@ class Agent:
     # ---- step 3: DECIDE ---------------------------------------------------
 
     def _decide(self, event: RiskEvent, now: datetime, attempts: int,
-                refused: frozenset = frozenset()) -> tuple[Decision, Diagnosis]:
+                refused: frozenset = frozenset(),
+                attempts_made_so_far: int = 0) -> tuple[Decision, Diagnosis]:
         dx = self._diagnose(event)
         active = [d for d in self.downtimes if d.affects(event.method, event.bank)]
         ctx = DecisionContext(
@@ -163,6 +172,7 @@ class Agent:
             mapping=dx.mapping, now=now, downtime_active=bool(active),
             downtime_clears_in_h=2.0 if active else 0.0, attempts_made=attempts,
             class_beliefs=dx.beliefs, market=self.market,
+            steps_remaining=max(1, MAX_DECISIONS - attempts_made_so_far),
         )
         considered = score_candidates(ctx, self.model, self.rng, explore=self.explore)
         # Do not re-propose what the contract has already refused THIS episode.
@@ -238,6 +248,8 @@ class Agent:
         now = started
         history = event.customer_history
         attempts = contacts = 0
+        promise_due_at: datetime | None = None
+        broken_promises = 0
         refused_actions: set[ActionType] = set()
         cost = recovered = 0
         blocked = refused = taken = 0
@@ -253,7 +265,8 @@ class Agent:
             })
 
             self._roll_merchant_day(now)
-            decision, dx = self._decide(observed, now, attempts, frozenset(refused_actions))
+            decision, dx = self._decide(observed, now, attempts,
+                                        frozenset(refused_actions), seq)
             if decision.llm_fallback_used:
                 llm_fallbacks += 1
             if self.use_llm:
@@ -268,6 +281,8 @@ class Agent:
                 merchant_actions_today=self._merchant_actions,
                 merchant_spend_today_paise=self._merchant_spend_paise,
                 escalations_today=self._merchant_escalations,
+                broken_promise_to_pay=(
+                    promise_due_at is not None and now > promise_due_at),
                 action_cost_paise=self._cost_of(decision, contacts),
             )
             # ---- step 4: GOVERN --------------------------------------------
@@ -357,6 +372,15 @@ class Agent:
             got_it, quit = observe(decision.action, scheduled, hours_out,
                                    max(0, contacts - 1), seq)
 
+            # Promise-to-pay: a delivered nudge that did not convert opens a window.
+            if decision.action is ActionType.NUDGE:
+                if got_it:
+                    promise_due_at = None
+                else:
+                    if promise_due_at is not None and scheduled > promise_due_at:
+                        broken_promises += 1
+                    promise_due_at = scheduled + timedelta(hours=self.promise_window_hours)
+
             # ---- step 5: LEARN ---------------------------------------------
             self.model.update_distribution(dx.beliefs, decision.action, got_it)
 
@@ -380,7 +404,8 @@ class Agent:
 
         return EpisodeResult(
             event.event_id, arm, recovered, cost, seq + 1, taken, blocked, refused,
-            escalated, opted_out, contacts, llm_consulted, llm_fallbacks, stop_reason,
+            escalated, opted_out, contacts, broken_promises, llm_consulted,
+            llm_fallbacks, stop_reason,
         )
 
     # ---- helpers ----------------------------------------------------------

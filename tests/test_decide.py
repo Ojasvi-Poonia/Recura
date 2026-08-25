@@ -246,3 +246,27 @@ def test_optimiser_beats_a_random_chooser_on_expected_value():
         chosen_ev += choose(scored).expected_value_paise
         random_ev += scored[int(rng.integers(len(scored)))].expected_value_paise
     assert chosen_ev > random_ev
+
+
+def test_horizon_discount_shrinks_value_when_chances_remain():
+    """Acting now matters less when the customer has other opportunities anyway."""
+    model = PropensityModel()
+    last_chance = score_candidates(
+        DecisionContext(**{**mk_ctx().__dict__, "steps_remaining": 1}),
+        model, np.random.default_rng(11))
+    many_chances = score_candidates(
+        DecisionContext(**{**mk_ctx().__dict__, "steps_remaining": 5}),
+        model, np.random.default_rng(11))
+    a = max(c.gross_value_paise for c in last_chance)
+    b = max(c.gross_value_paise for c in many_chances)
+    assert b < a, "a naive scorer overvalues every intervention"
+
+
+def test_no_action_is_unaffected_by_the_horizon():
+    model = PropensityModel()
+    for steps in (1, 5):
+        scored = score_candidates(
+            DecisionContext(**{**mk_ctx().__dict__, "steps_remaining": steps}),
+            model, np.random.default_rng(2))
+        assert next(c for c in scored if c.action is ActionType.NO_ACTION
+                    ).expected_value_paise == 0
