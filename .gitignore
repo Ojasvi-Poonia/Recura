@@ -15,3 +15,4 @@ data/latents.json
 CLAUDE.md
 data/results.json
 recura.db
+data/ablations.json

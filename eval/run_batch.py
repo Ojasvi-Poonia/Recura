@@ -41,8 +41,13 @@ def load_cohort() -> list[tuple[RiskEvent, str]]:
     if not COHORT_PATH.exists():
         sys.exit("cohort not found - run `make seed` first")
     rows = json.loads(COHORT_PATH.read_text(encoding="utf-8"))
-    return [(RiskEvent(**{k: v for k, v in r.items() if k != "arm"}), r["arm"])
-            for r in rows]
+    events = [(RiskEvent(**{k: v for k, v in r.items() if k != "arm"}), r["arm"])
+              for r in rows]
+    # Chronological, not file order. A real system processes events as they arrive; this
+    # is also what makes learning causally honest (an outcome can only inform decisions
+    # that come after it) and what lets a per-day merchant budget bind at all.
+    events.sort(key=lambda pair: (pair[0].observed_at, pair[0].event_id))
+    return events
 
 
 def load_latents() -> dict[str, LatentState]:
@@ -93,6 +98,8 @@ def run(config: RunConfig, ledger_url: str | None = None, quiet: bool = False):
         explore=config.explore,
         use_llm=config.use_llm,
         use_taxonomy=config.use_taxonomy,
+        use_policy=config.use_policy,
+        random_chooser=config.random_chooser,
         allow_network=False,   # eval NEVER calls out; fixtures only (section 8)
     )
 
