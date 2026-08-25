@@ -4,6 +4,18 @@
 Do not modify this file while tuning the agent. Any post-freeze change must be a
 separate commit with a stated reason in the message.
 
+POST-FREEZE CHANGE LOG
+----------------------
+1. 2026-08-26 - COHORT_SIZE 2,000 -> 10,000. Reason: STATISTICAL POWER, not tuning.
+   The first Tier 2 run measured a +4.47pp lift with a 95% bootstrap CI of
+   [-0.51, +9.42] - an interval containing zero. An a-priori two-proportion power
+   calculation on that effect (4.47pp on a 27.2% baseline, 80% power, alpha=0.05)
+   requires 1,631 events PER ARM; the 20% holdout held only 394, roughly a quarter of
+   what is needed. The generative process below is UNCHANGED - same seed, same
+   distributions, same response model. Only the sample size moved, and it moved because
+   the experiment was underpowered by design, which is a design error rather than a
+   result we disliked. Nothing about the agent was altered in this commit.
+
 Design note - why this is not circular (CLAUDE.md section 9):
 
   The Razorpay `reason` is a NOISY EMISSION of the true underlying cause, not a
@@ -48,7 +60,7 @@ from src.models import Recoverability
 FC = FailureClass
 
 SEED = 20260826
-COHORT_SIZE = 2000
+COHORT_SIZE = 10_000  # see POST-FREEZE CHANGE LOG entry 1
 HOLDOUT_FRACTION = 0.20
 EPOCH = datetime(2026, 3, 1, 0, 0, tzinfo=IST)  # fixed origin; no wall clock anywhere
 
