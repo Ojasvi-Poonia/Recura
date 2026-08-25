@@ -64,6 +64,7 @@ class EpisodeState:
     pre_debit_notice_sent_at: datetime | None = None
     merchant_actions_today: int = 0
     escalations_today: int = 0
+    broken_promise_to_pay: bool = False
     merchant_spend_today_paise: int = 0
     action_cost_paise: int = 0
 
@@ -365,6 +366,26 @@ def _spend_cap(ctx: Ctx) -> RuleOutcome:
             f"Action would take today's spend to {projected} paise, over the "
             f"{limit} paise cap."))
     return RuleOutcome()
+
+
+@rule("escalation.after_broken_promise_to_pay")
+def _broken_promise(ctx: Ctx) -> RuleOutcome:
+    """A broken promise-to-pay ends automated chasing.
+
+    The customer engaged, was given a window, and it closed unpaid. Continuing to send
+    automated messages at that point is the behaviour collections regulation exists to
+    prevent; the case belongs with a human.
+    """
+    if not ctx.policy["escalation"].get("after_broken_promise_to_pay"):
+        return RuleOutcome()
+    if not ctx.state.broken_promise_to_pay:
+        return RuleOutcome()
+    if ctx.decision.action in (ActionType.ESCALATE_HUMAN, ActionType.NO_ACTION):
+        return RuleOutcome()
+    return RuleOutcome(_block(
+        "escalation.after_broken_promise_to_pay",
+        "Promise-to-pay window closed unpaid; this case must go to a human rather "
+        "than receive further automated contact."))
 
 
 @rule("escalation.max_per_day")

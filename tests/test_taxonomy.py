@@ -68,3 +68,19 @@ def test_ambiguous_calls_carry_a_rationale():
     """Judgment calls a panel will question must be justified in the table."""
     for reason in ("card_declined", "authorisation_declined_by_psp", "order_already_paid"):
         assert len(m.MAPPING[reason].note) > 40, f"{reason} needs a rationale"
+
+
+def test_checkout_abandonment_is_not_unknown():
+    """A dropped checkout carries no Razorpay error - nothing reached the gateway.
+
+    "Checkout abandonment" is a named Track 03 direction; classing it UNKNOWN would
+    discard real information about a customer who demonstrably had intent.
+    """
+    got = m.classify(None, source_type="checkout")
+    assert got.failure_class is FailureClass.AUTH_ABANDON
+    assert got.recoverability is Recoverability.CUSTOMER_RECOVERABLE
+
+
+def test_missing_error_without_checkout_context_is_still_unknown():
+    assert m.classify(None).failure_class is FailureClass.UNKNOWN
+    assert m.classify(None, source_type="payment").failure_class is FailureClass.UNKNOWN

@@ -74,6 +74,8 @@ BLOCK_SCENARIOS: dict[str, tuple] = {
     "merchant.daily_spend_cap_paise": (
         mk_decision(), mk_state(merchant_spend_today_paise=500000, action_cost_paise=1)),
     "escalation.to_human_above_paise": (mk_decision(amount_paise=6_000_000), mk_state()),
+    "escalation.after_broken_promise_to_pay": (
+        mk_decision(), mk_state(broken_promise_to_pay=True)),
     "escalation.max_per_day": (
         mk_decision(action=ActionType.ESCALATE_HUMAN),
         mk_state(escalations_today=load_policy()["escalation"]["max_per_day"])),
@@ -210,3 +212,17 @@ def test_escalation_capacity_does_not_block_other_actions():
     for action in (ActionType.NUDGE, ActionType.RETRY_NOW):
         verdict = evaluate(mk_decision(action=action), mk_state(escalations_today=999), NOW)
         assert "escalation.max_per_day" not in [b.rule_id for b in verdict.rules_blocked]
+
+
+def test_broken_promise_still_permits_escalation():
+    """The rule routes the case to a human - it must not block that route."""
+    verdict = evaluate(mk_decision(action=ActionType.ESCALATE_HUMAN),
+                       mk_state(broken_promise_to_pay=True), NOW)
+    assert "escalation.after_broken_promise_to_pay" not in [
+        b.rule_id for b in verdict.rules_blocked]
+
+
+def test_intact_promise_does_not_block():
+    verdict = evaluate(mk_decision(), mk_state(broken_promise_to_pay=False), NOW)
+    assert "escalation.after_broken_promise_to_pay" not in [
+        b.rule_id for b in verdict.rules_blocked]

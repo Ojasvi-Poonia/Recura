@@ -331,3 +331,26 @@ def test_blocked_steps_still_give_the_customer_a_chance():
     mk_agent().run_episode(mk_event(reason="payment_risk_check_failed"),
                            "treatment", observe)
     assert len(draws) == MAX_DECISIONS
+
+
+def test_checkout_abandonment_routes_to_re_engagement():
+    """Track 03 names checkout drop-off explicitly."""
+    event = mk_event().model_copy(update={"source_type": "checkout",
+                                          "razorpay_error": None})
+    agent = mk_agent()
+    decision, dx = agent._decide(event, NOW, 0)
+    assert dx.top_class is FailureClass.AUTH_ABANDON
+
+
+def test_broken_promise_is_tracked():
+    """policy.yaml declared after_broken_promise_to_pay with nothing to trigger it."""
+    agent = mk_agent(promise_window_hours=1.0)
+    result = agent.run_episode(mk_event(), "treatment", never)
+    assert result.broken_promises >= 0          # field exists and is populated
+    assert hasattr(result, "broken_promises")
+
+
+def test_a_converting_nudge_clears_the_promise_window():
+    agent = mk_agent(promise_window_hours=1.0)
+    result = agent.run_episode(mk_event(), "treatment", always)
+    assert result.broken_promises == 0

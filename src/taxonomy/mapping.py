@@ -227,8 +227,24 @@ UNMAPPED_FALLBACK = ReasonMapping(
 _unmapped_seen: dict[str, int] = {}
 
 
-def classify(error: ErrorObject | None) -> ReasonMapping:
+# A dropped checkout carries no Razorpay error: no payment was ever attempted, so there
+# is no code to map. It is nonetheless one of the best-understood failure modes there
+# is - the customer was present, engaged, and left. Treating it as UNKNOWN would discard
+# real information and route a re-engageable customer into conservative handling.
+CHECKOUT_ABANDONED = ReasonMapping(
+    reason="<checkout_abandoned>",
+    failure_class=FailureClass.AUTH_ABANDON,
+    recoverability=Recoverability.CUSTOMER_RECOVERABLE,
+    note="Checkout dropped before a payment was attempted. No Razorpay error exists "
+         "because nothing reached the gateway; intent was demonstrated and the "
+         "customer can be re-engaged.",
+)
+
+
+def classify(error: ErrorObject | None, source_type: str | None = None) -> ReasonMapping:
     """Map a Razorpay error object to our taxonomy. Never raises."""
+    if (error is None or not error.reason) and source_type == "checkout":
+        return CHECKOUT_ABANDONED
     if error is None or not error.reason:
         return UNMAPPED_FALLBACK
     hit = MAPPING.get(error.reason)
