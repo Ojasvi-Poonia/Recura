@@ -75,6 +75,7 @@ def make_observe(latent: LatentState):
 @dataclass
 class RunConfig:
     label: str = "full"
+    policy: dict | None = None   # None = policy.yaml as committed
     use_llm: bool = True
     use_taxonomy: bool = True
     use_policy: bool = True
@@ -82,9 +83,17 @@ class RunConfig:
     random_chooser: bool = False
 
 
-def run(config: RunConfig, ledger_url: str | None = None, quiet: bool = False):
-    cohort = load_cohort()
-    latents = load_latents()
+def run(config: RunConfig, ledger_url: str | None = None, quiet: bool = False,
+        cohort=None, latents=None):
+    """Run one configuration.
+
+    `cohort`/`latents` may be supplied in memory. The sensitivity sweep uses that to
+    vary generator parameters without ever overwriting the frozen files on disk.
+    """
+    if cohort is None:
+        cohort = load_cohort()
+    if latents is None:
+        latents = load_latents()
 
     provider = resolve_provider() if config.use_llm else NullProvider()
     ledger = Ledger(url=ledger_url) if ledger_url else None
@@ -99,6 +108,7 @@ def run(config: RunConfig, ledger_url: str | None = None, quiet: bool = False):
         use_llm=config.use_llm,
         use_taxonomy=config.use_taxonomy,
         use_policy=config.use_policy,
+        policy=config.policy,
         random_chooser=config.random_chooser,
         allow_network=False,   # eval NEVER calls out; fixtures only (section 8)
     )
