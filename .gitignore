@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+*.db
+*.sqlite3
+.env
+.DS_Store
+data/cohort.json
+data/latents.json
+
+# Internal spec / strategy doc - not part of the public submission
+CLAUDE.md

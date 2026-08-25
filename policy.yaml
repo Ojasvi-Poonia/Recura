@@ -1,0 +1,70 @@
+# Recura policy contract (CLAUDE.md section 6).
+#
+# This file is a contract a merchant could read and sign. It is evaluated by a
+# deterministic engine. The LLM NEVER sees this file and cannot modify it
+# (enforced by tests/test_invariants.py::test_policy_is_never_shown_to_the_llm).
+#
+# Every rule cites its regulatory basis with the date checked. Sources are graded
+# in eval/CALIBRATION.md. All windows are Asia/Kolkata.
+
+contact:
+  max_per_customer_per_7d: 3
+  min_hours_between: 24
+
+  # Contact window 09:00-19:00 IST = intersection of two binding regimes:
+  #   - TRAI TCCCPR: promotional commercial communication limited to 09:00-21:00.
+  #   - RBI Fair Practices Code direction on recovery agents (Aug 2022): contact with
+  #     borrowers only between 08:00-19:00, across ALL channels (call/SMS/WhatsApp/email);
+  #     ultimate responsibility for outsourced agents rests with the regulated entity.
+  # A payment-recovery nudge is causally a collections contact, so the stricter evening
+  # bound governs. NOTE: this is deliberately STRICTER than CLAUDE.md section 6's draft
+  # value of 21:00 - see eval/CALIBRATION.md section 1.1. Checked 2026-08-26.
+  quiet_hours:
+    start: "19:00"
+    end: "09:00"
+    tz: "Asia/Kolkata"
+
+  # DLT-registered templates are mandatory for commercial messaging; mixing promotional
+  # content into a transactional message reclassifies it as promotional and pulls it
+  # under DND scrubbing. The LLM selects and fills a registered template - it never
+  # authors free-form SMS. Checked 2026-08-26.
+  require_consent: [sms, whatsapp, voice]
+  require_registered_template: [sms, whatsapp]
+
+retry:
+  max_attempts_per_episode: 3
+  max_attempts_per_mandate_cycle: 2
+
+  # RBI, Digital Payments - E-Mandate Framework, 2026 (issued 21 April 2026), which
+  # CONSOLIDATES AND REPLACES all earlier e-mandate circulars: pre-debit notification
+  # to the customer at least 24h before every debit, with full transaction details and
+  # an opt-out facility; post-debit confirmation also mandatory. Checked 2026-08-26.
+  pre_debit_notification_hours: 24
+  post_debit_confirmation_required: true
+
+  # AFA (OTP) exemption thresholds under the same 2026 framework.
+  afa_exempt_below_paise: 1500000            # Rs 15,000 general recurring
+  afa_exempt_below_paise_special: 10000000   # Rs 1,00,000 insurance / MF / credit-card bills
+
+  # Retrying these classes cannot succeed and burns customer patience.
+  forbidden_for_classes: [RISK_DECLINE, INSTRUMENT_INVALID]
+
+  # A merchant integration bug must never produce a customer-facing action.
+  forbidden_for_recoverability: [MERCHANT_CONFIG, TERMINAL]
+
+episode:
+  max_days: 21
+  stop_on_payment: true
+  stop_on_opt_out: true
+  stop_on_dispute: true
+  # payment.authorized can arrive AFTER an apparent failure (CLAUDE.md section 7).
+  # Treated as a hard stop: acting here would contact an already-paying customer.
+  stop_on_late_authorisation: true
+
+merchant:
+  daily_action_budget: 500
+  daily_spend_cap_paise: 500000
+
+escalation:
+  to_human_above_paise: 5000000    # Rs 50,000
+  after_broken_promise_to_pay: true
