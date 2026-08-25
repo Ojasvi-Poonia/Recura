@@ -204,3 +204,32 @@ def test_all_money_is_integer_paise():
         for field in ("gross_value_paise", "direct_cost_paise",
                       "attention_cost_paise", "expected_value_paise"):
             assert isinstance(getattr(c, field), int)
+
+
+def test_no_action_baseline_is_not_thompson_sampled():
+    """Regression: the do-nothing baseline must be stable across Thompson draws.
+
+    Scoring every candidate as an increment over a RANDOM baseline makes each increment
+    a difference of two independent draws - mean zero, negative half the time - so the
+    agent refuses at random. The ablation study caught this: a random chooser was
+    outperforming the optimiser.
+    """
+    model = PropensityModel()
+    baselines = set()
+    for seed in range(15):
+        scored = score_candidates(mk_ctx(), model, np.random.default_rng(seed))
+        no_action = next(c for c in scored if c.action is ActionType.NO_ACTION)
+        baselines.add(round(no_action.p_recover, 9))
+    assert len(baselines) == 1, f"baseline drifted across seeds: {baselines}"
+
+
+def test_optimiser_beats_a_random_chooser_on_expected_value():
+    """The whole premise: argmax EV must beat picking uniformly at random."""
+    model = PropensityModel()
+    rng = np.random.default_rng(3)
+    chosen_ev, random_ev = 0, 0
+    for i in range(60):
+        scored = score_candidates(mk_ctx(amount=500_000 + i), model, rng)
+        chosen_ev += choose(scored).expected_value_paise
+        random_ev += scored[int(rng.integers(len(scored)))].expected_value_paise
+    assert chosen_ev > random_ev
