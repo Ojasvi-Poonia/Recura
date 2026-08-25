@@ -13,3 +13,5 @@ data/latents.json
 
 # Internal spec / strategy doc - not part of the public submission
 CLAUDE.md
+data/results.json
+recura.db

@@ -1,0 +1,69 @@
+"""Metrics tests (CLAUDE.md section 8)."""
+
+from dataclasses import dataclass
+
+from eval.metrics import bootstrap_lift_ci, compare, summarise
+
+
+@dataclass
+class R:
+    recovered_paise: int = 0
+    cost_paise: int = 0
+    contacts: int = 0
+    actions_blocked: int = 0
+    escalated: bool = False
+    refused_negative_ev: int = 0
+    opted_out: bool = False
+    llm_fallbacks: int = 0
+
+
+def arm(n, recovered, **kw):
+    return [R(recovered_paise=100_000 if i < recovered else 0, **kw) for i in range(n)]
+
+
+def test_recovery_rate():
+    m = summarise("treatment", arm(100, 30))
+    assert m.recovery_rate == 0.30 and m.recovered_events == 30
+
+
+def test_holdout_has_zero_cost_and_zero_contacts():
+    m = summarise("holdout", arm(50, 10))
+    assert m.cost_paise == 0 and m.contacts_per_customer == 0.0
+
+
+def test_lift_is_the_difference_in_recovery_rate():
+    c = compare(arm(1000, 350, cost_paise=10), arm(400, 280))
+    assert abs(c.lift_pp - (35.0 - 70.0)) < 0.01
+
+
+def test_bootstrap_is_deterministic():
+    """section 8: seeded, so intervals are byte-identical across runs."""
+    t, h = arm(500, 175), arm(200, 50)
+    assert bootstrap_lift_ci(t, h) == bootstrap_lift_ci(t, h)
+
+
+def test_bootstrap_interval_brackets_the_point_estimate():
+    t, h = arm(800, 320), arm(200, 50)
+    low, high = bootstrap_lift_ci(t, h)
+    point = 40.0 - 25.0
+    assert low < point < high
+
+
+def test_no_difference_gives_an_interval_containing_zero():
+    c = compare(arm(500, 150), arm(500, 150))
+    assert c.lift_ci_low_pp <= 0.0 <= c.lift_ci_high_pp
+    assert not c.significant
+
+
+def test_a_real_difference_is_flagged_significant():
+    c = compare(arm(1000, 600), arm(400, 80))
+    assert c.significant and c.lift_ci_low_pp > 0
+
+
+def test_net_incremental_subtracts_intervention_cost():
+    c = compare(arm(1000, 400, cost_paise=500), arm(400, 100))
+    assert c.net_incremental_paise == c.incremental_recovered_paise - c.treatment.cost_paise
+
+
+def test_empty_arms_do_not_crash():
+    assert bootstrap_lift_ci([], []) == (0.0, 0.0)
