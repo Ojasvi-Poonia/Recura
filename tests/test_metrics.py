@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 
+import pytest
+
 from eval.metrics import bootstrap_lift_ci, compare, summarise
 
 
@@ -67,3 +69,14 @@ def test_net_incremental_subtracts_intervention_cost():
 
 def test_empty_arms_do_not_crash():
     assert bootstrap_lift_ci([], []) == (0.0, 0.0)
+
+
+def test_roi_is_recovered_per_rupee_spent():
+    """The number a merchant actually asks for."""
+    c = compare(arm(1000, 400, cost_paise=100), arm(400, 100))
+    assert c.roi == pytest.approx(c.incremental_recovered_paise / c.treatment.cost_paise)
+
+
+def test_roi_is_infinite_when_nothing_was_spent():
+    c = compare(arm(100, 40), arm(100, 25))
+    assert c.roi == float("inf")

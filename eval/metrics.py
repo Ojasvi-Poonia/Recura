@@ -46,6 +46,7 @@ class Comparison:
     incremental_recovered_paise: int
     net_incremental_paise: int
     cost_per_recovery_paise: int
+    roi: float                      # rupees recovered per rupee spent
     significant: bool               # does the 95% interval exclude zero?
 
 
@@ -103,6 +104,8 @@ def compare(treatment: list, holdout: list) -> Comparison:
         incremental_recovered_paise=incremental,
         net_incremental_paise=incremental - t.cost_paise,
         cost_per_recovery_paise=int(t.cost_paise / extra_recoveries),
+        # The number a merchant actually asks for: what does a rupee of spend return?
+        roi=(incremental / t.cost_paise) if t.cost_paise else float("inf"),
         significant=(low > 0.0),
     )
 

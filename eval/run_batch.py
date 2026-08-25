@@ -152,6 +152,7 @@ def report(config: RunConfig, c, agent: Agent) -> None:
     print(f"{'INCREMENTAL RECOVERED':<32}{rupees(c.incremental_recovered_paise):>19}")
     print(f"{'NET INCREMENTAL':<32}{rupees(c.net_incremental_paise):>19}")
     print(f"{'Cost per extra recovery':<32}{rupees(c.cost_per_recovery_paise):>19}")
+    print(f"{'RETURN ON SPEND':<32}{f'{c.roi:.1f}x':>19}")
     print("=" * 72)
     print(f"bandit cells learned: {agent.model.cells_learned}")
 
