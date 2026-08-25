@@ -68,3 +68,11 @@ merchant:
 escalation:
   to_human_above_paise: 5000000    # Rs 50,000
   after_broken_promise_to_pay: true
+
+  # A merchant cannot put an unbounded number of failures in front of a person.
+  # 2 collections agents x ~40 cases per working day. Without this cap the optimiser
+  # correctly discovers that escalation is the single most effective action available
+  # and escalates ~40% of all events - operationally impossible, and the main reason an
+  # early headline of 67% recovery was not credible. Capacity is a real constraint and
+  # therefore belongs in the contract, not in the agent's head. Checked 2026-08-26.
+  max_per_day: 80

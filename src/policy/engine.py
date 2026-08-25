@@ -63,6 +63,7 @@ class EpisodeState:
     late_authorised: bool = False
     pre_debit_notice_sent_at: datetime | None = None
     merchant_actions_today: int = 0
+    escalations_today: int = 0
     merchant_spend_today_paise: int = 0
     action_cost_paise: int = 0
 
@@ -363,6 +364,20 @@ def _spend_cap(ctx: Ctx) -> RuleOutcome:
             "merchant.daily_spend_cap_paise",
             f"Action would take today's spend to {projected} paise, over the "
             f"{limit} paise cap."))
+    return RuleOutcome()
+
+
+@rule("escalation.max_per_day")
+def _escalation_capacity(ctx: Ctx) -> RuleOutcome:
+    """Human review is a finite resource. Exceeding it is not a policy nicety."""
+    limit = ctx.policy["escalation"].get("max_per_day")
+    if limit is None or ctx.decision.action is not ActionType.ESCALATE_HUMAN:
+        return RuleOutcome()
+    if ctx.state.escalations_today >= limit:
+        return RuleOutcome(_block(
+            "escalation.max_per_day",
+            f"Human review capacity for today is spent "
+            f"({ctx.state.escalations_today}/{limit} cases)."))
     return RuleOutcome()
 
 

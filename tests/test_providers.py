@@ -2,7 +2,12 @@
 
 import pytest
 
-from src.act.costs import attention_cost_paise, direct_cost_paise
+from src.act.costs import (
+    attention_cost_paise,
+    direct_cost_paise,
+    opt_out_probability,
+    opt_out_risk_paise,
+)
 from src.act.provider import (
     Downtime,
     LiveKeyRefused,
@@ -89,3 +94,29 @@ def test_all_costs_are_integer_paise():
     for ch in Channel:
         assert isinstance(direct_cost_paise(ActionType.NUDGE, ch), int)
     assert isinstance(attention_cost_paise(ActionType.NUDGE, 3), int)
+
+
+def test_attention_cost_prices_the_opt_out_risk():
+    """costs.yaml declared opt_out_risk_paise from day one but never applied it.
+
+    Annoyance is cheap; losing the customer is not. Pricing only fatigue let the agent
+    contact people almost freely.
+    """
+    from src.act.costs import opt_out_probability, opt_out_risk_paise
+    cost = attention_cost_paise(ActionType.NUDGE, 0)
+    fatigue_only = 150  # base_paise from config/costs.yaml
+    assert cost > fatigue_only
+    assert cost >= opt_out_probability(0) * opt_out_risk_paise()
+
+
+def test_opt_out_probability_rises_superlinearly_and_is_capped():
+    probs = [opt_out_probability(n) for n in range(6)]
+    gaps = [b - a for a, b in zip(probs, probs[1:])]
+    assert all(b > a for a, b in zip(gaps, gaps[1:]))
+    assert all(0.0 <= p <= 0.5 for p in probs)
+
+
+def test_fifth_contact_costs_far_more_than_the_first():
+    first = attention_cost_paise(ActionType.NUDGE, 0)
+    fifth = attention_cost_paise(ActionType.NUDGE, 4)
+    assert fifth > first * 20

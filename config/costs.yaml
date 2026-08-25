@@ -11,7 +11,12 @@ direct_cost_paise:
                      # also triggers the issuer's own decline SMS to the customer, and
                      # burns one of the NPCI per-day frequency slots. Modelling retries
                      # as free made NO_ACTION unreachable on small tickets.
-  escalate_human: 4000  # ~Rs 40 of an agent's time per escalated case
+  escalate_human: 12000  # ~Rs 120: FULLY LOADED cost of one human collections touch.
+                         # 10-15 min of an agent's time at an all-in ~Rs 500/hour, not
+                         # just wage. Priced at Rs 40 the optimiser correctly found that
+                         # escalation was the cheapest strong action available and
+                         # escalated ~40% of events - an operational impossibility that
+                         # was inflating the headline recovery rate.
 
 # Attention cost rises SUPERLINEARLY with recent contact count.
 # This is the term that makes the agent stop on its own (CLAUDE.md section 5).

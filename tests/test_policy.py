@@ -74,6 +74,9 @@ BLOCK_SCENARIOS: dict[str, tuple] = {
     "merchant.daily_spend_cap_paise": (
         mk_decision(), mk_state(merchant_spend_today_paise=500000, action_cost_paise=1)),
     "escalation.to_human_above_paise": (mk_decision(amount_paise=6_000_000), mk_state()),
+    "escalation.max_per_day": (
+        mk_decision(action=ActionType.ESCALATE_HUMAN),
+        mk_state(escalations_today=load_policy()["escalation"]["max_per_day"])),
 }
 
 
@@ -190,3 +193,20 @@ def test_evaluation_is_deterministic():
     d, s = BLOCK_SCENARIOS["contact.max_per_customer_per_7d"]
     a, b = evaluate(d, s, NOW), evaluate(d, s, NOW)
     assert a == b
+
+
+def test_escalation_capacity_binds_before_the_budget_does():
+    """Human review is finite; without this the optimiser escalates ~40% of events.
+
+    The limit is read from policy.yaml so tuning capacity cannot silently break the test.
+    """
+    limit = load_policy()["escalation"]["max_per_day"]
+    decision = mk_decision(action=ActionType.ESCALATE_HUMAN)
+    assert evaluate(decision, mk_state(escalations_today=limit - 1), NOW).allowed
+    assert not evaluate(decision, mk_state(escalations_today=limit), NOW).allowed
+
+
+def test_escalation_capacity_does_not_block_other_actions():
+    for action in (ActionType.NUDGE, ActionType.RETRY_NOW):
+        verdict = evaluate(mk_decision(action=action), mk_state(escalations_today=999), NOW)
+        assert "escalation.max_per_day" not in [b.rule_id for b in verdict.rules_blocked]
