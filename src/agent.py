@@ -114,6 +114,7 @@ class Agent:
     use_policy: bool = True              # False = ablation 3: no policy gate
     random_chooser: bool = False         # True  = ablation 1: ignore EV entirely
     allow_network: bool = True
+    policy: dict | None = None   # None = load policy.yaml
 
     # Merchant-level daily counters, carried ACROSS episodes.
     # These were previously per-episode, which meant `merchant.daily_action_budget` and
@@ -123,6 +124,7 @@ class Agent:
     _merchant_date: object = None
     _merchant_actions: int = 0
     _merchant_spend_paise: int = 0
+    _merchant_escalations: int = 0
 
     # ---- step 2: DIAGNOSE -------------------------------------------------
 
@@ -245,11 +247,12 @@ class Agent:
                 consented_channels=history.consented_channels, opted_out=opted_out,
                 merchant_actions_today=self._merchant_actions,
                 merchant_spend_today_paise=self._merchant_spend_paise,
+                escalations_today=self._merchant_escalations,
                 action_cost_paise=self._cost_of(decision, contacts),
             )
             # ---- step 4: GOVERN --------------------------------------------
             if self.use_policy:
-                verdict = evaluate(decision, state, now)
+                verdict = evaluate(decision, state, now, self.policy)
             else:
                 # Ablation 3: no gate. Expect more actions and worse cost-per-recovery.
                 verdict = PolicyVerdict(allowed=True, rules_evaluated=())
@@ -309,6 +312,7 @@ class Agent:
                 attempts += 1
             if decision.action is ActionType.ESCALATE_HUMAN:
                 escalated = True
+                self._merchant_escalations += 1
 
             hours_out = (scheduled - started).total_seconds() / 3600.0
             got_it, quit = observe(decision.action, scheduled, hours_out,
@@ -349,6 +353,7 @@ class Agent:
             self._merchant_date = day
             self._merchant_actions = 0
             self._merchant_spend_paise = 0
+            self._merchant_escalations = 0
 
     @staticmethod
     def _is_customer_contact(decision: Decision) -> bool:

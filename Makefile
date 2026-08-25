@@ -25,11 +25,11 @@ fixtures-plan: seed  ## how many model calls the fixture set still needs
 eval: seed  ## Tier 2: batch run + metrics. Must be byte-identical across runs.
 	$(VENV)/python -m eval.run_batch
 
-ablate:  ## Tier 3: ablation study (random / no-taxonomy / no-policy / no-LLM)
+ablate: seed  ## ablation study (random / no-taxonomy / no-policy / no-LLM)
 	$(VENV)/python -m eval.ablate
 
-sweep:  ## Tier 3: sensitivity sweep across generator parameterisations
+sweep: seed  ## Tier 3: sensitivity sweep across generator parameterisations
 	$(VENV)/python -m eval.sweep
 
-replay:  ## policy-diff harness: replay the ledger under a changed policy.yaml
+replay: seed  ## policy-diff harness: replay the cohort under altered contracts
 	$(VENV)/python -m eval.replay

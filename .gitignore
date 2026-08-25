@@ -16,3 +16,8 @@ CLAUDE.md
 data/results.json
 recura.db
 data/ablations.json
+
+# Private submission notes - not part of the public repo
+BUILD_NOTES.md
+data/sweep.json
+data/replay.json
