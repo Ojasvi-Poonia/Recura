@@ -7,7 +7,10 @@ direct_cost_paise:
   whatsapp: 70       # ~Rs 0.70 per business-initiated utility conversation
   email: 2           # ~Rs 0.02 amortised ESP cost
   voice: 300         # ~Rs 3.00 per connected outbound call minute
-  retry_attempt: 0   # a gateway retry is free to us; its true cost is customer patience
+  retry_attempt: 50  # ~Rs 0.50 gateway processing overhead. NOT zero: a failed debit
+                     # also triggers the issuer's own decline SMS to the customer, and
+                     # burns one of the NPCI per-day frequency slots. Modelling retries
+                     # as free made NO_ACTION unreachable on small tickets.
   escalate_human: 4000  # ~Rs 40 of an agent's time per escalated case
 
 # Attention cost rises SUPERLINEARLY with recent contact count.
