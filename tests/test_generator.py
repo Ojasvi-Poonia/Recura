@@ -105,3 +105,10 @@ def test_generator_is_frozen():
     """section 9.3: the freeze is declared in the file itself, not just in a doc."""
     src = Path(g.__file__).read_text(encoding="utf-8")
     assert "FROZEN" in src and "section 9.3" in src
+
+
+def test_batch_walks_the_cohort_chronologically():
+    """Learning must be causally honest: an outcome can only inform later decisions."""
+    from eval.run_batch import load_cohort
+    times = [event.observed_at for event, _ in load_cohort()]
+    assert times == sorted(times)
