@@ -36,8 +36,18 @@ class BetaPosterior:
     alpha: float = 1.0
     beta: float = 1.0
 
-    def updated(self, success: bool) -> BetaPosterior:
-        return replace(self, alpha=self.alpha + 1.0) if success else replace(self, beta=self.beta + 1.0)
+    def updated(self, success: bool, weight: float = 1.0) -> BetaPosterior:
+        """Beta conjugate update. `weight` < 1 credits a cell only partially.
+
+        Fractional weights are how a belief DISTRIBUTION over failure classes learns:
+        if the diagnosis was "60% FUNDS, 40% infra", the observed outcome updates the
+        FUNDS cell by 0.6 and the infra cell by 0.4 rather than betting the whole
+        observation on one guess.
+        """
+        if weight <= 0:
+            return self
+        return (replace(self, alpha=self.alpha + weight) if success
+                else replace(self, beta=self.beta + weight))
 
     def sample(self, rng: np.random.Generator) -> float:
         return float(rng.beta(self.alpha, self.beta))
@@ -75,9 +85,29 @@ class PropensityModel:
         """Posterior mean - used by the no-exploration ablation."""
         return self.posterior(failure_class, action).mean
 
-    def update(self, failure_class: FailureClass, action: ActionType, success: bool) -> None:
+    def update(self, failure_class: FailureClass, action: ActionType, success: bool,
+               weight: float = 1.0) -> None:
         key = (failure_class, action)
-        self._cells[key] = self.posterior(*key).updated(success)
+        self._cells[key] = self.posterior(*key).updated(success, weight)
+
+    def update_distribution(self, beliefs, action: ActionType, success: bool) -> None:
+        """Soft credit assignment across a belief distribution."""
+        for failure_class, probability in beliefs:
+            self.update(failure_class, action, success, weight=probability)
+
+    def sample_marginal(self, beliefs, action: ActionType,
+                        rng: np.random.Generator) -> float:
+        """Marginalise the Thompson draw over the diagnosis distribution:
+
+            p(action) = SUM_c  P(c) * p_recover(action | c)
+
+        This is where "the LLM proposes, the math decides" actually happens - the
+        model's uncertainty is integrated over, never rounded to a label.
+        """
+        return float(sum(p * self.sample(c, action, rng) for c, p in beliefs))
+
+    def expected_marginal(self, beliefs, action: ActionType) -> float:
+        return float(sum(p * self.expected(c, action) for c, p in beliefs))
 
     def snapshot(self) -> dict[str, dict[str, float]]:
         """Serialisable view for the ledger and for convergence charts."""

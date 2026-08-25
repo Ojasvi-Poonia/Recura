@@ -45,6 +45,7 @@ from src.models import (
     CustomerHistory,
     Decision,
     FailureClass,
+    PolicyVerdict,
     Recoverability,
     RiskEvent,
 )
@@ -61,6 +62,22 @@ class Observe(Protocol):
 
     def __call__(self, action: ActionType, at: datetime, hours_since_event: float,
                  prior_contacts: int, sequence: int) -> tuple[bool, bool]: ...
+
+
+@dataclass(frozen=True)
+class Diagnosis:
+    """Steps 1-2 output. A distribution over failure classes, not a single label."""
+
+    beliefs: tuple[tuple[FailureClass, float], ...]
+    recoverability: Recoverability
+    root_cause: str
+    confidence: float
+    mapping: object
+    source: ProposalSource
+
+    @property
+    def top_class(self) -> FailureClass:
+        return max(self.beliefs, key=lambda pair: pair[1])[0]
 
 
 @dataclass(frozen=True)
@@ -92,54 +109,75 @@ class Agent:
     rng: np.random.Generator = field(default_factory=lambda: np.random.default_rng(0))
     downtimes: tuple[Downtime, ...] = ()
     explore: bool = True                 # False = posterior mean (no-exploration ablation)
-    use_llm: bool = True                 # False = the rules-only ablation
-    use_taxonomy: bool = True            # False = the no-taxonomy ablation
+    use_llm: bool = True                 # False = ablation 4: rules only
+    use_taxonomy: bool = True            # False = ablation 2: all failures identical
+    use_policy: bool = True              # False = ablation 3: no policy gate
+    random_chooser: bool = False         # True  = ablation 1: ignore EV entirely
     allow_network: bool = True
+
+    # Merchant-level daily counters, carried ACROSS episodes.
+    # These were previously per-episode, which meant `merchant.daily_action_budget` and
+    # `daily_spend_cap_paise` could never bind - a merchant with a 500-action budget was
+    # effectively running 7,992 separate budgets of 5. Requires the cohort to be walked
+    # in chronological order, which eval/run_batch.py now does.
+    _merchant_date: object = None
+    _merchant_actions: int = 0
+    _merchant_spend_paise: int = 0
 
     # ---- step 2: DIAGNOSE -------------------------------------------------
 
-    def _diagnose(self, event: RiskEvent) -> tuple[FailureClass, Recoverability, str, float,
-                                                   object, ProposalSource]:
+    def _diagnose(self, event: RiskEvent) -> Diagnosis:
+        """Steps 1-2: TRIAGE and DIAGNOSE. Returns a DISTRIBUTION, not a label."""
         mapping = classify(event.razorpay_error)
-        if not self.use_taxonomy:
-            # Ablation: every failure treated identically.
-            return (FailureClass.UNKNOWN, Recoverability.CUSTOMER_RECOVERABLE,
-                    "taxonomy disabled", 0.5, mapping, ProposalSource.SKIPPED)
 
-        if not self.use_llm:
-            return (mapping.failure_class, mapping.recoverability,
-                    mapping.note or mapping.reason, 0.5, mapping, ProposalSource.SKIPPED)
+        if not self.use_taxonomy:  # ablation 2: every failure treated identically
+            return Diagnosis(((FailureClass.UNKNOWN, 1.0),),
+                             Recoverability.CUSTOMER_RECOVERABLE,
+                             "taxonomy disabled", 0.5, mapping, ProposalSource.SKIPPED)
+
+        certain = ((mapping.failure_class, 1.0),)
+        if not self.use_llm:       # ablation 4: rules only
+            return Diagnosis(certain, mapping.recoverability,
+                             mapping.note or mapping.reason, 0.5, mapping,
+                             ProposalSource.SKIPPED)
 
         result = propose_root_cause(event, mapping, provider=self.llm_provider,
                                     allow_network=self.allow_network)
-        proposal = result.proposal
-
-        # The LLM is consulted only where the taxonomy is blind, so when it returns a
-        # confident non-UNKNOWN class it is strictly more informative than the lookup.
         consulted = result.source in (ProposalSource.FIXTURE, ProposalSource.API)
-        if (consulted and proposal.suspected_failure_class is not FailureClass.UNKNOWN
-                and proposal.confidence >= 0.5):
-            failure_class = proposal.suspected_failure_class
-        else:
-            failure_class = mapping.failure_class
-
-        return (failure_class, mapping.recoverability, proposal.root_cause,
-                proposal.confidence, mapping, result.source)
+        beliefs = result.proposal.distribution() if consulted else certain
+        return Diagnosis(beliefs, mapping.recoverability, result.proposal.root_cause,
+                         result.proposal.confidence, mapping, result.source)
 
     # ---- step 3: DECIDE ---------------------------------------------------
 
-    def _decide(self, event: RiskEvent, now: datetime, attempts: int) -> Decision:
-        failure_class, recoverability, root_cause, confidence, mapping, source = \
-            self._diagnose(event)
-
+    def _decide(self, event: RiskEvent, now: datetime, attempts: int,
+                refused: frozenset = frozenset()) -> tuple[Decision, Diagnosis]:
+        dx = self._diagnose(event)
         active = [d for d in self.downtimes if d.affects(event.method, event.bank)]
         ctx = DecisionContext(
-            event=event, failure_class=failure_class, recoverability=recoverability,
-            mapping=mapping, now=now, downtime_active=bool(active),
+            event=event, failure_class=dx.top_class, recoverability=dx.recoverability,
+            mapping=dx.mapping, now=now, downtime_active=bool(active),
             downtime_clears_in_h=2.0 if active else 0.0, attempts_made=attempts,
+            class_beliefs=dx.beliefs,
         )
         considered = score_candidates(ctx, self.model, self.rng, explore=self.explore)
-        best = choose(considered)
+        # Do not re-propose what the contract has already refused THIS episode.
+        #
+        # A blocked action yields no outcome, so the bandit learns nothing from it and
+        # would happily propose the same forbidden retry every step. Left unfixed the
+        # agent degenerates into a retry bot - CLAUDE.md section 12's explicit anti-goal -
+        # burning its whole decision budget on requests the policy already denied. The
+        # first refusal is still logged as evidence (section 6); only the repeats stop.
+        if refused:
+            survivors = [c for c in considered if c.action not in refused]
+            if survivors:
+                considered = survivors
+        if self.random_chooser:
+            # Ablation 1: pick uniformly at random. Every candidate is still priced and
+            # logged, so the ledger shows exactly what EV was thrown away.
+            best = considered[int(self.rng.integers(len(considered)))]
+        else:
+            best = choose(considered)
         runner_up = max((c for c in considered if c is not best),
                         key=lambda c: c.expected_value_paise, default=None)
 
@@ -148,15 +186,16 @@ class Agent:
             f"{runner_up.action.value} at {runner_up.expected_value_paise}"
             if runner_up else "only candidate"
         )
-        return Decision(
-            event_id=event.event_id, failure_class=failure_class,
-            recoverability=recoverability, root_cause=root_cause[:200],
+        decision = Decision(
+            event_id=event.event_id, failure_class=dx.top_class,
+            recoverability=dx.recoverability, root_cause=dx.root_cause[:200],
             action=best.action, params=best.params,
             expected_value_paise=best.expected_value_paise, p_recover=best.p_recover,
-            confidence=confidence, rationale=rationale,
+            confidence=dx.confidence, rationale=rationale,
             considered=tuple(considered), decided_at=now,
-            llm_fallback_used=(source is ProposalSource.FALLBACK),
+            llm_fallback_used=(dx.source is ProposalSource.FALLBACK),
         )
+        return decision, dx
 
     # ---- the loop ---------------------------------------------------------
 
@@ -177,6 +216,7 @@ class Agent:
         now = started
         history = event.customer_history
         attempts = contacts = 0
+        refused_actions: set[ActionType] = set()
         cost = recovered = 0
         blocked = refused = taken = 0
         llm_consulted = llm_fallbacks = 0
@@ -190,36 +230,58 @@ class Agent:
                     update={"contacts_last_7d": contacts})
             })
 
-            decision = self._decide(observed, now, attempts)
+            self._roll_merchant_day(now)
+            decision, dx = self._decide(observed, now, attempts, frozenset(refused_actions))
             if decision.llm_fallback_used:
                 llm_fallbacks += 1
             if self.use_llm:
                 llm_consulted += 1
 
-            # ---- step 4: GOVERN --------------------------------------------
             state = EpisodeState(
                 event_id=event.event_id, episode_started_at=started,
                 attempts_made=attempts, attempts_this_mandate_cycle=attempts,
                 contacts_last_7d=contacts,
                 last_contact_at=self._last_contact_at(now, contacts),
                 consented_channels=history.consented_channels, opted_out=opted_out,
-                merchant_actions_today=taken,
-                merchant_spend_today_paise=cost,
+                merchant_actions_today=self._merchant_actions,
+                merchant_spend_today_paise=self._merchant_spend_paise,
                 action_cost_paise=self._cost_of(decision, contacts),
             )
-            verdict = evaluate(decision, state, now)
+            # ---- step 4: GOVERN --------------------------------------------
+            if self.use_policy:
+                verdict = evaluate(decision, state, now)
+            else:
+                # Ablation 3: no gate. Expect more actions and worse cost-per-recovery.
+                verdict = PolicyVerdict(allowed=True, rules_evaluated=())
 
             # Quiet hours SHIFT rather than block; honour the modified send time.
             scheduled = self._scheduled_at(decision, verdict, now)
 
             if decision.action is ActionType.NO_ACTION:
+                # Refusing is a DECISION, not an exit. Two things follow from that:
+                #
+                # 1. The money does not vanish. A customer we chose not to chase may
+                #    still pay on their own, and that recovery belongs to the treatment
+                #    arm. Recording zero here biased the comparison against ourselves.
+                # 2. We still observe the outcome, so the NO_ACTION cell keeps learning.
+                #    Without this its posterior sits at the Beta(1,1) mean of 0.5
+                #    forever - a baseline far more optimistic than reality, against
+                #    which every real action looks like a bad bet. That is what made
+                #    the agent refuse 4,128 times.
                 refused += 1
-                self._log(event, arm, seq, decision, verdict, 0, 0, now)
-                stop_reason = "refused_negative_ev"
+                got_it, _ = observe(ActionType.NO_ACTION, now,
+                                    (now - started).total_seconds() / 3600.0,
+                                    contacts, seq)
+                self.model.update_distribution(dx.beliefs, ActionType.NO_ACTION, got_it)
+                recovered_now = margin_amount if got_it else 0
+                recovered += recovered_now
+                self._log(event, arm, seq, decision, verdict, 0, recovered_now, now)
+                stop_reason = "recovered_unprompted" if got_it else "refused_negative_ev"
                 break
 
             if not verdict.allowed:
                 blocked += 1
+                refused_actions.add(decision.action)
                 self._log(event, arm, seq, decision, verdict, 0, 0, now)
                 # A block is evidence, not a crash. Try again after a cooling-off.
                 now = now + timedelta(hours=24)
@@ -239,6 +301,8 @@ class Agent:
 
             cost += action_cost
             taken += 1
+            self._merchant_actions += 1
+            self._merchant_spend_paise += action_cost
             if self._is_customer_contact(decision):
                 contacts += 1
             if decision.action in RETRY_ACTIONS:
@@ -251,7 +315,7 @@ class Agent:
                                    max(0, contacts - 1), seq)
 
             # ---- step 5: LEARN ---------------------------------------------
-            self.model.update(decision.failure_class, decision.action, got_it)
+            self.model.update_distribution(dx.beliefs, decision.action, got_it)
 
             recovered_now = margin_amount if got_it else 0
             recovered += recovered_now
@@ -277,6 +341,14 @@ class Agent:
         )
 
     # ---- helpers ----------------------------------------------------------
+
+    def _roll_merchant_day(self, now: datetime) -> None:
+        """Reset the merchant's daily counters when the virtual date advances."""
+        day = now.date()
+        if self._merchant_date != day:
+            self._merchant_date = day
+            self._merchant_actions = 0
+            self._merchant_spend_paise = 0
 
     @staticmethod
     def _is_customer_contact(decision: Decision) -> bool:

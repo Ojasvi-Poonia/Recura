@@ -64,10 +64,13 @@ class DecisionContext:
     """Everything the EV layer needs. All observable - no latents anywhere."""
 
     event: RiskEvent
-    failure_class: FailureClass
+    failure_class: FailureClass          # argmax of `class_beliefs`; used for logging
     recoverability: Recoverability
     mapping: ReasonMapping
     now: datetime
+    # Diagnosis as a DISTRIBUTION. Defaults to all-mass-on-failure_class, which makes
+    # the rules-only path a special case of the same arithmetic.
+    class_beliefs: tuple[tuple[FailureClass, float], ...] = ()
     downtime_active: bool = False
     downtime_clears_in_h: float = 0.0
     attempts_made: int = 0
@@ -133,8 +136,9 @@ def candidate_actions(ctx: DecisionContext) -> list[tuple[ActionType, dict]]:
 
 def _p_for(ctx: DecisionContext, action: ActionType, params: dict,
            model: PropensityModel, rng: np.random.Generator, explore: bool) -> float:
-    raw = (model.sample(ctx.failure_class, action, rng) if explore
-           else model.expected(ctx.failure_class, action))
+    beliefs = ctx.class_beliefs or ((ctx.failure_class, 1.0),)
+    raw = (model.sample_marginal(beliefs, action, rng) if explore
+           else model.expected_marginal(beliefs, action))
     at = params.get("scheduled_at") or ctx.now
     if isinstance(at, str):
         at = datetime.fromisoformat(at)
@@ -160,7 +164,15 @@ def score_candidates(
     amount = ctx.event.amount_paise
     contacts = ctx.event.customer_history.contacts_last_7d
 
-    p_no_action = _p_for(ctx, ActionType.NO_ACTION, {}, model, rng, explore)
+    # The do-nothing baseline uses the posterior MEAN, never a Thompson draw.
+    #
+    # This is subtle and it matters: every candidate is scored as an INCREMENT over this
+    # baseline. Drawing the baseline randomly too makes each increment a difference of
+    # two independent random variables - mean zero, negative half the time - so the agent
+    # refuses at random rather than on evidence. Exploration belongs on the action arms,
+    # which is where the information actually is; the counterfactual is a fixed reference
+    # point. (Caught by the ablation study: a random chooser was beating the optimiser.)
+    p_no_action = _p_for(ctx, ActionType.NO_ACTION, {}, model, rng, explore=False)
 
     scored: list[CandidateEV] = []
     for action, params in candidate_actions(ctx):

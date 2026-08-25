@@ -68,13 +68,39 @@ class ProposalSource(StrEnum):
     SKIPPED = "skipped"      # routing gate: taxonomy was already diagnostic
 
 
+class ClassBelief(BaseModel):
+    failure_class: FailureClass
+    probability: float = Field(ge=0.0, le=1.0)
+
+
 class RootCauseProposal(BaseModel):
-    """What we ask the model to return. Also the fixture schema."""
+    """What we ask the model to return. Also the fixture schema.
+
+    `beliefs` is a DISTRIBUTION, not a label. That matters: on an opaque error code an
+    honest model answers "UNKNOWN", and a single-label interface would throw that entire
+    call away. A distribution lets partial information through - "probably FUNDS, maybe
+    infra" is genuinely useful even when nothing is certain - and the EV layer
+    marginalises over it rather than betting on one guess.
+    """
 
     root_cause: str = Field(description="One sentence, max 200 chars, plain language.")
-    suspected_failure_class: FailureClass
+    beliefs: list[ClassBelief] = Field(default_factory=list)
     confidence: float = Field(ge=0.0, le=1.0)
     reasoning: str
+
+    def distribution(self) -> tuple[tuple[FailureClass, float], ...]:
+        """Normalised belief. Falls back to all-UNKNOWN if the model returned nothing."""
+        total = sum(max(0.0, b.probability) for b in self.beliefs)
+        if total <= 0:
+            return ((FailureClass.UNKNOWN, 1.0),)
+        return tuple((b.failure_class, max(0.0, b.probability) / total)
+                     for b in self.beliefs if b.probability > 0)
+
+    @property
+    def suspected_failure_class(self) -> FailureClass:
+        """Most likely class. Kept for logging and for the no-marginalisation ablation."""
+        dist = self.distribution()
+        return max(dist, key=lambda pair: pair[1])[0]
 
 
 @dataclass(frozen=True)
@@ -211,7 +237,7 @@ def rules_fallback(mapping: ReasonMapping, reason: str | None) -> RootCausePropo
     described = mapping.note or mapping.reason
     return RootCauseProposal(
         root_cause=f"{reason or 'unknown reason'}: {described}"[:200],
-        suspected_failure_class=mapping.failure_class,
+        beliefs=[ClassBelief(failure_class=mapping.failure_class, probability=1.0)],
         confidence=0.5,
         reasoning="Deterministic taxonomy lookup; no model judgement applied.",
     )
