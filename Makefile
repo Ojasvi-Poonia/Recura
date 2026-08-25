@@ -22,6 +22,9 @@ fixtures: seed  ## one-off: generate the committed LLM fixture set (needs a prov
 fixtures-plan: seed  ## how many model calls the fixture set still needs
 	$(VENV)/python -m eval.generate_fixtures --dry-run
 
+validate: seed  ## benchmark validity suite: negative controls + randomisation checks
+	$(VENV)/python -m eval.validate
+
 eval: seed  ## Tier 2: batch run + metrics. Must be byte-identical across runs.
 	$(VENV)/python -m eval.run_batch
 

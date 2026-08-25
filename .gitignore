@@ -21,3 +21,4 @@ data/ablations.json
 BUILD_NOTES.md
 data/sweep.json
 data/replay.json
+data/validity.json
