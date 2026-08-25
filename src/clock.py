@@ -10,7 +10,18 @@ from datetime import datetime, timedelta
 from typing import Protocol
 from zoneinfo import ZoneInfo
 
-IST = ZoneInfo("Asia/Kolkata")  # CLAUDE.md section 2: all policy windows are IST
+IST = ZoneInfo("Asia/Kolkata")  # India default; see tz_for() for other markets
+
+
+def tz_for(market_code: str = "IN") -> ZoneInfo:
+    """Policy windows are evaluated in the MARKET's timezone, not always IST.
+
+    A Malaysian merchant's quiet hours are Asia/Kuala_Lumpur. Hardcoding IST would
+    silently send a message at 03:00 local time and breach the local equivalent of the
+    rule we were trying to honour.
+    """
+    from src.market import get_market
+    return get_market(market_code).timezone
 
 
 class Clock(Protocol):

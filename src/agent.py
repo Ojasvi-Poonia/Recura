@@ -39,6 +39,7 @@ from src.decide.ev import DecisionContext, choose, score_candidates
 from src.decide.llm import ProposalSource, propose_root_cause
 from src.decide.providers import LLMProvider, NullProvider
 from src.ledger.store import Ledger, make_entry
+from src.market import Market, get_market
 from src.models import (
     ActionType,
     Channel,
@@ -115,6 +116,7 @@ class Agent:
     random_chooser: bool = False         # True  = ablation 1: ignore EV entirely
     allow_network: bool = True
     policy: dict | None = None   # None = load policy.yaml
+    market: Market = field(default_factory=get_market)
 
     # Merchant-level daily counters, carried ACROSS episodes.
     # These were previously per-episode, which meant `merchant.daily_action_budget` and
@@ -160,7 +162,7 @@ class Agent:
             event=event, failure_class=dx.top_class, recoverability=dx.recoverability,
             mapping=dx.mapping, now=now, downtime_active=bool(active),
             downtime_clears_in_h=2.0 if active else 0.0, attempts_made=attempts,
-            class_beliefs=dx.beliefs,
+            class_beliefs=dx.beliefs, market=self.market,
         )
         considered = score_candidates(ctx, self.model, self.rng, explore=self.explore)
         # Do not re-propose what the contract has already refused THIS episode.
@@ -205,14 +207,32 @@ class Agent:
         started = event.observed_at
         margin_amount = event.amount_paise
 
-        # HOLDOUT: observe only. No decision, no action, no contact. This is the
-        # counterfactual the headline number is measured against (section 8).
+        # HOLDOUT: no decision, no action, no contact - but observed over the SAME
+        # horizon, with the SAME number of opportunities as a treated episode.
+        #
+        # This matters more than it looks. Observing the control arm once while the
+        # treatment arm gets up to MAX_DECISIONS re-observations across 21 days hands
+        # treatment extra draws on the same underlying probability, and the harness
+        # reports "lift" that is pure repeated sampling. Our placebo negative control
+        # caught exactly that: with every action made inert, the measured lift was
+        # still +18.57pp. A customer left completely alone for three weeks also gets
+        # several natural chances to pay; the counterfactual has to include them.
         if arm == "holdout":
-            recovered, _ = observe(ActionType.NO_ACTION, started, 0.0, 0, 0)
-            self._log(event, arm, 0, None, None, 0,
-                      margin_amount if recovered else 0, started)
-            return EpisodeResult(event.event_id, arm,
-                                 recovered_paise=margin_amount if recovered else 0,
+            when = started
+            for seq in range(MAX_DECISIONS):
+                got_it, _ = observe(ActionType.NO_ACTION, when,
+                                    (when - started).total_seconds() / 3600.0, 0, seq)
+                self._log(event, arm, seq, None, None, 0,
+                          margin_amount if got_it else 0, when)
+                if got_it:
+                    return EpisodeResult(event.event_id, arm,
+                                         recovered_paise=margin_amount,
+                                         decisions=seq + 1,
+                                         stop_reason="recovered_unprompted")
+                when = when + timedelta(hours=30)
+                if (when - started).days > 21:
+                    break
+            return EpisodeResult(event.event_id, arm, decisions=seq + 1,
                                  stop_reason="holdout_observed")
 
         now = started
@@ -279,15 +299,34 @@ class Agent:
                 recovered_now = margin_amount if got_it else 0
                 recovered += recovered_now
                 self._log(event, arm, seq, decision, verdict, 0, recovered_now, now)
-                stop_reason = "recovered_unprompted" if got_it else "refused_negative_ev"
-                break
+                if got_it:
+                    stop_reason = "recovered_unprompted"
+                    break
+                stop_reason = "refused_negative_ev"
+                now = now + timedelta(hours=30)
+                if (now - started).days > 21:
+                    stop_reason = "episode_expired"
+                    break
+                continue
 
             if not verdict.allowed:
                 blocked += 1
                 refused_actions.add(decision.action)
-                self._log(event, arm, seq, decision, verdict, 0, 0, now)
+                # The contract stopped US, not the customer. They still have their own
+                # chance to pay during this window, and the counterfactual arm gets one
+                # at every step - so treatment must too, or the comparison is unfair.
+                got_it, _ = observe(ActionType.NO_ACTION, now,
+                                    (now - started).total_seconds() / 3600.0,
+                                    contacts, seq)
+                self.model.update_distribution(dx.beliefs, ActionType.NO_ACTION, got_it)
+                recovered_now = margin_amount if got_it else 0
+                recovered += recovered_now
+                self._log(event, arm, seq, decision, verdict, 0, recovered_now, now)
+                if got_it:
+                    stop_reason = "recovered_unprompted"
+                    break
                 # A block is evidence, not a crash. Try again after a cooling-off.
-                now = now + timedelta(hours=24)
+                now = now + timedelta(hours=30)
                 if (now - started).days > 21:
                     stop_reason = "episode_expired"
                     break

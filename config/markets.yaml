@@ -1,0 +1,31 @@
+# Market profiles.
+#
+# SCOPE: India only. Razorpay also operates in Malaysia (Curlec) and Singapore, and this
+# structure exists so those are a config file rather than a rewrite - but we ship only
+# what we have verified against primary regulation. A profile we had not checked would
+# be a liability dressed as a feature.
+#
+# The point of this file is that nothing locale-specific is compiled into the decision
+# core: currency, minor units, timezone, lawful contact window, payment rails and
+# languages are all data. An invariant test fails the build if a currency symbol
+# reappears in src/.
+
+IN:
+  name: India
+  verified: true
+  currency: { code: INR, symbol: "₹", minor_per_major: 100, minor_name: paise }
+  timezone: Asia/Kolkata
+  # RBI Fair Practices Code (08:00-19:00, all channels) intersected with TRAI TCCCPR
+  # promotional window (09:00-21:00). Checked 2026-08-26.
+  contact_window: { start: "09:00", end: "19:00" }
+  regulators: ["RBI Fair Practices Code", "TRAI TCCCPR", "RBI E-Mandate Framework 2026"]
+  pre_debit_notification_hours: 24
+  registered_template_channels: [sms, whatsapp]
+  rails: [upi, card, netbanking, wallet, emandate]
+  rail_alternatives:
+    card: [upi, netbanking]
+    upi: [card, netbanking]
+    netbanking: [upi, card]
+    wallet: [upi, card]
+    emandate: [upi, netbanking]
+  languages: [en, hi]

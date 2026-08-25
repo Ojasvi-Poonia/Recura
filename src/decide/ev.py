@@ -27,7 +27,7 @@ Action space is (type, time, channel) - timing is a first-class dimension (secti
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 import numpy as np
@@ -35,6 +35,7 @@ import numpy as np
 from src.act.costs import attention_cost_paise, direct_cost_paise, margin_bps
 from src.decide.bandit import PropensityModel
 from src.decide.multipliers import adjust
+from src.market import Market, get_market
 from src.models import (
     ActionType,
     CandidateEV,
@@ -45,18 +46,13 @@ from src.models import (
 )
 from src.taxonomy.mapping import ReasonMapping
 
-# Alternative rails to suggest, in preference order, when switching method.
-RAIL_ALTERNATIVES: dict[str, tuple[str, ...]] = {
-    "card": ("upi", "netbanking"),
-    "upi": ("card", "netbanking"),
-    "netbanking": ("upi", "card"),
-    "wallet": ("upi", "card"),
-    "emandate": ("upi", "netbanking"),
-}
+# Rail alternatives are MARKET data, not code: UPI does not exist in Malaysia and
+# FPX does not exist in India. See config/markets.yaml.
 
 # Candidate retry offsets in hours. Deliberately small and legible.
 RETRY_OFFSETS_H = (6.0, 24.0, 72.0)
 NUDGE_OFFSETS_H = (0.0, 24.0)
+EPISODE_HORIZON_H = 21 * 24.0   # policy.yaml episode.max_days
 
 
 @dataclass(frozen=True)
@@ -74,6 +70,7 @@ class DecisionContext:
     downtime_active: bool = False
     downtime_clears_in_h: float = 0.0
     attempts_made: int = 0
+    market: Market = field(default_factory=get_market)
 
 
 def _next_salary_window(now: datetime) -> datetime:
@@ -110,12 +107,16 @@ def candidate_actions(ctx: DecisionContext) -> list[tuple[ActionType, dict]]:
             "scheduled_at": ctx.now + timedelta(hours=ctx.downtime_clears_in_h + 0.5),
             "reason_hint": "waiting for bank downtime to clear"}))
     if ctx.failure_class is FailureClass.FUNDS:
-        out.append((ActionType.RETRY_SCHEDULED, {
-            **base, "scheduled_at": _next_salary_window(ctx.now),
-            "reason_hint": "aligned to salary-cycle replenishment"}))
+        salary = _next_salary_window(ctx.now)
+        # Only if it actually lands inside the episode. An action we could never take
+        # is not a candidate, and scheduling past the horizon silently expired episodes.
+        if (salary - ctx.now).total_seconds() / 3600.0 <= EPISODE_HORIZON_H:
+            out.append((ActionType.RETRY_SCHEDULED, {
+                **base, "scheduled_at": salary,
+                "reason_hint": "aligned to salary-cycle replenishment"}))
 
-    # Method switch.
-    for rail in RAIL_ALTERNATIVES.get(ev.method or "", ())[:1]:
+    # Method switch - to a rail that actually exists in this market.
+    for rail in ctx.market.alternatives_to(ev.method)[:1]:
         out.append((ActionType.SWITCH_METHOD, {**base, "suggested_rail": rail}))
 
     # Nudges, only on consented channels, only via a registered template.

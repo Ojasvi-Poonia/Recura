@@ -211,6 +211,16 @@ class LedgerEntry(_Frozen):
     wall_time: datetime
 
 
+def money(minor_units: int, market_code: str = "IN") -> str:
+    """Display helper. The ONLY place minor units become a human-readable amount.
+
+    Market-aware: a Curlec merchant in Kuala Lumpur must see RM, not a rupee symbol
+    glued onto a MYR amount. See src/market.py.
+    """
+    from src.market import get_market
+    return get_market(market_code).money(minor_units)
+
+
 def rupees(paise: int) -> str:
-    """Display helper. The ONLY place paise become rupees."""
-    return f"₹{paise / PAISE_PER_RUPEE:,.2f}"
+    """India-specific alias, kept for readability in India-only call sites."""
+    return money(paise, "IN")

@@ -133,3 +133,29 @@ def test_no_dialect_specific_sql_outside_trigger_definitions():
                 if postgres_only.search(node.value):
                     offenders.append(f"{path.name}:{node.lineno}")
     assert not offenders, "Postgres-specific SQL found: " + ", ".join(offenders)
+
+
+def test_no_hardcoded_currency_symbols_outside_the_market_module():
+    """Locale belongs in config/markets.yaml, not scattered through the decision core.
+
+    Razorpay operates in India, Malaysia and Singapore. A rupee symbol compiled into
+    the agent is a bug for two thirds of those merchants.
+    """
+    offenders = []
+    for path in _python_files(SRC):
+        if path.name in {"market.py", "models.py"}:   # the two sanctioned places
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        docstrings = {
+            ast.get_docstring(n, clean=False)
+            for n in ast.walk(tree)
+            if isinstance(n, (ast.Module, ast.ClassDef, ast.FunctionDef,
+                              ast.AsyncFunctionDef))
+        }
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                if node.value in docstrings:
+                    continue
+                if "₹" in node.value or "RM" == node.value or "S$" in node.value:
+                    offenders.append(f"{path.name}:{node.lineno}")
+    assert not offenders, f"hardcoded currency symbol: {offenders}"
