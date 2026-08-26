@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The razorpay source points to the customer during payment authorization for mandate creation, strongly suggesting an abandonment or dismissal of the UPI mandate setup screen. Some weight remains on transient infrastructure due to potential app-to-app callback failures.",
+  "root_cause": "The customer initiated a UPI mandate creation during payment authorization, but the setup process was aborted or rejected."
+}

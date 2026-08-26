@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer source and authorization step point towards an incomplete UPI prompt approval or abandonment, though the generic decline reason leaves room for transient network issues.",
+  "root_cause": "The UPI payment authorization was declined by the customer's bank during the authentication step, likely due to a lack of response or an aborted approval."
+}

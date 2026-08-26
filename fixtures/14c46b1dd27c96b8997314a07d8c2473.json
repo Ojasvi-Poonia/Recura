@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The Razorpay source points to the customer and the step is payment authorization, strongly suggesting an abandonment or timeout on the UPI app. Transient banking infrastructure issues also commonly trigger vague credit_failed statuses during peak evening hours.",
+  "root_cause": "The UPI payment failed during authorization, likely due to the customer abandoning the authentication step or a temporary app connectivity issue."
+}

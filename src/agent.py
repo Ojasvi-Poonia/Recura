@@ -24,6 +24,7 @@ therefore never enter `src/` at all (section 9.1).
 
 from __future__ import annotations
 
+import os
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -55,6 +56,21 @@ from src.policy.engine import EpisodeState, evaluate
 from src.taxonomy.mapping import classify
 
 MAX_DECISIONS = 5           # section 1: "typically 1-5 decisions"
+
+# How much of the model's stated distribution to believe, versus the taxonomy's prior.
+#
+# NOT a taste parameter - it is set from a measurement. eval/calibration.py scores the
+# diagnosis layer against ground truth and found the model materially overconfident:
+# when it said 61% it was right 20% of the time, with an expected calibration error of
+# 0.26 and a Brier score WORSE than simply predicting base rates. Feeding probabilities
+# like that into an expected-value calculation at face value degrades the decision, and
+# the ablation confirmed it: the agent scored better with the model switched off.
+#
+# So we shrink toward the deterministic taxonomy prior:
+#     p_used = w * p_model + (1 - w) * p_taxonomy
+# w = 0 is rules-only, w = 1 is taking the model at its word. Re-derive this whenever
+# the diagnosis model changes; a better-calibrated model earns a higher weight.
+DIAGNOSIS_SHRINKAGE = float(os.getenv("RECURA_DIAGNOSIS_SHRINKAGE", "0.35"))
 CONTACT_ACTIONS = {ActionType.NUDGE, ActionType.ESCALATE_HUMAN}
 RETRY_ACTIONS = {ActionType.RETRY_NOW, ActionType.RETRY_SCHEDULED, ActionType.SWITCH_METHOD}
 
@@ -158,11 +174,24 @@ class Agent:
         result = propose_root_cause(event, mapping, provider=self.llm_provider,
                                     allow_network=self.allow_network)
         consulted = result.source in (ProposalSource.FIXTURE, ProposalSource.API)
-        beliefs = result.proposal.distribution() if consulted else certain
+        beliefs = (self._shrink(result.proposal.distribution(), mapping.failure_class)
+                   if consulted else certain)
         return Diagnosis(beliefs, mapping.recoverability, result.proposal.root_cause,
                          result.proposal.confidence, mapping, result.source)
 
     # ---- step 3: DECIDE ---------------------------------------------------
+
+    @staticmethod
+    def _shrink(beliefs, prior_class: FailureClass):
+        """Blend the model's distribution with the taxonomy prior (see DIAGNOSIS_SHRINKAGE)."""
+        w = DIAGNOSIS_SHRINKAGE
+        if w >= 1.0:
+            return beliefs
+        merged: dict[FailureClass, float] = {prior_class: (1.0 - w)}
+        for cls, p in beliefs:
+            merged[cls] = merged.get(cls, 0.0) + w * p
+        total = sum(merged.values()) or 1.0
+        return tuple((c, p / total) for c, p in merged.items() if p > 0)
 
     def _decide(self, event: RiskEvent, now: datetime, attempts: int,
                 refused: frozenset = frozenset(),

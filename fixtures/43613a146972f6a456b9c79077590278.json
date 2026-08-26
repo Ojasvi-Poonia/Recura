@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure at the customer authorization step strongly points toward user abandonment or interaction drop-off, though transient gateway communication issues during setup remain a significant possibility.",
+  "root_cause": "The customer was unable to successfully complete the mandate creation step during card payment authorization."
+}

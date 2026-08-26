@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer source and payment authorization step strongly point towards an abandoned or interrupted UPI prompt, while prior recovery history suggests willingness to pay.",
+  "root_cause": "The customer was present during the UPI payment attempt at authorization step, but the transaction could not be completed successfully."
+}

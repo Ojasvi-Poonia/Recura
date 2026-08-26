@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.35
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "The opaque decline source and reason point to potential bank connectivity issues or an uncompleted customer session during netbanking authorization, balanced by the lack of prior history.",
+  "root_cause": "The netbanking payment was declined during authorization at the bank's end without a specific reason provided."
+}

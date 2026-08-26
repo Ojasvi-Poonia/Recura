@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure originating from the customer side points strongly toward authorization abandonment during the UPI flow, while history of prior recoveries indicates a familiar user.",
+  "root_cause": "The UPI mandate creation failed during payment authorization, likely due to customer drop-off or authorization interruption."
+}

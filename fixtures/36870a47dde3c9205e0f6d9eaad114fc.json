@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The emandate creation failure at authorization suggests the customer may have dropped off during authentication or lacked the initial verification balance, despite having a history of recovery.",
+  "root_cause": "The recurring mandate authorization process failed during setup, preventing the automatic payment creation."
+}

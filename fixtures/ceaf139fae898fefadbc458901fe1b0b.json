@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.6
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The razorpay source points to the customer and the step is authorization, strongly suggesting an abandonment or timeout on the app. However, the high prior failure count leaves room for transient network issues during the mandate setup.",
+  "root_cause": "The UPI mandate creation failed during payment authorization, likely due to a customer drop-off or authorization cancellation."
+}

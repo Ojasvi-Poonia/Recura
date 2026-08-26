@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The razorpay source indicates customer-side involvement during payment authorization with an opaque credit_failed code, pointing towards an abandonment or a transient UPI gateway issue given the prior recovery history.",
+  "root_cause": "The UPI payment authorization failed during the transaction attempt in the evening."
+}

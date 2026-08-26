@@ -249,8 +249,8 @@ def test_unknown_provider_is_rejected():
 
 
 def test_resolution_falls_back_to_null_without_keys(monkeypatch):
-    for var in ("RECURA_LLM_PROVIDER", "GEMINI_API_KEY", "GOOGLE_API_KEY",
-                "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN"):
+    for var in ("RECURA_LLM_PROVIDER", "GEMINI_API_KEYS", "GEMINI_API_KEY",
+                "GOOGLE_API_KEY", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN"):
         monkeypatch.delenv(var, raising=False)
     assert P.resolve_provider().name == "null"
 

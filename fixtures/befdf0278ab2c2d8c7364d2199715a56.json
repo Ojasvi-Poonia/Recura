@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.5,
+  "reasoning": "The authorization step failure and night timing point heavily toward a customer drop-off or bank redirect timeout, though the opaque reason leaves room for transient network issues.",
+  "root_cause": "The netbanking payment was declined during authorization at the bank portal, likely due to authentication drop or session timeout."
+}

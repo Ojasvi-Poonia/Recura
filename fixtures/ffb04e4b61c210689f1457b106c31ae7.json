@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer source step and evening timing strongly point toward an authentication drop or user abandonment on UPI, though the opaque reason leaves room for transient infrastructure issues.",
+  "root_cause": "The UPI mandate payment failed at authorization during the evening, likely due to an authentication drop or a temporary technical hitch."
+}

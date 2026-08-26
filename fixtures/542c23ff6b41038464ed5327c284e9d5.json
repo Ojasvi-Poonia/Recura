@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate_creation_failed reason and authorization step strongly suggest an interruption during the authentication or setup flow, leaning towards customer abandonment or card incompatibility with mandates.",
+  "root_cause": "The customer attempted to set up a recurring mandate during card payment authorization, but the creation failed."
+}

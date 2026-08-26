@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The opaque razorpay_reason and mandate source suggest potential authentication issues or card validity limits despite prior recovery history.",
+  "root_cause": "The card payment was declined during authorization with an unspecified reason, likely due to authentication drop or issuer restriction."
+}

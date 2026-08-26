@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source being a customer-initiated UPI mandate step strongly points toward an abandoned authorization or a transient UPI network timeout, despite the lack of a specific gateway reason code.",
+  "root_cause": "The UPI mandate authorization failed during payment processing without a specific gateway reason."
+}

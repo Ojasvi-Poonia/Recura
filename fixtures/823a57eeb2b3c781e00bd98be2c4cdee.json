@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source is listed as customer at the payment authorization step, strongly pointing to an authentication drop or app timeout during late-night UPI usage, tempered by the opaque error code.",
+  "root_cause": "The UPI payment failed during authorization at night, likely due to authentication abandonment or a transient network drop."
+}

@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The razorpay source is customer and step is payment_authorization, strongly pointing toward abandonment during authentication like a dropped 3DS page. Prior failed attempts add weight to possible transient or funds issues.",
+  "root_cause": "The customer was present during checkout and attempted card payment authorization, but the transaction failed before completion."
+}

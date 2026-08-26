@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The emandate creation failure during authorization strongly points toward customer abandonment during authentication or a transient bank integration issue, given the history of prior recoveries.",
+  "root_cause": "The customer likely encountered an issue during the emandate authorization step, such as failing to complete authentication or encountering a bank setup restriction."
+}

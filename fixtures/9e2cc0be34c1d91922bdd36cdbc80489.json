@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The emandate authorization step failing points strongly toward customer drop-off during authentication or a transient infrastructure glitch at the destination bank.",
+  "root_cause": "The recurring mandate authorization failed during creation, likely due to customer drop-off or bank processing issues."
+}
