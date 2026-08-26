@@ -46,7 +46,7 @@ def plan(model_id: str, fixtures_dir: Path) -> tuple[list, int, int]:
     consulted = skipped = 0
 
     for event in _load_treatment_events():
-        mapping = classify(event.razorpay_error)
+        mapping = classify(event.razorpay_error, event.source_type)
         reason = event.razorpay_error.reason if event.razorpay_error else None
         if not llm.should_consult_llm(mapping, reason, event.amount_paise):
             skipped += 1
@@ -60,12 +60,23 @@ def plan(model_id: str, fixtures_dir: Path) -> tuple[list, int, int]:
     return list(pending.items()), consulted, skipped
 
 
+def _all_consulted(model_id: str):
+    """(event, mapping) for every event the router would send to a model."""
+    for event in _load_treatment_events():
+        mapping = classify(event.razorpay_error, event.source_type)
+        reason = event.razorpay_error.reason if event.razorpay_error else None
+        if llm.should_consult_llm(mapping, reason, event.amount_paise):
+            yield event, mapping
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--provider", default=None, help="anthropic | gemini | null")
     ap.add_argument("--limit", type=int, default=None, help="max calls this run")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--fixtures-dir", default=str(llm.FIXTURES_DIR))
+    ap.add_argument("--prune", action="store_true",
+                    help="delete fixtures whose keys no longer match this cohort")
     args = ap.parse_args()
 
     fixtures_dir = Path(args.fixtures_dir)
@@ -79,10 +90,28 @@ def main() -> None:
     existing = len(list(fixtures_dir.glob("*.json"))) if fixtures_dir.exists() else 0
 
     print(f"provider            : {provider.name} ({model_id})")
+    if isinstance(provider, NullProvider):
+        # Cache keys are model-scoped, so planning against "null" describes a fixture
+        # set that can never match a real one. Without this warning the counts look
+        # authoritative and are simply wrong.
+        print("  WARNING: no provider key found, so this plan was computed against")
+        print("  model 'null'. Cache keys are model-scoped - set GEMINI_API_KEYS (or")
+        print("  pass --provider) or these counts describe a set that cannot match.")
     print(f"taxonomy sufficed   : {skipped} events (no model call - routing gate)")
     print(f"model consulted for : {consulted} events")
     print(f"fixtures on disk    : {existing}")
     print(f"CALLS STILL NEEDED  : {len(pending)}")
+
+    if args.prune:
+        wanted = {llm.cache_key(llm.observable_payload(e, m), llm.load_system_prompt(),
+                                model_id)
+                  for e, m in [(ev, mp) for ev, mp in _all_consulted(model_id)]}
+        removed = 0
+        for path in fixtures_dir.glob("*.json"):
+            if path.stem not in wanted:
+                path.unlink()
+                removed += 1
+        print(f"pruned {removed} fixtures whose keys no longer match this cohort")
 
     if args.dry_run:
         return
@@ -95,20 +124,25 @@ def main() -> None:
     todo = pending[: args.limit] if args.limit else pending
     print(f"generating {len(todo)}...\n")
 
-    written = failed = 0
+    written = failed = streak = 0
     for i, (key, (event, mapping)) in enumerate(todo, 1):
         result = llm.propose_root_cause(event, mapping, fixtures_dir=fixtures_dir,
                                         provider=provider)
         if result.source is llm.ProposalSource.API:
             written += 1
+            streak = 0
             status = result.proposal.suspected_failure_class.value
         else:
             failed += 1
+            streak += 1
             status = f"FAILED {result.error}"
-        if i % 10 == 0 or failed:
-            print(f"  [{i}/{len(todo)}] {written} written, {failed} failed - last: {status}")
-        if failed >= 5:
-            print("\n5 consecutive-ish failures - stopping. Check quota or key.")
+        if i % 25 == 0 or streak:
+            print(f"  [{i}/{len(todo)}] {written} written, {failed} failed - last: {status}",
+                  flush=True)
+        # CONSECUTIVE failures, not cumulative: a transient blip early in a 1,000-call
+        # run should not abort it. A sustained streak means quota or key trouble.
+        if streak >= 12:
+            print("\n12 consecutive failures - stopping. Check quota or key.")
             break
 
     remaining = len(pending) - written

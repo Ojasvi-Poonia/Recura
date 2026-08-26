@@ -270,3 +270,64 @@ def test_no_action_is_unaffected_by_the_horizon():
             model, np.random.default_rng(2))
         assert next(c for c in scored if c.action is ActionType.NO_ACTION
                     ).expected_value_paise == 0
+
+
+# --- B2B receivables (Track 03: "overdue receivables", "B2B receivables chaser") ----
+
+def _receivable(days_overdue=45, amount=2_000_000):
+    from datetime import timedelta
+    event = RiskEvent(
+        event_id="inv1", merchant_id="m", customer_id="c", source_type="invoice",
+        amount_paise=amount, observed_at=NOW, razorpay_error=None,
+        due_at=NOW - timedelta(days=days_overdue),
+        customer_history=CustomerHistory(consented_channels=(Channel.EMAIL,)),
+    )
+    mapping = classify(None, source_type="invoice")
+    return DecisionContext(event=event, failure_class=mapping.failure_class,
+                           recoverability=mapping.recoverability, mapping=mapping,
+                           now=NOW)
+
+
+def test_overdue_invoice_is_not_unknown():
+    """No charge was attempted, so there is no error code - but we still know a lot."""
+    mapping = classify(None, source_type="invoice")
+    assert mapping.failure_class is FailureClass.FUNDS
+
+
+def test_receivables_are_never_offered_a_gateway_retry():
+    """Nothing was ever charged. There is no instrument to retry or switch."""
+    actions = {a for a, _ in candidate_actions(_receivable())}
+    assert ActionType.RETRY_NOW not in actions
+    assert ActionType.RETRY_SCHEDULED not in actions
+    assert ActionType.SWITCH_METHOD not in actions
+
+
+def test_receivables_get_a_reminder_ladder():
+    params = [p for a, p in candidate_actions(_receivable()) if a is ActionType.NUDGE]
+    assert params
+    assert all(p["template_id"].startswith("tpl_receivable_") for p in params)
+
+
+def test_reminder_template_escalates_with_ageing():
+    """Collections practice escalates by ageing bucket, following net terms."""
+    def bucket_for(days):
+        return next(p["ageing_bucket"] for a, p in candidate_actions(_receivable(days))
+                    if a is ActionType.NUDGE)
+    assert bucket_for(5) == "current"
+    assert bucket_for(40) == "30d"
+    assert bucket_for(75) == "60d"
+    assert bucket_for(120) == "90d_plus"
+
+
+def test_aged_receivables_route_to_a_human():
+    """Past 60 days a reminder has stopped working; a person must renegotiate."""
+    fresh = [p for a, p in candidate_actions(_receivable(10))
+             if a is ActionType.ESCALATE_HUMAN]
+    aged = [p for a, p in candidate_actions(_receivable(75))
+            if a is ActionType.ESCALATE_HUMAN]
+    assert any("aged" in p.get("escalation_reason", "") for p in aged)
+    assert not any("aged" in p.get("escalation_reason", "") for p in fresh)
+
+
+def test_days_overdue_is_zero_for_non_receivables():
+    assert mk_ctx().event.days_overdue(NOW) == 0

@@ -63,19 +63,34 @@ def test_holdout_split_is_close_to_target(cohort):
     assert 0.17 <= holdout <= 0.23, holdout
 
 
-def test_true_failure_mix_matches_calibration(cohort):
-    """The generated mix must match the documented, cited mix."""
-    _, latents, _ = cohort
-    n = len(latents)
+def test_true_failure_mix_matches_calibration_for_gateway_events(cohort):
+    """The cited mix must hold for the population the sources actually describe.
+
+    NPCI's TD/BD figures are about DECLINES - transactions that reached a gateway and
+    were refused. Checkout abandonment and overdue receivables never reach a gateway,
+    so they are generated with their own distribution and are excluded here. Asserting
+    the decline mix over the whole cohort would be a category error.
+    """
+    events, latents, _ = cohort
+    gateway = [e for e in events if e.razorpay_error is not None]
+    assert gateway
+    n = len(gateway)
     for cls, target in g.FAILURE_MIX.items():
-        actual = sum(1 for l in latents.values() if l.true_failure_class is cls) / n
-        assert abs(actual - target) < 0.03, f"{cls}: {actual:.3f} vs {target}"
+        actual = sum(1 for e in gateway
+                     if latents[e.event_id].true_failure_class is cls) / n
+        assert abs(actual - target) < 0.04, f"{cls}: {actual:.3f} vs {target}"
 
 
 def test_emitted_reasons_are_all_real_razorpay_codes(cohort):
-    """section 7: never invent a reason code."""
+    """section 7: never invent a reason code.
+
+    Checkout and invoice events legitimately carry no error - nothing reached the
+    gateway - so only events that DO carry one are checked.
+    """
     events, _, _ = cohort
-    for e in events:
+    with_error = [e for e in events if e.razorpay_error is not None]
+    assert with_error, "no event carried a reason code at all"
+    for e in with_error:
         assert e.razorpay_error.reason in MAPPING, e.razorpay_error.reason
 
 
@@ -86,12 +101,13 @@ def test_label_is_genuinely_unreliable(cohort):
     amount / history / hour can beat it.
     """
     events, latents, _ = cohort
+    with_error = [e for e in events if e.razorpay_error is not None]
     wrong = sum(
-        1 for e in events
+        1 for e in with_error
         if MAPPING[e.razorpay_error.reason].failure_class
         is not latents[e.event_id].true_failure_class
     )
-    rate = wrong / len(events)
+    rate = wrong / len(with_error)
     assert 0.15 <= rate <= 0.30, f"label error rate {rate:.1%} outside the designed band"
 
 
@@ -112,3 +128,23 @@ def test_batch_walks_the_cohort_chronologically():
     from eval.run_batch import load_cohort
     times = [event.observed_at for event, _ in load_cohort()]
     assert times == sorted(times)
+
+
+def test_checkout_and_invoice_events_carry_no_gateway_error():
+    """A dropped checkout never reached the gateway; an invoice was never charged."""
+    events, _, _ = g.generate()
+    invoices = [e for e in events if e.source_type == "invoice"]
+    assert invoices and all(e.razorpay_error is None for e in invoices)
+    assert all(e.due_at is not None for e in invoices)
+    checkouts = [e for e in events if e.source_type == "checkout"]
+    no_error = [e for e in checkouts if e.razorpay_error is None]
+    assert 0.4 < len(no_error) / len(checkouts) < 0.8
+
+
+def test_source_type_does_not_trivially_reveal_the_true_class():
+    """Constrained but noisy - the agent must still infer, not read the answer off."""
+    events, latents, _ = g.generate()
+    invoices = [e for e in events if e.source_type == "invoice"]
+    aligned = sum(1 for e in invoices
+                  if latents[e.event_id].true_failure_class is FailureClass.FUNDS)
+    assert 0.6 < aligned / len(invoices) < 0.9

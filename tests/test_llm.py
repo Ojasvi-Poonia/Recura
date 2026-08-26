@@ -209,10 +209,38 @@ def test_root_cause_is_truncated_to_200_chars(tmp_path):
 
 # --- provider adapters ------------------------------------------------------
 
-def test_provider_resolution_prefers_explicit_choice():
+def test_provider_resolution_prefers_explicit_choice(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     assert P.resolve_provider("gemini").name == "gemini"
     assert P.resolve_provider("anthropic").name == "anthropic"
     assert P.resolve_provider("null").name == "null"
+
+
+def test_gemini_reads_a_comma_separated_key_ring(monkeypatch):
+    """Free-tier quotas are per key, so several keys extend the daily ceiling."""
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.setenv("GEMINI_API_KEYS", "k1, k2 ,k3")
+    assert P.GeminiProvider().keys == ["k1", "k2", "k3"]
+
+
+def test_gemini_rotates_off_an_exhausted_key(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEYS", "k1,k2")
+    provider = P.GeminiProvider(pace=False)
+    assert provider.active_key_index == 0
+    assert provider._rotate() is True
+    assert provider.active_key_index == 1
+    assert provider._rotate() is False       # ring exhausted
+
+
+@pytest.mark.parametrize("message,expected", [
+    ("429 RESOURCE_EXHAUSTED: quota exceeded", True),
+    ("403 PERMISSION_DENIED: API key invalid", True),
+    ("400 INVALID_ARGUMENT: bad schema", False),
+])
+def test_only_quota_and_auth_errors_trigger_rotation(message, expected):
+    """A malformed request is our bug - burning a second key on it helps nobody."""
+    assert P._should_rotate(RuntimeError(message)) is expected
 
 
 def test_unknown_provider_is_rejected():
@@ -234,10 +262,10 @@ def test_bring_your_own_key_selects_gemini(monkeypatch):
 
 
 def test_gemini_without_a_key_raises_provider_unavailable(monkeypatch):
-    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
-    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    for var in ("GEMINI_API_KEYS", "GEMINI_API_KEY", "GOOGLE_API_KEY"):
+        monkeypatch.delenv(var, raising=False)
     with pytest.raises(P.ProviderUnavailable):
-        P.GeminiProvider()._ensure()
+        P.GeminiProvider()
 
 
 def test_anthropic_model_is_pinned():
@@ -301,3 +329,25 @@ def test_fixtures_from_different_models_do_not_collide():
     keys = {llm.cache_key(payload, system, m)
             for m in ("claude-opus-5", "gemini-2.5-flash", "null")}
     assert len(keys) == 3
+
+
+@pytest.mark.parametrize("message,transient", [
+    ("ReadError: [Errno 54] Connection reset by peer", True),
+    ("httpx.ConnectTimeout: timed out", True),
+    ("503 Service temporarily unavailable", True),
+    ("429 RESOURCE_EXHAUSTED: quota exceeded", False),
+    ("400 INVALID_ARGUMENT: bad schema", False),
+])
+def test_transient_network_errors_are_distinguished_from_quota(message, transient):
+    """A connection reset is not a spent quota - retry the key, do not burn the next one."""
+    assert P._is_transient(RuntimeError(message)) is transient
+
+
+def test_checkout_and_receivable_events_do_not_consult_the_model():
+    """Neither is ambiguous: a dropped checkout is AUTH_ABANDON, an overdue invoice is
+    a working-capital problem. Sending them to a model wastes quota and, worse, would
+    have them diagnosed as UNKNOWN by a caller that forgot the source type."""
+    from src.taxonomy.mapping import classify as cls
+    for source in ("checkout", "invoice"):
+        mapping = cls(None, source_type=source)
+        assert not llm.should_consult_llm(mapping, None, 500_000)

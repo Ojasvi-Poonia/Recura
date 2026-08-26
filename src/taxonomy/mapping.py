@@ -241,10 +241,27 @@ CHECKOUT_ABANDONED = ReasonMapping(
 )
 
 
+# An overdue receivable carries no Razorpay error either: nobody attempted a charge, an
+# invoice simply went unpaid past its terms. B2B non-payment is overwhelmingly a
+# working-capital timing problem - the buyer's accounts-payable run has not reached it -
+# which is the same phenomenon as FUNDS, on a corporate cycle rather than a salary one.
+# Classing it UNKNOWN would throw away the strongest thing we know about it.
+RECEIVABLE_OVERDUE = ReasonMapping(
+    reason="<invoice_overdue>",
+    failure_class=FailureClass.FUNDS,
+    recoverability=Recoverability.CUSTOMER_RECOVERABLE,
+    note="Invoice past its payment terms with no charge attempted. Treated as a "
+         "working-capital timing problem aligned to the buyer's AP run, not as a "
+         "gateway failure - there is no instrument to retry.",
+)
+
+
 def classify(error: ErrorObject | None, source_type: str | None = None) -> ReasonMapping:
     """Map a Razorpay error object to our taxonomy. Never raises."""
     if (error is None or not error.reason) and source_type == "checkout":
         return CHECKOUT_ABANDONED
+    if (error is None or not error.reason) and source_type == "invoice":
+        return RECEIVABLE_OVERDUE
     if error is None or not error.reason:
         return UNMAPPED_FALLBACK
     hit = MAPPING.get(error.reason)

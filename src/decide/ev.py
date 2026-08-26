@@ -99,6 +99,50 @@ def _next_salary_window(now: datetime) -> datetime:
                        second=0, microsecond=0)
 
 
+# B2B receivables ageing ladder. Collections practice worldwide escalates by bucket,
+# and the buckets are the same everywhere because they follow net terms.
+AGEING_BUCKETS = ((0, "current"), (30, "30d"), (60, "60d"), (90, "90d_plus"))
+
+
+def ageing_bucket(days_overdue: int) -> str:
+    label = "current"
+    for threshold, name in AGEING_BUCKETS:
+        if days_overdue >= threshold:
+            label = name
+    return label
+
+
+def _receivable_candidates(ctx: DecisionContext, base: dict) -> list[tuple[ActionType, dict]]:
+    """Actions available on an overdue invoice.
+
+    Deliberately NOT the payment action space. There is no failed charge to retry and
+    no instrument to switch - nobody attempted a payment. What exists is a reminder
+    ladder that escalates with ageing, which is how receivables are actually collected.
+    """
+    ev = ctx.event
+    days = ev.days_overdue(ctx.now)
+    bucket = ageing_bucket(days)
+    out: list[tuple[ActionType, dict]] = []
+
+    for channel in ev.customer_history.consented_channels:
+        for offset in NUDGE_OFFSETS_H:
+            out.append((ActionType.NUDGE, {
+                **base, "channel": channel.value,
+                "template_id": f"tpl_receivable_{bucket}",
+                "language": ev.customer_history.language,
+                "scheduled_at": ctx.now + timedelta(hours=offset),
+                "days_overdue": days, "ageing_bucket": bucket,
+            }))
+
+    # Past 60 days a reminder has stopped working; this belongs with a person who can
+    # renegotiate terms or place a credit hold.
+    if days >= 60:
+        out.append((ActionType.ESCALATE_HUMAN, {
+            **base, "escalation_reason": f"receivable aged {bucket} ({days} days)",
+            "days_overdue": days, "ageing_bucket": bucket}))
+    return out
+
+
 def candidate_actions(ctx: DecisionContext) -> list[tuple[ActionType, dict]]:
     """Enumerate the (type, time, channel) options worth pricing."""
     ev = ctx.event
@@ -109,6 +153,13 @@ def candidate_actions(ctx: DecisionContext) -> list[tuple[ActionType, dict]]:
     if ctx.recoverability is not Recoverability.CUSTOMER_RECOVERABLE:
         out.append((ActionType.ESCALATE_HUMAN, {
             **base, "escalation_reason": f"{ctx.recoverability.value}: {ctx.mapping.reason}"}))
+        return out
+
+    # Receivables take the ageing ladder, not the gateway-retry path.
+    if ev.source_type == "invoice":
+        out.extend(_receivable_candidates(ctx, base))
+        out.append((ActionType.ESCALATE_HUMAN, {
+            **base, "escalation_reason": "high-value receivable"}))
         return out
 
     min_delay = ctx.mapping.min_retry_delay_hours or 0.0

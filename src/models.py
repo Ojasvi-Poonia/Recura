@@ -128,8 +128,17 @@ class RiskEvent(_Frozen):
     method: str | None = None
     bank: str | None = None
     attempt_number: int = Field(default=1, ge=1)
+    # Receivables only: when payment was contractually due. An overdue invoice has no
+    # gateway error to diagnose - its signal is ageing, not an error code.
+    due_at: datetime | None = None
     customer_history: CustomerHistory = Field(default_factory=CustomerHistory)
     merchant_context: MerchantContext | None = None
+
+    def days_overdue(self, now: datetime) -> int:
+        """0 for anything that is not a dated receivable."""
+        if self.due_at is None:
+            return 0
+        return max(0, (now - self.due_at).days)
 
 
 # --------------------------------------------------------------------------
