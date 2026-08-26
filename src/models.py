@@ -189,6 +189,9 @@ class PolicyVerdict(_Frozen):
     rules_evaluated: tuple[str, ...]
     rules_blocked: tuple[BlockedRule, ...] = ()
     modified_params: dict[str, Any] | None = None  # e.g. quiet hours shifted scheduled_at
+    # Some rules do not merely forbid - they mandate. Above the automation ceiling the
+    # contract REQUIRES human review, and "do nothing" is not a permitted outcome.
+    required_action: ActionType | None = None
 
 
 # --------------------------------------------------------------------------

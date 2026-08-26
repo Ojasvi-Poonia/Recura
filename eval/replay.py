@@ -53,6 +53,18 @@ VARIANTS: list[Variant] = [
         "How much of the result depends on having people available?",
         {"escalation.max_per_day": 0}),
     Variant(
+        "spend cap 5x tighter (Rs 5k/day)",
+        "What does a merchant give up by under-budgeting recovery?",
+        {"merchant.daily_spend_cap_paise": 500000}),
+    Variant(
+        "spend cap 25x tighter (Rs 1k/day)",
+        "And at the point where the budget is purely symbolic?",
+        {"merchant.daily_spend_cap_paise": 100000}),
+    Variant(
+        "no merchant spend cap at all",
+        "Does the shipped budget cost anything? (the agent stops on its own first)",
+        {"merchant.daily_spend_cap_paise": 10**12}),
+    Variant(
         "retry risk declines anyway",
         "What if we ignored the rule against retrying risk declines?",
         {"retry.forbidden_for_classes": ["INSTRUMENT_INVALID"]}),

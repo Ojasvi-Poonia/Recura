@@ -74,6 +74,7 @@ class EpisodeState:
 class RuleOutcome:
     blocked: BlockedRule | None = None
     modified: dict[str, Any] = field(default_factory=dict)
+    requires: ActionType | None = None    # this rule MANDATES an action
 
 
 @dataclass(frozen=True)
@@ -417,10 +418,11 @@ def _escalation_threshold(ctx: Ctx) -> RuleOutcome:
     if amount > threshold and ctx.decision.action not in (
         ActionType.ESCALATE_HUMAN, ActionType.NO_ACTION
     ):
-        return RuleOutcome(_block(
-            "escalation.to_human_above_paise",
-            f"Amount {amount} paise exceeds the {threshold} paise automation ceiling; "
-            "must be escalated to a human."))
+        return RuleOutcome(
+            _block("escalation.to_human_above_paise",
+                   f"Amount {amount} paise exceeds the {threshold} paise automation "
+                   "ceiling; must be escalated to a human."),
+            requires=ActionType.ESCALATE_HUMAN)
     return RuleOutcome()
 
 
@@ -434,6 +436,7 @@ def evaluate(decision: Decision, state: EpisodeState, now: datetime,
     evaluated: list[str] = []
     blocked: list[BlockedRule] = []
     modified: dict[str, Any] = {}
+    required: ActionType | None = None
 
     for rule_id, fn in _RULES:
         evaluated.append(rule_id)
@@ -442,12 +445,15 @@ def evaluate(decision: Decision, state: EpisodeState, now: datetime,
             blocked.append(outcome.blocked)
         if outcome.modified:
             modified.update(outcome.modified)
+        if outcome.requires is not None:
+            required = outcome.requires
 
     return PolicyVerdict(
         allowed=not blocked,
         rules_evaluated=tuple(evaluated),
         rules_blocked=tuple(blocked),
         modified_params=modified or None,
+        required_action=required,
     )
 
 

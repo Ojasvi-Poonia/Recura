@@ -283,8 +283,15 @@ def score_candidates(
 
 
 def choose(scored: list[CandidateEV]) -> CandidateEV:
-    """argmax EV. NO_ACTION wins when nothing beats zero - derived, not special-cased."""
+    """argmax EV. NO_ACTION wins when nothing beats zero - derived, not special-cased.
+
+    NO_ACTION is not always on the slate: when the contract MANDATES an action (above
+    the automation ceiling, human review is required) the candidates are filtered to
+    it, and refusing is not one of the permitted outcomes. Assuming it was always
+    present raised StopIteration on exactly those high-value cases.
+    """
     best = max(scored, key=lambda c: (c.expected_value_paise, -c.direct_cost_paise))
     if best.expected_value_paise < 0:
-        return next(c for c in scored if c.action is ActionType.NO_ACTION)
+        fallback = next((c for c in scored if c.action is ActionType.NO_ACTION), None)
+        return fallback if fallback is not None else best
     return best

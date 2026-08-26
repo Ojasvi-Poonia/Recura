@@ -84,3 +84,47 @@ def test_checkout_abandonment_is_not_unknown():
 def test_missing_error_without_checkout_context_is_still_unknown():
     assert m.classify(None).failure_class is FailureClass.UNKNOWN
     assert m.classify(None, source_type="payment").failure_class is FailureClass.UNKNOWN
+
+
+# --- Razorpay's `source` field carries triage information ---------------------
+
+def test_source_business_forces_merchant_triage():
+    """Razorpay documents source=business as "fix the request parameters".
+
+    Found by Tier 1: the first real failed payment returned
+    international_transaction_not_allowed with source=business - which our
+    reason-only table classed CUSTOMER_RECOVERABLE. Nudging a customer about the
+    merchant's own configuration would be wrong.
+    """
+    err = ErrorObject(reason="international_transaction_not_allowed", source="business")
+    assert m.classify(err).recoverability is Recoverability.MERCHANT_CONFIG
+
+
+def test_source_customer_leaves_triage_alone():
+    err = ErrorObject(reason="international_transaction_not_allowed", source="customer")
+    assert m.classify(err).recoverability is Recoverability.CUSTOMER_RECOVERABLE
+
+
+def test_source_refinement_explains_itself_in_the_note():
+    err = ErrorObject(reason="insufficient_funds", source="business")
+    assert "source=business" in m.classify(err).note
+
+
+def test_source_never_downgrades_an_already_merchant_reason():
+    err = ErrorObject(reason="invalid_order_id", source="business")
+    assert m.classify(err).recoverability is Recoverability.MERCHANT_CONFIG
+
+
+def test_missing_source_is_harmless():
+    assert m.classify(ErrorObject(reason="insufficient_funds")).recoverability \
+        is Recoverability.CUSTOMER_RECOVERABLE
+
+
+def test_real_tier1_payload_triages_correctly():
+    """The exact error object the live API returned on 2026-08-27."""
+    err = ErrorObject(code="BAD_REQUEST_ERROR",
+                      reason="international_transaction_not_allowed",
+                      source="business", step="payment_initiation")
+    got = m.classify(err, "payment")
+    assert got.failure_class is FailureClass.INSTRUMENT_INVALID
+    assert got.recoverability is Recoverability.MERCHANT_CONFIG

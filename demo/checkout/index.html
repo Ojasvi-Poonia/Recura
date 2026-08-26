@@ -1,0 +1,53 @@
+<!doctype html>
+<meta charset="utf-8"><title>Recura — Tier 1 failure harness</title>
+<style>
+ body{font:15px/1.6 -apple-system,system-ui,sans-serif;max-width:640px;margin:60px auto;padding:0 24px;color:#111}
+ code{background:#f3f3f3;padding:2px 6px;border-radius:4px}
+ .card{border:1px solid #ddd;border-radius:10px;padding:20px;margin:20px 0;background:#fafafa}
+ button{font:inherit;padding:12px 22px;border:0;border-radius:8px;background:#0b5;color:#fff;cursor:pointer}
+ .warn{border-left:3px solid #c60;padding-left:14px;color:#553}
+ table{border-collapse:collapse;width:100%;margin-top:8px}
+ td{padding:4px 8px;border-bottom:1px solid #eee;font-family:ui-monospace,monospace;font-size:13px}
+</style>
+<h2>Recura — Tier 1: induce a real payment failure</h2>
+<p><strong>Razorpay TEST MODE.</strong> No real money moves. This exists so our taxonomy
+can map a genuine <code>error_reason</code> returned by Razorpay, rather than one we wrote.</p>
+<div class="card">
+  <div>order <code>order_TUWXQX6wToMXqL</code> &middot; ₹2,499.00 &middot; key <code>rzp_test_TUWP5leBeSkjfj</code></div>
+  <p><button id="pay">Open Razorpay Checkout</button></p>
+</div>
+<div class="card warn">
+  <strong>Use a card that FAILS.</strong> Razorpay publishes test cards for this.
+  A failing card produces the real error object we want to map.
+  <table>
+    <tr><td>Card</td><td>4111 1111 1111 1111</td></tr>
+    <tr><td>Expiry</td><td>any future date</td></tr>
+    <tr><td>CVV</td><td>any 3 digits</td></tr>
+    <tr><td>OTP screen</td><td>choose <b>Failure</b> / enter a wrong OTP</td></tr>
+  </table>
+  <p style="margin-bottom:0">Full list: razorpay.com/docs/payments/payments/test-card-details/</p>
+</div>
+<div class="card" id="out">waiting…</div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+const out = document.getElementById('out');
+document.getElementById('pay').onclick = function () {
+  const rzp = new Razorpay({
+    key: "rzp_test_TUWP5leBeSkjfj",
+    order_id: "order_TUWXQX6wToMXqL",
+    amount: 249900,
+    currency: "INR",
+    name: "Recura Tier 1",
+    description: "Deliberate failure for taxonomy validation",
+    handler: function (r) { out.textContent = "SUCCEEDED (we wanted a failure): " + JSON.stringify(r); },
+    modal: { ondismiss: function () { out.textContent = "Checkout dismissed — that also produces a real event."; } }
+  });
+  rzp.on('payment.failed', function (r) {
+    out.innerHTML = "<strong>Payment failed — this is what we want.</strong><br>" +
+      "<code>" + (r.error.reason || '?') + "</code> &middot; source " + (r.error.source||'?') +
+      " &middot; step " + (r.error.step||'?') +
+      "<br><br>Now run <code>make tier1</code> in your terminal.";
+  });
+  rzp.open();
+};
+</script>

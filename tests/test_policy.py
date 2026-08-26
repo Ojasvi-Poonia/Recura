@@ -69,9 +69,15 @@ BLOCK_SCENARIOS: dict[str, tuple] = {
         mk_decision(), mk_state(contacts_last_7d=1, last_contact_at=NOW - timedelta(hours=1))),
     "contact.require_consent": (mk_decision(channel="whatsapp"), mk_state()),
     "contact.require_registered_template": (mk_decision(template_id=None), mk_state()),
-    "merchant.daily_action_budget": (mk_decision(), mk_state(merchant_actions_today=500)),
+    # Read the limits from policy.yaml so scaling the contract cannot silently
+    # stop these rules being exercised.
+    "merchant.daily_action_budget": (
+        mk_decision(),
+        mk_state(merchant_actions_today=load_policy()["merchant"]["daily_action_budget"])),
     "merchant.daily_spend_cap_paise": (
-        mk_decision(), mk_state(merchant_spend_today_paise=500000, action_cost_paise=1)),
+        mk_decision(),
+        mk_state(merchant_spend_today_paise=load_policy()["merchant"]["daily_spend_cap_paise"],
+                 action_cost_paise=1)),
     "escalation.to_human_above_paise": (mk_decision(amount_paise=6_000_000), mk_state()),
     "escalation.after_broken_promise_to_pay": (
         mk_decision(), mk_state(broken_promise_to_pay=True)),

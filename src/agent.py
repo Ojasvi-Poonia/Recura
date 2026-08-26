@@ -82,6 +82,23 @@ class Observe(Protocol):
                  prior_contacts: int, sequence: int) -> tuple[bool, bool]: ...
 
 
+# A long-running agent must not accumulate one row per merchant per day forever, but
+# eviction must not be driven by the LATEST date seen: an episode advances its own clock
+# days ahead while the next episode starts back near the cohort's beginning, so a
+# "prune anything older than today" rule silently discards budgets that are still live
+# and resets them on re-entry. Evict by SIZE instead, oldest date first.
+MAX_MERCHANT_DAYS = 50_000
+
+
+@dataclass
+class MerchantDay:
+    """One merchant's spend against one day's contract limits."""
+
+    actions: int = 0
+    spend_paise: int = 0
+    escalations: int = 0
+
+
 @dataclass(frozen=True)
 class Diagnosis:
     """Steps 1-2 output. A distribution over failure classes, not a single label."""
@@ -146,10 +163,11 @@ class Agent:
     # `daily_spend_cap_paise` could never bind - a merchant with a 500-action budget was
     # effectively running 7,992 separate budgets of 5. Requires the cohort to be walked
     # in chronological order, which eval/run_batch.py now does.
-    _merchant_date: object = None
-    _merchant_actions: int = 0
-    _merchant_spend_paise: int = 0
-    _merchant_escalations: int = 0
+    # Keyed by (merchant_id, date). `merchant.daily_action_budget` and
+    # `daily_spend_cap_paise` are per merchant per day, and one agent instance serves
+    # many merchants: a shared counter would let a busy merchant exhaust a quiet one's
+    # budget, and neither would get the limit their contract promises.
+    _merchant_days: dict = field(default_factory=dict)
 
     # Promise-to-pay window, in hours, opened when a nudge lands without immediate
     # payment. The customer has effectively said "I will pay" by engaging; if the
@@ -199,7 +217,8 @@ class Agent:
 
     def _decide(self, event: RiskEvent, now: datetime, attempts: int,
                 refused: frozenset = frozenset(),
-                attempts_made_so_far: int = 0) -> tuple[Decision, Diagnosis]:
+                attempts_made_so_far: int = 0,
+                force: ActionType | None = None) -> tuple[Decision, Diagnosis]:
         dx = self._diagnose(event)
         active = [d for d in self.downtimes if d.affects(event.method, event.bank)]
         ctx = DecisionContext(
@@ -221,6 +240,10 @@ class Agent:
             survivors = [c for c in considered if c.action not in refused]
             if survivors:
                 considered = survivors
+        if force is not None:
+            mandated = [c for c in considered if c.action is force]
+            if mandated:
+                considered = mandated
         if self.random_chooser:
             # Ablation 1: pick uniformly at random. Every candidate is still priced and
             # logged, so the ledger shows exactly what EV was thrown away.
@@ -300,7 +323,7 @@ class Agent:
                     update={"contacts_last_7d": contacts})
             })
 
-            self._roll_merchant_day(now)
+            budget = self.merchant_day(event.merchant_id, now)
             decision, dx = self._decide(observed, now, attempts,
                                         frozenset(refused_actions), seq)
             if decision.llm_fallback_used:
@@ -313,10 +336,15 @@ class Agent:
                 attempts_made=attempts, attempts_this_mandate_cycle=attempts,
                 contacts_last_7d=contacts,
                 last_contact_at=self._last_contact_at(now, contacts),
-                consented_channels=history.consented_channels, opted_out=opted_out,
-                merchant_actions_today=self._merchant_actions,
-                merchant_spend_today_paise=self._merchant_spend_paise,
-                escalations_today=self._merchant_escalations,
+                consented_channels=history.consented_channels,
+                # Seed from the INBOUND record, not just from opt-outs we caused this
+                # episode. A customer who unsubscribed last month arrives with
+                # opted_out=True, and contacting them is the exact thing the rule
+                # exists to prevent. Found by probing values the cohort never emits.
+                opted_out=opted_out or history.opted_out,
+                merchant_actions_today=budget.actions,
+                merchant_spend_today_paise=budget.spend_paise,
+                escalations_today=budget.escalations,
                 broken_promise_to_pay=(
                     promise_due_at is not None and now > promise_due_at),
                 action_cost_paise=self._cost_of(decision, contacts),
@@ -324,8 +352,19 @@ class Agent:
             # ---- step 4: GOVERN --------------------------------------------
             if self.use_policy:
                 verdict = evaluate(decision, state, now, self.policy)
+
+                # A rule may not merely forbid - it may MANDATE. Above the automation
+                # ceiling the contract requires human review, and refusing is not one
+                # of the permitted outcomes. Without this the agent proposed a retry
+                # on a high-value failure, got blocked, and walked away from the money.
+                if (verdict.required_action is not None
+                        and decision.action is not verdict.required_action):
+                    decision, dx = self._decide(observed, now, attempts,
+                                                frozenset(refused_actions), seq,
+                                                force=verdict.required_action)
+                    verdict = evaluate(decision, state, now, self.policy)
             else:
-                # Ablation 3: no gate. Expect more actions and worse cost-per-recovery.
+                # Ablation 3: no gate. Expect more actions, worse cost-per-recovery.
                 verdict = PolicyVerdict(allowed=True, rules_evaluated=())
 
             # Quiet hours SHIFT rather than block; honour the modified send time.
@@ -402,15 +441,15 @@ class Agent:
 
             cost += action_cost
             taken += 1
-            self._merchant_actions += 1
-            self._merchant_spend_paise += action_cost
+            budget.actions += 1
+            budget.spend_paise += action_cost
             if self._is_customer_contact(decision):
                 contacts += 1
             if decision.action in RETRY_ACTIONS:
                 attempts += 1
             if decision.action is ActionType.ESCALATE_HUMAN:
                 escalated = True
-                self._merchant_escalations += 1
+                budget.escalations += 1
 
             hours_out = (scheduled - started).total_seconds() / 3600.0
             got_it, quit = observe(decision.action, scheduled, hours_out,
@@ -465,14 +504,23 @@ class Agent:
         except Exception:
             pass
 
-    def _roll_merchant_day(self, now: datetime) -> None:
-        """Reset the merchant's daily counters when the virtual date advances."""
-        day = now.date()
-        if self._merchant_date != day:
-            self._merchant_date = day
-            self._merchant_actions = 0
-            self._merchant_spend_paise = 0
-            self._merchant_escalations = 0
+    def merchant_day(self, merchant_id: str, now: datetime) -> MerchantDay:
+        """This merchant's counters for this date, created on first use.
+
+        Budgets are per merchant per day, and one agent serves many merchants: a shared
+        counter would let a busy merchant exhaust a quiet one's allowance. Eviction is
+        by size rather than by recency, because episodes advance their own clocks and
+        revisiting an earlier date must not silently reset a live budget.
+        """
+        key = (merchant_id, now.date())
+        budget = self._merchant_days.get(key)
+        if budget is None:
+            if len(self._merchant_days) >= MAX_MERCHANT_DAYS:
+                oldest = min(self._merchant_days, key=lambda k: k[1])
+                del self._merchant_days[oldest]
+            budget = MerchantDay()
+            self._merchant_days[key] = budget
+        return budget
 
     def _render_message(self, event: RiskEvent, decision: Decision,
                         history: CustomerHistory):

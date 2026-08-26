@@ -14,7 +14,7 @@ where the call is not obvious. Nothing here invents a reason code.
 from __future__ import annotations
 
 import csv
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from src.models import ErrorObject, FailureClass, Recoverability
@@ -256,6 +256,33 @@ RECEIVABLE_OVERDUE = ReasonMapping(
 )
 
 
+# Razorpay's `source` field states WHO MUST ACT, and their documentation is explicit
+# about it: customer -> prompt them to retry; business -> "Fix the request parameters
+# before retrying"; gateway -> retry or switch method; razorpay -> retry after a delay.
+#
+# We mapped on `reason` alone and discarded `source` entirely, which meant discarding a
+# triage signal the provider hands us for free. Found by Tier 1: the very first real
+# failed payment came back as `international_transaction_not_allowed` with
+# `source=business` — a merchant configuration problem our reason-only table classed as
+# customer-recoverable. Our synthetic cohort could never have surfaced this, because the
+# generator only ever emits `source=customer`.
+MERCHANT_SOURCES = frozenset({"business"})
+
+
+def refine_by_source(mapping: ReasonMapping, source: str | None) -> ReasonMapping:
+    """Let Razorpay's own `source` field override our triage where it is decisive."""
+    if source and source.lower() in MERCHANT_SOURCES:
+        if mapping.recoverability is Recoverability.CUSTOMER_RECOVERABLE:
+            return replace(
+                mapping,
+                recoverability=Recoverability.MERCHANT_CONFIG,
+                note=(mapping.note or "") + " [source=business: Razorpay attributes this "
+                     "to the merchant's integration, so it must not generate customer "
+                     "contact regardless of the reason code.]",
+            )
+    return mapping
+
+
 def classify(error: ErrorObject | None, source_type: str | None = None) -> ReasonMapping:
     """Map a Razorpay error object to our taxonomy. Never raises."""
     if (error is None or not error.reason) and source_type == "checkout":
@@ -266,7 +293,7 @@ def classify(error: ErrorObject | None, source_type: str | None = None) -> Reaso
         return UNMAPPED_FALLBACK
     hit = MAPPING.get(error.reason)
     if hit is not None:
-        return hit
+        return refine_by_source(hit, error.source)
     _unmapped_seen[error.reason] = _unmapped_seen.get(error.reason, 0) + 1
     return UNMAPPED_FALLBACK
 

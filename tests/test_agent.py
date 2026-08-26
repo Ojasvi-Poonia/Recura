@@ -227,37 +227,48 @@ def test_no_action_cell_keeps_learning():
 
 
 def test_merchant_budget_accumulates_within_a_day_across_episodes():
-    """Previously per-episode, so a 500-action budget never bound on 7,992 events.
-
-    The contract is per merchant per DAY: actions from different episodes landing on
-    the same virtual day must accumulate against one budget.
-    """
+    """The contract is per merchant per DAY: actions from different episodes landing
+    on the same virtual day accumulate against one budget."""
     agent = mk_agent()
-    agent._roll_merchant_day(NOW)
-    agent._merchant_actions = 7
-    agent._roll_merchant_day(NOW)                     # same day -> preserved
-    assert agent._merchant_actions == 7
-    agent._roll_merchant_day(NOW + timedelta(days=1))  # new day -> reset
-    assert agent._merchant_actions == 0
+    agent.merchant_day("m1", NOW).actions = 7
+    assert agent.merchant_day("m1", NOW).actions == 7          # same day -> preserved
+    assert agent.merchant_day("m1", NOW + timedelta(days=1)).actions == 0  # new day
 
 
 def test_merchant_actions_are_counted_at_all():
     agent = mk_agent()
     result = agent.run_episode(mk_event(), "treatment", never)
     if result.actions_taken:
-        assert agent._merchant_actions >= 1
+        assert sum(d.actions for d in agent._merchant_days.values()) >= 1
 
 
-def test_merchant_counters_reset_on_a_new_virtual_day():
+def test_merchant_counters_are_per_day():
+    """Day two must not inherit day one's spend."""
     agent = mk_agent()
-    agent.run_episode(mk_event(event_id="a"), "treatment", never)
-    spent_day_one = agent._merchant_spend_paise
-    later = mk_event(event_id="b").model_copy(
-        update={"observed_at": NOW + timedelta(days=3)})
-    agent.run_episode(later, "treatment", never)
-    # A new virtual day resets the counters, so day two cannot inherit day one's spend.
-    assert agent._merchant_spend_paise <= spent_day_one or agent._merchant_actions >= 1
-    assert agent._merchant_date != NOW.date()
+    agent.merchant_day("m1", NOW).spend_paise = 4_000
+    assert agent.merchant_day("m1", NOW + timedelta(days=1)).spend_paise == 0
+    assert agent.merchant_day("m1", NOW).spend_paise == 4_000
+
+
+def test_revisiting_an_earlier_day_does_not_reset_a_live_budget():
+    """Episodes advance their own clocks, so an earlier date is revisited constantly.
+
+    Evicting by recency silently reset budgets that were still live, which changed the
+    headline and broke the A/A control.
+    """
+    agent = mk_agent()
+    agent.merchant_day("m1", NOW).actions = 7
+    agent.merchant_day("m1", NOW + timedelta(days=10))     # jump forward
+    assert agent.merchant_day("m1", NOW).actions == 7      # earlier day still intact
+
+
+def test_merchant_day_table_is_bounded():
+    """A long-running agent must not keep a row per merchant per day forever."""
+    from src.agent import MAX_MERCHANT_DAYS
+    agent = mk_agent()
+    for i in range(MAX_MERCHANT_DAYS + 50):
+        agent.merchant_day(f"m{i}", NOW + timedelta(days=i % 40))
+    assert len(agent._merchant_days) <= MAX_MERCHANT_DAYS
 
 
 def test_agent_does_not_repeat_a_refused_action():

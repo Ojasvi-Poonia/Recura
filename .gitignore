@@ -24,3 +24,4 @@ data/replay.json
 data/validity.json
 data/calibration.json
 data/tier1.json
+demo/checkout/order.json
