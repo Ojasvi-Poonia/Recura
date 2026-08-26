@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.5,
+  "reasoning": "The source is customer-initiated and the method is netbanking during the early month, which frequently points to transient bank connectivity issues or the customer dropping off at the bank login page.",
+  "root_cause": "The netbanking payment failed during authorization due to an issue on the bank side or customer abandonment."
+}

@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source is listed as customer and the step is payment_authorization, strongly pointing toward drop-off or OTP timeout. However, the opaque reason code and lack of prior recovery history leave room for transient bank issues or fund shortages.",
+  "root_cause": "The customer likely abandoned the payment during the authorization step or encountered a silent bank decline."
+}

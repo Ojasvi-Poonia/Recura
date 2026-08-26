@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The razorpay source points to the customer and the step is payment authorization, suggesting either a drop-off or a silent gateway timeout during the night hours.",
+  "root_cause": "The wallet payment failed during authorization with no specific error code provided by the gateway."
+}

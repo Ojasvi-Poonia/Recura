@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The UPI method and authorization step strongly point toward customer abandonment during the PIN entry or app switch, while the credit_failed reason and afternoon timing leave room for intermittent infrastructure issues.",
+  "root_cause": "The UPI transaction failed during authorization, likely due to a customer drop-off or an unresponsive banking app."
+}

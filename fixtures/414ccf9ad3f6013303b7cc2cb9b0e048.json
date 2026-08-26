@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "The emandate method and payment_authorization step combined with an opaque decline heavily implicate either insufficient funds at the time of the debit or an invalidated recurring instruction, though the prior recovery history indicates a previously working setup.",
+  "root_cause": "The emandate payment authorization was declined by the issuer with an unspecified reason, pointing towards a lack of funds or a mandate issue."
+}

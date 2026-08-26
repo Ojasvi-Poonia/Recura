@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure during authorization strongly suggests an authentication drop or customer abandonment, though nighttime timing leaves room for transient gateway issues.",
+  "root_cause": "The wallet mandate creation failed during payment authorization at night."
+}

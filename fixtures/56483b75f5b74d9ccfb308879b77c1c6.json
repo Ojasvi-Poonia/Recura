@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The specific failure during mandate creation strongly points to authentication abandonment or card eligibility issues for recurring debits, while prior recovery history indicates a valid customer intent.",
+  "root_cause": "The customer attempted to set up a recurring card mandate during payment authorization, but the mandate creation process failed."
+}

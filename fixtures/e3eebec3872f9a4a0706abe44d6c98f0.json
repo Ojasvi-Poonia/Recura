@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source is customer-facing during authorization with a credit card, strongly pointing toward authorization abandonment or insufficient funds. Mid-month timing and lack of prior history offer little further clarification, leaving some weight on transient issues.",
+  "root_cause": "The credit card authorization failed during payment processing due to an issue originating on the customer's end."
+}

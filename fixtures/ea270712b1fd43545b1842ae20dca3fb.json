@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The opaque decline code and lack of prior history leave multiple failure modes plausible, with insufficient funds and transient gateway issues being common contributors.",
+  "root_cause": "The card payment authorization was declined by the issuer with no specific reason provided."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure during authorization and customer source strongly points to an abandonment or an app-switch timeout during UPI setup, weighted with a possibility of transient UPI gateway issues.",
+  "root_cause": "The customer was setting up a UPI mandate for the first time during payment authorization and the mandate creation failed."
+}

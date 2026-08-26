@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The 'mandate_creation_failed' reason and 'customer' source point strongly toward an authorization drop or an unsupported card for recurring setups. Prior failed attempts add weight to an invalid instrument.",
+  "root_cause": "The customer's card failed during mandate creation at the authorization step, likely due to authentication drop or setup issue."
+}

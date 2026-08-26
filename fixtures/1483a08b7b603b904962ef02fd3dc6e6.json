@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The razorpay_reason indicates mandate creation failed at the authorization step originating from the customer, heavily pointing towards an authentication drop or an unsupported card instrument for e-mandates.",
+  "root_cause": "The customer was unable to complete the mandate creation process during payment authorization."
+}

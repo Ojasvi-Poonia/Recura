@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The razorpay_source points to the customer and the step is payment_authorization for a mandate creation, strongly suggesting abandonment or app-level failure during the UPI PIN entry or app switch, weighted against potential banking infra glitches.",
+  "root_cause": "The customer attempted to set up a UPI mandate during payment authorization, but the creation process failed on the customer's end."
+}

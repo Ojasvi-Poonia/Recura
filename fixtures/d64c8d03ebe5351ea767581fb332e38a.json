@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The Razorpay source is customer-driven at the payment authorization step, pointing heavily toward an abandoned or timed-out UPI PIN entry. However, a high prior failure count combined with the mid-month position also keeps insufficient funds in strong consideration.",
+  "root_cause": "The UPI payment authorization failed at the customer's end, most likely due to an authentication timeout or insufficient funds."
+}

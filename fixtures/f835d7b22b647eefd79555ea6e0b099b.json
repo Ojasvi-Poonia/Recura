@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The failure occurred at the payment_authorization step via UPI during the night with a source indicating the customer. This strongly points towards an authentication drop or user abandonment, with some weight given to transient infrastructure issues.",
+  "root_cause": "The UPI payment authorization failed at the customer step during night hours, likely due to an authentication timeout or transient app issue."
+}

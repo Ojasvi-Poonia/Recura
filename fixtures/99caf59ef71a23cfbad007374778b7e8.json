@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The credit_failed reason during a mandate payment authorization strongly points toward insufficient balance or an abandoned authentication step. The early month position makes funds slightly more probable than a hard limit issue.",
+  "root_cause": "The UPI mandate authorization failed during execution, likely due to insufficient funds or an abrupt drop by the customer."
+}

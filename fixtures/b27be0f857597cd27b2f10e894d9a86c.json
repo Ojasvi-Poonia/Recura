@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure at the payment authorization step strongly suggests an abandonment or drop during the authentication flow, with bank infrastructure or card capability issues as secondary possibilities.",
+  "root_cause": "The customer attempted to set up a card mandate during payment authorization, but the creation process failed."
+}

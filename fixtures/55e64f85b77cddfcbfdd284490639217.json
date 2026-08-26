@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The razorpay source points to the customer and the step is payment authorization, leaning our belief towards abandonment. However, since the error is a generic opaque failure and prior history shows successful past recoveries, transient gateway issues at night remain a plausible alternative.",
+  "root_cause": "The customer likely abandoned the authorization step or encountered a transient issue during nighttime card processing."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The authorization step failure combined with a UPI method heavily points toward an incomplete customer authentication or a transient gateway drop, especially since prior recoveries indicate a functional account.",
+  "root_cause": "The UPI payment failed during authorization at the customer's bank app, most likely due to an incomplete authentication or a temporary connectivity drop."
+}

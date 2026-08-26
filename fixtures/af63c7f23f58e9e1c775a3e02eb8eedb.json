@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source is listed as customer at the payment authorization step, strongly pointing towards an authentication drop or timeout, though minor banking infra issues cannot be fully ruled out.",
+  "root_cause": "The UPI payment authorization was declined by the customer's bank or app during the approval step."
+}

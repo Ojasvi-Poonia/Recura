@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The credit_failed reason on an emandate during night hours heavily points toward insufficient funds or transient bank processing limitations, though prior recovery history shows the instrument has worked before.",
+  "root_cause": "The automated emandate debit failed during authorization at night, likely due to insufficient funds or a temporary processing issue at the issuing bank."
+}

@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The payment_authorization step and customer source strongly suggest an abandoned UPI PIN entry or app timeout, while prior failures hint at underlying friction.",
+  "root_cause": "The UPI payment failed during authorization without a specific gateway reason code, likely due to an authentication drop or temporary app issue."
+}

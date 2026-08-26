@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The credit_failed reason and payment_authorization step point toward an authorization issue, distributed between lack of funds and abandonment.",
+  "root_cause": "The card authorization failed during the payment step, indicating a potential issue with funds or card validity."
+}

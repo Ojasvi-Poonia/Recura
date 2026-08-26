@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The customer source tag and authorization step point strongly toward an authentication drop or session abandonment, supported by transient bank issues typical of netbanking flows.",
+  "root_cause": "The netbanking authorization failed during payment processing, likely due to a session timeout or bank-side interruption."
+}

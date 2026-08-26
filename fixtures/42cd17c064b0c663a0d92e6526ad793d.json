@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The UPI method and failure at the authorization step with a customer source strongly suggest abandonment or a transient timeout, especially given the history of successful recoveries.",
+  "root_cause": "The UPI payment failed during authorization by the customer's bank, likely due to a network drop or a timeout during the PIN entry stage."
+}

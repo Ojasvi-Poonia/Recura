@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.7,
+  "reasoning": "The history of multiple prior failed attempts combined with zero prior recoveries heavily points toward an invalid card or insufficient funds, while discounting transient infrastructure issues.",
+  "root_cause": "The card transaction failed during authorization after multiple previous failures with no prior recoveries."
+}

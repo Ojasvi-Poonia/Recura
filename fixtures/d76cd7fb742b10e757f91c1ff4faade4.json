@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The razorpay source points to the customer and the step is authorization, suggesting an abandoned or timed-out UPI collect request. Transient bank or VPA resolution issues also contribute a reasonable share.",
+  "root_cause": "The UPI payment failed during authorization with a credit failure indication from the customer side."
+}

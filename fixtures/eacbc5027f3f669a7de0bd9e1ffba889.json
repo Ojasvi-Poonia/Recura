@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate_creation_failed reason points to authorization friction where the customer likely dropped off or timed out during the UPI app mandate approval screen, though intermittent bank API issues during setup also carry weight.",
+  "root_cause": "The customer was attempting to set up a UPI recurring mandate during payment authorization, but the mandate creation process failed."
+}

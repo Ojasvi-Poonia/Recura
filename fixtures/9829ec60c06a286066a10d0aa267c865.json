@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The generic decline on an emandate points strongly towards insufficient funds at the time of debit, though temporary bank processing issues or mandate state problems at night remain plausible.",
+  "root_cause": "The recurring emandate payment was declined at the bank authorization step during a night-time attempt."
+}

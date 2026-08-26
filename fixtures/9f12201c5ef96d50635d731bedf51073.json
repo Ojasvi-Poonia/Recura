@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.5,
+  "reasoning": "The failure occurred at the payment authorization step originating from the customer using UPI, which strongly points toward abandonment or a dropped PIN entry. Prior failed attempts combined with zero recoveries suggest ongoing friction, though infrastructure issues cannot be entirely ruled out given the opaque reason code.",
+  "root_cause": "The UPI payment failed during authorization by the customer."
+}

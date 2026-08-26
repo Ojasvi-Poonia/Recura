@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure at the authorization step with a wallet strongly suggests the customer dropped off or authentication timed out, though intermittent gateway communication issues during setup are also plausible given the prior failure history.",
+  "root_cause": "The wallet mandate creation process failed during payment authorization, preventing the setup required to complete the transaction."
+}

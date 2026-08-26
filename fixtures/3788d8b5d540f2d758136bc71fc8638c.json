@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source is listed as customer at the payment authorization step for a UPI transaction, pointing heavily towards an authentication drop or user cancellation. However, the opaque decline code and lack of prior history leave room for transient gateway issues or balance constraints.",
+  "root_cause": "The UPI payment was declined at the authorization step with no specific reason provided by the bank or gateway."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.6
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The razorpay_source as 'customer' and step as 'payment_authorization' strongly point towards an interaction drop during mandate setup, though minor gateway or UPI app connectivity issues could also contribute.",
+  "root_cause": "The UPI mandate creation failed during payment authorization, likely due to a customer drop-off or approval timeout on their banking app."
+}

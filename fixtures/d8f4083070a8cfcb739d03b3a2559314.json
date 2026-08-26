@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "RISK_DECLINE",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "Given the opaque decline source and reason with a mid-amount card transaction, the failure could stem from insufficient funds, an abandoned authentication step, or a bank risk rule, with no prior history to narrow it down further.",
+  "root_cause": "The card payment was declined during authorization by the issuer with no specific reason provided."
+}

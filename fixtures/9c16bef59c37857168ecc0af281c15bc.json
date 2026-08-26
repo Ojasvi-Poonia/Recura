@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The failure occurred during mandate creation at the authorization step via UPI, pointing towards a customer drop-off or authorization interruption. Transient bank or gateway issues during the night time slot also contribute slightly to the distribution.",
+  "root_cause": "The UPI mandate creation failed during payment authorization, likely due to a customer drop-off or authorization failure."
+}

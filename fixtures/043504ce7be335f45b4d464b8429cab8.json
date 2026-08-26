@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The failure occurred during netbanking mandate authorization with a source indicating customer involvement, pointing heavily toward abandonment or an OTP/authentication drop. Transient banking infra issues during mandate setup also contribute a reasonable share.",
+  "root_cause": "The customer was unable to complete the netbanking mandate creation step during payment authorization."
+}

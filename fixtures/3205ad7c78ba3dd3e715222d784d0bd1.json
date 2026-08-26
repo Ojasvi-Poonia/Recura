@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.3
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The opaque payment_declined reason from a wallet method during authorization points toward either insufficient wallet balance or an authentication drop, though lack of detail limits certainty.",
+  "root_cause": "The wallet payment was declined during authorization by the issuer or wallet provider without a detailed reason."
+}

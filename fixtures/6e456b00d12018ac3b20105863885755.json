@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source is listed as customer during payment authorization using UPI, which strongly points toward authentication drop or abandonment. Past recovery history suggests a functioning instrument, leaving transient infrastructure as a secondary possibility.",
+  "root_cause": "The UPI payment failed at authorization during the morning attempt, likely due to an uncompleted customer action or temporary bank issue."
+}

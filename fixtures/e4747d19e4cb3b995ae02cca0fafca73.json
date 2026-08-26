@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.65
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The Razorpay source being listed as customer and the step as payment_authorization strongly point towards the user dropping off during netbanking authentication, though intermittent bank redirect issues remain a possibility.",
+  "root_cause": "The customer initiated a netbanking payment but failed to complete the authorization step at their bank's portal."
+}

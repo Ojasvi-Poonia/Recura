@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The failure occurred at the authorization step with a card method at night, alongside a high prior failure count for an experienced customer. This points heavily toward the customer dropping off during 3DS or lacking funds, though the opaque credit_failed reason leaves some uncertainty.",
+  "root_cause": "The card payment failed during authorization due to authentication abandonment or insufficient funds."
+}

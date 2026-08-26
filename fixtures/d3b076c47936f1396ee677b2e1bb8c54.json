@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source and payment_authorization step strongly suggest an abandonment or app timeout during the UPI flow, while the night timing and lack of gateway details leave room for transient infrastructure issues.",
+  "root_cause": "The UPI payment failed during authorization due to an opaque gateway error without a specific reason."
+}

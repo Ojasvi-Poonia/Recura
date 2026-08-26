@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The UPI method and authorization step strongly point towards an abandoned or timed-out user interaction, while the credit_failed reason and prior history leave room for transient infrastructure issues.",
+  "root_cause": "The UPI payment failed during authorization, likely due to an authentication drop or a temporary bank response issue."
+}

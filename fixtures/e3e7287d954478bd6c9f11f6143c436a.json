@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "RISK_DECLINE",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The opaque decline code combined with an early-month timing and moderate ticket size leaves the exact cause ambiguous, with insufficient balance and risk checks being the most frequent hidden drivers for such card declines.",
+  "root_cause": "The card payment was declined during authorization by the issuer for an unspecified reason."
+}

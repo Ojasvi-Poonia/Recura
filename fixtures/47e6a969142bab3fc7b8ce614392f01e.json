@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "LIMIT_EXCEEDED",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure during authorization strongly points toward a customer drop-off or approval timeout, while the high amount band (>Rs50k) also raises the possibility of hitting UPI per-transaction limits.",
+  "root_cause": "The UPI mandate creation failed during the authorization step at night for a high-value transaction."
+}

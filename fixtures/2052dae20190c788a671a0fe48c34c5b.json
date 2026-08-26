@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.1
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The UPI mandate authorization step failure with an opaque decline source leans heavily towards either a lack of funds or the customer abandoning the authentication prompt, while prior failed attempts discount transient infrastructure issues.",
+  "root_cause": "The UPI mandate authorization was declined during payment processing, likely due to insufficient funds or authentication abandonment."
+}

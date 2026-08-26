@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The mandate_creation_failed reason and customer source point strongly toward abandonment during setup, with minor weight given to bank-side infra issues or invalid account details.",
+  "root_cause": "The customer was unable to complete the mandate creation process during payment authorization."
+}

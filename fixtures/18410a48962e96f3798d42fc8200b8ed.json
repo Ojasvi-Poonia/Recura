@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure during authorization and customer-side source strongly suggests user drop-off or approval timeout, though potential UPI infrastructure issues cannot be fully ruled out.",
+  "root_cause": "The UPI mandate creation process failed during payment authorization."
+}

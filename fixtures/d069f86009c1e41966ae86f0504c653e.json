@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source and authorization step point towards an abandonment or drop-off during 3DS, though the high prior failures and night timing leave room for transient gateway issues.",
+  "root_cause": "The customer initiated a card payment during the night that failed during authorization with an unspecified error."
+}

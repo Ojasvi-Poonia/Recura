@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure during netbanking authorization points primarily to customer drop-off or a banking interface glitch during the redirection flow, though lack of prior recoveries adds uncertainty.",
+  "root_cause": "The customer initiated a netbanking transaction that failed during mandate creation at the authorization step."
+}

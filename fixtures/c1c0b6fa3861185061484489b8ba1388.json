@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The wallet method combined with a credit_failed reason strongly points toward either a gateway or issuer timeout during authorization or an insufficient balance in the wallet. Past recoveries show the customer is generally functional.",
+  "root_cause": "The wallet credit authorization failed during payment execution, likely due to a temporary service interruption or a balance issue on the wallet side."
+}

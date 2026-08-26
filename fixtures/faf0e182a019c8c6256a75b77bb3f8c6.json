@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The authorization step failure and UPI method strongly point toward an abandoned or timed-out user prompt, though lack of a specific error code leaves room for transient network issues.",
+  "root_cause": "The UPI payment failed during authorization without a specific gateway reason code, likely due to an incomplete authentication step."
+}

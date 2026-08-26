@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The failure occurred during wallet mandate creation at the authorization step, suggesting the customer may have dropped off during the issuer authentication flow or experienced a gateway timeout.",
+  "root_cause": "The customer attempted to set up a recurring mandate via a wallet during payment authorization, but the mandate creation step failed."
+}

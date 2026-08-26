@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The razorpay source is listed as customer during mandate creation, pointing heavily toward an authorization abandonment or interruption. However, wallet mandate setup can also fail due to transient gateway or issuer connectivity issues.",
+  "root_cause": "The customer initiated a wallet mandate creation during payment authorization, but the setup failed before completion."
+}

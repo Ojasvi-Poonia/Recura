@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source being customer and step being payment_authorization strongly points toward an authentication abandonment or drop-off, though the opaque reason code leaves room for transient issues or fund constraints.",
+  "root_cause": "The card payment failed during authorization with no specific gateway reason provided."
+}

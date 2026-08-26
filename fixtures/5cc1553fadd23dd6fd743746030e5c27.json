@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The authorization step failure on UPI with a customer source points heavily toward an abandonment or user drop during PIN entry, supported by prior failures and a history of recovery.",
+  "root_cause": "The UPI payment failed during authorization, most likely due to an authentication drop or a temporary banking network issue."
+}

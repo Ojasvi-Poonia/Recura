@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The customer has prior recoveries and the method is UPI at the authorization step, pointing towards a drop in authentication. However, multiple prior failures suggest potential infrastructure hiccups.",
+  "root_cause": "The UPI payment authorization failed during credit processing, likely due to authentication drop or bank-side issues."
+}

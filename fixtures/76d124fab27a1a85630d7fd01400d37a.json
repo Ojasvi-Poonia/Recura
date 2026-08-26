@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The night timing and authorization step failure point toward a customer abandoning the UPI app prompt, but prior recoveries suggest the setup is generally sound, leaving room for transient infrastructure issues.",
+  "root_cause": "The UPI mandate authorization failed during the payment step at night, likely due to a customer drop-off or a temporary bank issue."
+}

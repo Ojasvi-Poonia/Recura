@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The UPI method and authorization step strongly point toward an abandoned customer flow or a transient timeout at night, while the lack of prior history leaves some ambiguity.",
+  "root_cause": "The UPI payment failed during authorization at night, likely due to a customer drop-off or a temporary banking glitch."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.3
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source and payment authorization step strongly point towards an authentication abandonment or drop. The opaque reason code and lack of prior history leave room for transient infrastructure issues and general unknown factors.",
+  "root_cause": "The payment failed during authorization at night with an opaque error, likely due to an authentication drop or temporary bank issue."
+}

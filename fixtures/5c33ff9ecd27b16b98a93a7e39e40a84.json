@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.1
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The credit_failed reason combined with an emandate authorization step strongly points toward either insufficient funds or an invalid payment instrument, especially given the history of multiple prior failures.",
+  "root_cause": "The emandate payment authorization failed at night with a credit failure signal after multiple prior failures."
+}

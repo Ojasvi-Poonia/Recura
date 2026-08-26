@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The failure occurred during mandate creation at night via netbanking, heavily pointing toward the customer dropping off or encountering an OTP/authentication timeout. Some weight is given to transient infrastructure issues since bank netbanking portals can be unstable during late hours.",
+  "root_cause": "The customer attempted to set up a recurring mandate via netbanking at night, but the process failed during authorization."
+}

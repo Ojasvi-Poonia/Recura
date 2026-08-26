@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.3
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "The vague decline during UPI mandate authorization points towards an authorization drop or bank infrastructure hiccup, especially since the customer has successfully paid before.",
+  "root_cause": "The UPI mandate payment was declined during authorization by the customer's bank with an unspecified reason."
+}

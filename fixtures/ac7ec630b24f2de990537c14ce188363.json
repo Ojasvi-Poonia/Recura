@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source tag and nighttime timing strongly point towards an abandoned authentication or app timeout, while the opaque failure code leaves room for transient network issues.",
+  "root_cause": "The UPI mandate payment failed during authorization at night with no explicit gateway reason provided."
+}

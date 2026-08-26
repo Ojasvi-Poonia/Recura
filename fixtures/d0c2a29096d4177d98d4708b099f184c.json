@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source is a mandate during evening hours with an opaque decline code, pointing towards customer drop-off or transient banking issues, tempered by the customer's prior recovery history.",
+  "root_cause": "The card payment was declined during authorization by the issuer without an explicit reason provided."
+}

@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The emandate method combined with a credit failure points heavily toward an account balance issue, reinforced by prior failures. However, recurring mandates can also occasionally suffer from transient bank routing drops.",
+  "root_cause": "The automated emandate debit failed during authorization despite a history of past recoveries, likely due to insufficient funds at the time of the scheduled pull."
+}

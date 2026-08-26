@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source tag and authorization step point toward an abandonment during netbanking redirection, but the opaque declined reason leaves room for transient bank issues.",
+  "root_cause": "The netbanking payment was declined during authorization by the bank or customer side without a specific error code."
+}

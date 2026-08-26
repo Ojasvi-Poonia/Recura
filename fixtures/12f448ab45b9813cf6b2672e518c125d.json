@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The razorpay source indicates customer involvement and the step was authorization via UPI at night, heavily pointing toward an authentication abandonment or drop. Transient infrastructure issues are also considered due to the nature of UPI timeouts.",
+  "root_cause": "The UPI payment failed during authorization at night, likely due to an authentication drop or customer abandonment."
+}

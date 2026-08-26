@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "The customer source tag and authorization step point towards an incomplete authentication session or drop-off, though high prior failures suggest persistent friction.",
+  "root_cause": "The netbanking payment was declined by the bank during authorization after multiple prior failures."
+}

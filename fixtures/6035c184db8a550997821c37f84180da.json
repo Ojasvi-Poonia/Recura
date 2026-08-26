@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The UPI method, customer source, and authorization step point heavily toward an authentication drop or user abandonment, though the lack of a specific error code leaves room for transient infrastructure issues or insufficient funds.",
+  "root_cause": "The UPI payment failed during authorization with no specific gateway reason provided, following a history of prior failed attempts."
+}

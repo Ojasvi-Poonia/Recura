@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The mandate_creation_failed reason and customer source point strongly toward an authorization abandonment or interruption during the UPI PIN entry stage. Prior failure history suggests recurring friction, but the specific authorization step leans our belief toward abandonment over systemic infra issues.",
+  "root_cause": "The UPI mandate creation failed during authorization, likely due to a customer drop-off or an authorization issue on the UPI app."
+}

@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The vague decline source pointing to the customer during night hours suggests an authentication drop or insufficient funds, though past recovery indicates a viable instrument.",
+  "root_cause": "The card payment was declined during authorization by the issuer without an explicit reason provided."
+}

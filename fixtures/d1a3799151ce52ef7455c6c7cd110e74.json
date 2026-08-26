@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The authorization step failure combined with a UPI method strongly suggests an abandoned or timed-out user prompt, though recurring prior failures leave room for transient infrastructure issues.",
+  "root_cause": "The UPI payment failed during authorization at night after multiple prior failed attempts."
+}

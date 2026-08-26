@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The authorization step failure combined with the UPI method strongly suggests an authentication drop or app timeout, though transient gateway issues remain plausible given the opaque decline code.",
+  "root_cause": "The UPI payment was declined during authorization by the customer's bank or app for an unspecified reason."
+}

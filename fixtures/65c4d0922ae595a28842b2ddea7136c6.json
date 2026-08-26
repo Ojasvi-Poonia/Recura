@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer source and authorization step strongly point towards an abandoned UPI collect request or app timeout, while the opaque failure code leaves room for transient infrastructure issues.",
+  "root_cause": "The UPI payment failed during authorization at night with no specific error code, likely due to a customer drop-off or a temporary banking glitch."
+}

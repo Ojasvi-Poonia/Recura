@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The opaque payment_declined code from the customer source points toward authentication abandonment or insufficient funds during authorization, tempered by a lack of historical signals.",
+  "root_cause": "The card payment was declined during authorization by the issuer, but the specific reason was not communicated."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The combination of a netbanking source mandate failing at authorization with a source of customer points toward either a bank connectivity issue or an abandoned authentication step, weighed down by a history of repeated failures.",
+  "root_cause": "The netbanking mandate authorization failed during payment processing after multiple prior failures."
+}

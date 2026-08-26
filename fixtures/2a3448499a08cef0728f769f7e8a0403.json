@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source is listed as customer at the payment authorization step for a UPI transaction, pointing toward an abandonment like a missed PIN or app timeout, while transient bank issues remain a strong alternative given the opaque error.",
+  "root_cause": "The UPI payment failed during authorization with no specific reason provided by the gateway."
+}

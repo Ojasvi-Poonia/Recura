@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The specific mandate_creation_failed reason points heavily toward card setup issues or intermittent issuing bank gateway rejections during the authorization step.",
+  "root_cause": "The customer attempted to create a recurring mandate during payment authorization, but the setup process failed at the bank or network level."
+}

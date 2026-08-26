@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The razorpay source is marked as customer and failed at payment authorization using UPI during the morning, pointing towards an abandoned or timed-out app interaction rather than a fund shortfall.",
+  "root_cause": "The UPI payment failed during authorization at the customer side, likely due to an incomplete approval or temporary app timeout."
+}

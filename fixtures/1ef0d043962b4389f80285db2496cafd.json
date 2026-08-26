@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer source and payment authorization step strongly point towards an abandoned authentication or dropped prompt at night, supported by prior history indicating an active user.",
+  "root_cause": "The UPI mandate payment failed during authorization at night with no gateway code, suggesting a customer drop or bank timeout."
+}

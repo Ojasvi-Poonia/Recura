@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The razorpay source indicates a customer-side event during payment authorization, pushing belief toward authentication abandonment. Prior recovery history suggests the customer is familiar with the flow, keeping transient infrastructure issues as a strong alternative.",
+  "root_cause": "The UPI mandate payment failed during authorization, likely due to a customer-side authentication drop or a temporary technical issue at the bank."
+}

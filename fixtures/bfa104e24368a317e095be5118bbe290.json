@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The emandate method and early-month timing point strongly toward a shortfall in account balance during recurring debit execution, while the opaque failure code leaves room for transient infrastructure or abandonment issues.",
+  "root_cause": "The recurring mandate authorization failed during payment processing without a specific reason from the gateway."
+}

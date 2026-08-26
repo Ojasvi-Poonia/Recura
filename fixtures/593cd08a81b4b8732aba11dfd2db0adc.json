@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure at the authorization step with UPI source attributed to the customer points heavily towards an authentication drop or user abandonment, though intermittent UPI infrastructure issues could also contribute.",
+  "root_cause": "The UPI mandate creation process failed during authorization, likely due to a customer drop or banking app issue."
+}

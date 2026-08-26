@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source is noted as customer during payment authorization for a UPI transaction, strongly pointing toward an abandonment or app timeout, while acknowledging the possibility of underlying transient gateway issues.",
+  "root_cause": "The UPI payment failed during authorization at the customer step."
+}

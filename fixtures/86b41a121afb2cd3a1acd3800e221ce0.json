@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The failure occurred during mandate creation authorization with a customer source flag, indicating drop-off or auth issues despite prior recovery history and multiple past failures.",
+  "root_cause": "The recurring mandate authorization failed during creation, likely due to an issue with authentication or setup at the customer's bank."
+}

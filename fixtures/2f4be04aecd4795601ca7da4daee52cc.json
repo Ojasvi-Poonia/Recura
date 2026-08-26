@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer source tag and nighttime timing strongly point towards an abandoned authentication or UPI app timeout, though transient banking issues during late hours also remain plausible given the prior failure history.",
+  "root_cause": "The UPI payment authorization failed at night after multiple prior failed attempts."
+}

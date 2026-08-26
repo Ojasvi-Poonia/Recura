@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The credit_failed reason during UPI authorization at night heavily points toward bank downtime or a dropped customer prompt, supported by prior recovery history indicating a normal user.",
+  "root_cause": "The UPI payment failed during authorization at night, likely due to a temporary bank outage or an abandoned authorization prompt."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure during UPI authorization with a customer source points heavily toward an authentication drop or user abandonment, though potential backend UPI infrastructure hiccups cannot be fully ruled out given the opaque mandate error.",
+  "root_cause": "The UPI mandate creation failed during the customer payment authorization step."
+}

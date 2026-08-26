@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The credit_failed reason during payment_authorization via netbanking at night strongly points toward transient bank downtime or an authorization abandonment by the customer. Prior recoveries indicate the user understands the flow.",
+  "root_cause": "The netbanking authorization failed during the bank's processing step at night, possibly due to a session timeout or bank connectivity issue."
+}

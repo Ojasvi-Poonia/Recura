@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The credit_failed reason during a UPI mandate payment authorization strongly points toward insufficient balance or an abandonment during the UPI PIN entry stage. Prior failed attempts and lack of prior recoveries further tilt the weight toward customer-side liquidity or interaction issues.",
+  "root_cause": "The UPI mandate authorization failed during payment processing, likely due to a lack of funds or an authentication interruption."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure during authorization via UPI strongly points toward an abandoned app redirect or customer drop-off, though transient banking app connectivity issues at night are also plausible.",
+  "root_cause": "The UPI mandate creation failed during the authorization step at night."
+}

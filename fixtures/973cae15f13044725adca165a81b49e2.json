@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The UPI method and morning timing paired with an authorization step failure strongly suggest an abandoned prompt or a minor app gateway timeout, heavily weighted by the customer's prior recovery history.",
+  "root_cause": "The UPI payment failed during authorization due to an unclear customer-side issue or transient interaction."
+}

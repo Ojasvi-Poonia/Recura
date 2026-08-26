@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer source and payment authorization step strongly point toward an authentication drop or user abandonment on the UPI app, while the early-month position and prior recovery history suggest transient issues rather than chronic lack of funds.",
+  "root_cause": "The UPI payment failed during authorization without a specific gateway error code, likely due to an authentication drop or temporary app timeout."
+}

@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The credit_failed reason during payment authorization on a netbanking mandate with prior failed attempts strongly points toward account balance issues or the customer dropping off during bank redirection. Early month timing provides mild counterweight against absolute fund depletion, keeping abandonment plausible.",
+  "root_cause": "The mandate authorization failed during netbanking processing, likely due to insufficient funds or abandoned authentication."
+}

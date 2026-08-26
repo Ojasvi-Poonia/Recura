@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.1
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source being a customer-side mandate failure during authorization strongly points toward an abandoned UPI prompt or insufficient funds for the mandate debit. Prior successful recoveries show the customer is familiar with the flow, leaning our belief more toward auth drop-off or account balance issues.",
+  "root_cause": "The UPI mandate authorization was declined by the customer's bank during payment execution."
+}

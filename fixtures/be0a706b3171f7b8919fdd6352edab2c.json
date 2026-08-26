@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The payment failed at the authorization step using UPI early in the month with an opaque declined reason, suggesting an uncompleted approval prompt or a brief banking glitch.",
+  "root_cause": "The UPI payment was declined during authorization by the customer's bank or app."
+}

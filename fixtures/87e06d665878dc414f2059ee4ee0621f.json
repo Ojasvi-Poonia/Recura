@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The payment_declined signal from the customer source during UPI authorization heavily points towards an authentication drop or app timeout at night, though the opaque reason code leaves room for transient infrastructure issues.",
+  "root_cause": "The UPI payment was declined at authorization during the night, likely due to an authentication drop or temporary app timeout."
+}

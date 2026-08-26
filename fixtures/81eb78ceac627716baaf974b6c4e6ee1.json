@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer source and payment authorization step strongly suggest an abandonment during authentication, though the opaque reason code leaves room for transient gateway issues.",
+  "root_cause": "The customer likely abandoned the transaction or experienced an authentication drop during card payment authorization."
+}

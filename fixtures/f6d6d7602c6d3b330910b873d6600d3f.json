@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The authorization step failure combined with the UPI method strongly points towards customer drop-off during PIN entry or a transient gateway delay.",
+  "root_cause": "The UPI payment failed during authorization, likely due to an uncompleted PIN entry or a temporary bank response timeout."
+}

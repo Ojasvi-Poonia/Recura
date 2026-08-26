@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The failure occurred on an emandate authorization attempt with a generic source indicator, which commonly points to either insufficient funds in the account or a temporary banking glitch during the recurring debit.",
+  "root_cause": "The automated emandate debit failed during authorization at the customer's bank."
+}

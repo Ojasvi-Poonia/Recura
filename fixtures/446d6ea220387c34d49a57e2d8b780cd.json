@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The combination of the payment authorization step failing with a credit card at night strongly points toward customer drop-off or 3DS abandonment, with transient bank issues as a secondary possibility.",
+  "root_cause": "The credit card payment authorization failed at night during the early month period."
+}

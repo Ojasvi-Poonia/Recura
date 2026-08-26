@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The source is listed as customer at the payment authorization step for a UPI transaction, pointing strongly toward abandonment or an incomplete prompt. Prior failed attempts combined with a history of recovery suggest occasional friction rather than a dead instrument.",
+  "root_cause": "The UPI payment failed during authorization at the bank end, likely due to a customer drop-off during approval or a temporary UPI network timeout."
+}

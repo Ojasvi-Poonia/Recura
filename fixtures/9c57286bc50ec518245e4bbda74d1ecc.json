@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "The opaque payment_declined reason with a source of customer and evening timing points towards potential funding limits or an authorization drop, but the lack of specific signals prevents a definitive conclusion.",
+  "root_cause": "The wallet payment was declined during authorization without a specific reason provided by the gateway."
+}

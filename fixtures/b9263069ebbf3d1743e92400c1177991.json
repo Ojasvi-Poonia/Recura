@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The UPI method, customer source, and authorization step strongly point to an authentication drop or app timeout. Prior recoveries suggest the customer is generally functional, making permanent instrument failure unlikely.",
+  "root_cause": "The UPI payment failed during authorization with a generic error code, most likely due to an authentication drop or temporary app timeout."
+}

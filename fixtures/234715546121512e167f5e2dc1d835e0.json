@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "The source is a customer-initiated UPI mandate at the authorization step, suggesting the user likely dropped off during the PIN entry or app switch, while the opaque reason code leaves room for a transient infrastructure glitch.",
+  "root_cause": "The UPI mandate authorization failed during payment authorization without a specific error code from the gateway."
+}

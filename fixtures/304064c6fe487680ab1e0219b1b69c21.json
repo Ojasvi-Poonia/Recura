@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The authorization step failure combined with customer-side source strongly suggests an authentication abandonment or drop. However, the lack of a specific gateway code and prior failed attempts leave room for transient infrastructure or balance issues.",
+  "root_cause": "The payment failed at authorization with an opaque error, likely due to an authentication drop or temporary bank issue."
+}

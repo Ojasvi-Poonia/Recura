@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer source tag and authorization step point strongly toward an abandoned authentication or balance issue during a wallet payment.",
+  "root_cause": "The wallet transaction failed during authorization at night, likely due to an authentication drop or insufficient wallet balance."
+}

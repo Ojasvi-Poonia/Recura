@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The credit_failed reason on a mandate authorization with netbanking points heavily toward bank-side transient issues or balance problems, while prior recovery history shows the customer is generally valid.",
+  "root_cause": "The netbanking mandate debit failed during payment authorization, most likely due to temporary bank communication issues or insufficient funds."
+}

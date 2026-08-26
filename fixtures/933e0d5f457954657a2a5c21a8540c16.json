@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The razorpay_source as customer and failure during payment_authorization heavily point toward an abandonment or app-level drop, tempered by the opaque error code which leaves room for transient network issues.",
+  "root_cause": "The UPI mandate authorization failed during the payment step, likely due to an abrupt customer drop-off or a silent app timeout."
+}

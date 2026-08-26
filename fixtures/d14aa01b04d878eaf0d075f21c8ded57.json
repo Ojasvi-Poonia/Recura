@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The opaque razorpay_reason and customer source point towards an authorization abandonment or potential funds issue during checkout, though the lack of specific error details leaves considerable ambiguity.",
+  "root_cause": "The payment was declined during authorization by an unspecified mechanism."
+}

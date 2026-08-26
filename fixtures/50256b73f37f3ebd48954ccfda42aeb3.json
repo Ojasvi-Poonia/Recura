@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer source and payment authorization step strongly point towards an abandoned or dropped UPI authentication flow, though the opaque reason code leaves room for transient network issues.",
+  "root_cause": "The UPI payment authorization failed at the customer step during the night, likely due to an authentication drop or app timeout."
+}

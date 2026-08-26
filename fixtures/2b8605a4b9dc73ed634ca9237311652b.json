@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure at authorization combined with multiple prior failed attempts points heavily toward customer drop-off during authentication steps or an issue with the card supporting mandates, though prior successful recoveries show the customer is capable of completing transactions.",
+  "root_cause": "The customer experienced a failure while attempting to set up a recurring mandate during payment authorization."
+}

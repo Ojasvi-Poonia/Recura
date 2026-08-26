@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The credit_failed reason on a UPI mandate during early month strongly implicates either insufficient funds or an incomplete customer authorization step, while discounting instrument invalidity since it is a first attempt.",
+  "root_cause": "The UPI mandate authorization failed during execution in the evening, pointing to a potential lack of funds or a customer drop-off."
+}

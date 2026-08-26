@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The failure occurred at the mandate creation and payment authorization step originating from the customer side. Since this is an emandate setup rather than a standard charge, authorization drop-off is the most likely cause, though account eligibility issues also remain plausible.",
+  "root_cause": "The customer was unable to complete the mandate creation and authorization process during setup."
+}

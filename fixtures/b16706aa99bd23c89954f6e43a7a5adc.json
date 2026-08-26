@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure during authorization strongly points to a customer drop-off or app interaction issue on UPI, though transient bank connectivity could also contribute.",
+  "root_cause": "The mandate creation failed during payment authorization on the customer side."
+}

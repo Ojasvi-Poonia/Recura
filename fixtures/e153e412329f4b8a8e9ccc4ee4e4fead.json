@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure with customer source and afternoon timing suggests authentication abandonment during setup, though prior recoveries indicate a valid card.",
+  "root_cause": "The customer likely abandoned the mandate setup or encountered an authorization failure during card processing."
+}

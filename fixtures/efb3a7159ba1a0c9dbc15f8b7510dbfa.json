@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.3
+    }
+  ],
+  "confidence": 0.35,
+  "reasoning": "The customer source and authorization step hint toward an abandonment or transient drop, but the complete lack of a specific error code leaves significant uncertainty.",
+  "root_cause": "The payment failed during authorization with an opaque error from the gateway."
+}

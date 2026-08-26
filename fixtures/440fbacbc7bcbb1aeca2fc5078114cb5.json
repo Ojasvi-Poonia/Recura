@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.6
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The Razorpay source is marked as customer and the step is payment authorization, pointing strongly toward abandonment or drop-off during the mandate flow. Past recoveries indicate a valid customer, reducing the likelihood of a permanently dead instrument.",
+  "root_cause": "The customer likely abandoned the mandate creation during the card authorization step."
+}

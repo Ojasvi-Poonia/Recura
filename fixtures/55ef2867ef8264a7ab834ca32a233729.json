@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The UPI method and customer source point strongly toward an authorization drop or app timeout, while the lack of specific gateway error codes leaves room for transient network issues.",
+  "root_cause": "The UPI payment failed during authorization without a specific gateway reason provided."
+}

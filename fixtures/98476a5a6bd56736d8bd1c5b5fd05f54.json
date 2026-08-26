@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The razorpay_source indicates 'customer' and the step is 'payment_authorization' during mandate creation, pointing heavily towards customer abandonment or drop-off during authentication. Instrument invalidity is also weighed because mandate setups frequently fail due to unsupported or incorrectly entered card details.",
+  "root_cause": "The customer was unable to complete the mandate creation process during payment authorization."
+}

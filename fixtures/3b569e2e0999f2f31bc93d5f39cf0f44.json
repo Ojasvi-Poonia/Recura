@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The customer has a history of prior failures and recoveries on a UPI mandate, pointing strongly toward either a balance issue or an authorization drop. The opaque decline code leaves room for uncertainty.",
+  "root_cause": "The UPI mandate authorization was declined during payment processing, likely due to insufficient funds or customer abandonment."
+}

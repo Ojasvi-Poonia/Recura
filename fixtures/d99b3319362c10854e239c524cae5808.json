@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The 'credit_failed' reason from the customer source during payment authorization points strongly toward an abandonment at the UPI app screen or a transient routing failure, while lack of prior history limits further certainty.",
+  "root_cause": "The UPI payment authorization failed, likely due to a customer drop-off during the PIN entry or a temporary bank-side connectivity issue."
+}

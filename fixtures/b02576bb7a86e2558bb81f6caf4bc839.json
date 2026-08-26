@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The failure occurred during mandate creation and payment authorization via netbanking at night, pointing toward user drop-off during authentication or bank connectivity timeouts. We discounted instrument invalidity since netbanking authentication flows depend heavily on session stability.",
+  "root_cause": "The netbanking mandate creation failed during payment authorization at night."
+}

@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure during payment authorization combined with the customer source tag heavily points towards an authentication drop or user abandonment, though a banking infrastructure issue cannot be fully ruled out.",
+  "root_cause": "The customer likely encountered an issue while setting up a recurring mandate during payment authorization."
+}

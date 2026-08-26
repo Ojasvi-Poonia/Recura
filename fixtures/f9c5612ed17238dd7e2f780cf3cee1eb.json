@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "RISK_DECLINE",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.3,
+  "reasoning": "The opaque decline reason and lack of prior history leave wide ambiguity, though the nighttime timing and card method lean moderately toward authorization abandonment or insufficient funds.",
+  "root_cause": "The payment was declined during authorization by the card issuer with no specific reason provided."
+}

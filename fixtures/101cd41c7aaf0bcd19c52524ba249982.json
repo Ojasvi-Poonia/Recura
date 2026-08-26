@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.6
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The Razorpay source indicating customer action and the payment_authorization step heavily point towards an authentication abandonment on UPI. Prior recovery history suggests the customer is otherwise familiar with the flow.",
+  "root_cause": "The customer likely abandoned the UPI authorization step or experienced an app timeout during payment confirmation."
+}

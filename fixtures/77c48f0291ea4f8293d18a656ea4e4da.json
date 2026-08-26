@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The wallet method combined with an opaque failure during authorization at night strongly suggests either an issuer timeout or user drop-off, though historical recovery shows the customer is typically viable.",
+  "root_cause": "The wallet transaction failed at the authorization step during a night attempt."
+}

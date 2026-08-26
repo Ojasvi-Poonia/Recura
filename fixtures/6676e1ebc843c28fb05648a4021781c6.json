@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure at the authorization step with a customer source points heavily towards abandonment or an incomplete flow during UPI PIN entry. Prior failed attempts combined with past recoveries suggest the user is familiar with the process but encountered friction this time.",
+  "root_cause": "The customer was unable to successfully complete the UPI mandate authorization step during setup."
+}

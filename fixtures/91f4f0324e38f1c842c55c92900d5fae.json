@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The evening timing and customer-side authorization step point heavily toward an abandoned netbanking session or bank OTP timeout, though the opaque reason code leaves room for transient infrastructure issues.",
+  "root_cause": "The netbanking payment failed during authorization with no specific gateway reason provided."
+}

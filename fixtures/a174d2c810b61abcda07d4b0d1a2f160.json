@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source is listed as customer during payment authorization for a mandate, suggesting an authentication abandonment or drop-off, though insufficient funds remain a strong alternative for credit-related failures.",
+  "root_cause": "The UPI mandate credit authorization failed at the customer step during payment authorization."
+}

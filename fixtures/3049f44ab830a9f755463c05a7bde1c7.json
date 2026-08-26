@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure at the authorization step with a UPI source strongly points toward customer abandonment during the app redirect flow, though transient infrastructure issues with the bank's mandate service remain plausible.",
+  "root_cause": "The UPI mandate creation process failed during payment authorization, likely due to customer drop-off or bank app interaction issues."
+}

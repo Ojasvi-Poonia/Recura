@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "RISK_DECLINE",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure combined with multiple prior failed attempts points strongly toward an invalid instrument or recurring authorization issue, though customer abandonment during authentication remains a possibility.",
+  "root_cause": "The customer's card failed during mandate creation at the payment authorization step after multiple prior failures."
+}

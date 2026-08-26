@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source is a card mandate at payment authorization with an opaque decline reason. The night timing and first attempt point slightly towards authentication drop-offs or silent bank declines, while discounting invalid instruments.",
+  "root_cause": "The card payment authorization was declined by the customer's bank during mandate setup."
+}

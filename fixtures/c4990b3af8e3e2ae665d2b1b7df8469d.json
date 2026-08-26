@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The failure occurred at the payment authorization step for a UPI transaction from a historically active customer, pointing strongly toward an abandoned authentication or a temporary banking network drop.",
+  "root_cause": "The customer was likely unable to complete the UPI authorization step despite a history of successful payments."
+}

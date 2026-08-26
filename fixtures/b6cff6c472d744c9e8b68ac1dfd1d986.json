@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source tag and authorization step point towards an abandonment or a bank-side drop during authentication, but the lack of a specific code keeps uncertainty high.",
+  "root_cause": "The netbanking payment failed at the authorization step due to an uncommunicated error from the bank."
+}

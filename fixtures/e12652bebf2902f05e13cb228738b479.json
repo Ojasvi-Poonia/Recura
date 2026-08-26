@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer-initiated step and UPI mandate source strongly suggest an authorization drop or insufficient funds at the time of the PIN entry, despite the opaque decline reason.",
+  "root_cause": "The UPI mandate authorization was declined by the customer's bank during the payment step."
+}

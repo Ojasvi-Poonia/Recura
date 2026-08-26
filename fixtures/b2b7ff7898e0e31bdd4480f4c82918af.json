@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer-side source and authorization step strongly point toward an abandoned authentication flow or UPI app timeout, though nocturnal timing leaves room for transient banking infrastructure glitches.",
+  "root_cause": "The UPI payment failed at authorization during the night without a specific gateway error code."
+}

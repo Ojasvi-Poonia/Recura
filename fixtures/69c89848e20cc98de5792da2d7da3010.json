@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The mandate creation failure originating from the customer during payment authorization heavily points towards authorization abandonment, such as a dropped UPI app PIN entry or timeout. Transient infrastructure issues at the bank handling the mandate setup also contribute to this belief.",
+  "root_cause": "The UPI mandate creation failed during payment authorization, likely due to a customer interruption or banking app issue."
+}

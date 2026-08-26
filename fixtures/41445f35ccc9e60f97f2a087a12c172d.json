@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer source and payment authorization step strongly point towards an abandoned UPI collect request or app timeout, while morning timing and prior recoveries suggest temporary infrastructure issues could also be at play.",
+  "root_cause": "The UPI payment failed at authorization during the morning hours with an opaque reason code."
+}

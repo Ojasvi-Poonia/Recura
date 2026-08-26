@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The emandate creation failure points strongly toward an authentication abandonment or an invalid account setup during the authorization step. Prior recovery history suggests the customer understands the flow, leaning our belief slightly more toward an authorization drop or bank-side validation hiccup rather than a dead instrument.",
+  "root_cause": "The recurring mandate authorization failed during creation, likely due to a customer drop-off or an issue with the bank account validation."
+}

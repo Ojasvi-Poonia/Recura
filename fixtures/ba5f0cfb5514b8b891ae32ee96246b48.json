@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The razorpay source indicates customer-side involvement during payment authorization with an opaque decline reason. Given UPI is heavily dependent on user action and PIN entry at night, authorization abandonment or insufficient funds are the most probable causes.",
+  "root_cause": "The UPI payment was declined during authorization by the customer's bank or app, likely due to authentication drop or insufficient funds."
+}

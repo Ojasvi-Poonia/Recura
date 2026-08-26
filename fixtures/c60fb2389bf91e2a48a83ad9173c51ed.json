@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source is listed as customer and step is payment_authorization, heavily pointing towards an authentication abandonment or drop. However, since the error code is completely opaque and netbanking can suffer from bank-side timeouts, a meaningful weight is assigned to transient infrastructure issues.",
+  "root_cause": "The netbanking payment authorization failed during the customer step with an opaque error code."
+}

@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate_creation_failed reason and customer source point strongly toward an authorization drop or card capability issue during setup, while transient network factors remain a minor possibility.",
+  "root_cause": "The customer's attempt to create a recurring payment mandate failed during card authorization."
+}

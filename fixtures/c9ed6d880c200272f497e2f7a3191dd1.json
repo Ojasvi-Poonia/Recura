@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The razorpay source points to the customer and the step is authorization, tilting probability toward authentication abandonment, while the opaque failure code leaves room for transient infrastructure or fund issues.",
+  "root_cause": "The card payment failed during authorization with no specific reason given by the gateway, likely due to an authentication drop or temporary bank issue."
+}

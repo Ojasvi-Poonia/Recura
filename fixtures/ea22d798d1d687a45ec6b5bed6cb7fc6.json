@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The payment failed at authorization using UPI during the morning, which heavily points toward an incomplete authentication or a transient gateway timeout. Prior recovery history suggests the customer is generally capable of completing transactions.",
+  "root_cause": "The UPI payment failed during authorization, likely due to an authentication timeout or a transient banking issue."
+}

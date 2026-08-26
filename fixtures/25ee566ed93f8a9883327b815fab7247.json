@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure at the authorization step with a customer source strongly points toward authentication abandonment or setup drop-off, though transient banking issues during mandate registration cannot be fully discounted.",
+  "root_cause": "Mandate creation failed during payment authorization, most likely due to authentication abandonment or a transient error during setup."
+}

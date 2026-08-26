@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The UPI method, evening timing, and authorization-step failure strongly point toward user drop-off or an app timeout, while prior successful recoveries suggest the customer profile is generally healthy.",
+  "root_cause": "The UPI payment failed during authorization with no specific reason provided by the gateway."
+}

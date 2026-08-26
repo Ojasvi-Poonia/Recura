@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The combination of the UPI method, customer-side authorization step, and prior successful recoveries heavily points toward an abandonment or a transient infrastructure hiccup during the prompt.",
+  "root_cause": "The UPI payment authorization failed, likely due to an incomplete customer action or a transient network drop during the UPI handle prompt."
+}

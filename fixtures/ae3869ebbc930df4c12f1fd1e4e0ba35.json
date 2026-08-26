@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "RISK_DECLINE",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The opaque payment_declined reason and lack of prior history leave significant ambiguity, though card authorization step points toward abandonment or issuer-side declines.",
+  "root_cause": "The card payment was declined during authorization with no specific reason provided by the gateway."
+}

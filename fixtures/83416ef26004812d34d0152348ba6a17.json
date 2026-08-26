@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "Given the opaque failure code during a first-time emandate attempt, insufficient funds and recurring infrastructure issues are the primary suspects, with abandonment also plausible.",
+  "root_cause": "The automated emandate payment failed during authorization without a specific reason provided by the gateway."
+}

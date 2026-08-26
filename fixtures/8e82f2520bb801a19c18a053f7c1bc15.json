@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The razorpay source is customer and step is payment_authorization, strongly suggesting an abandonment or dismissal on the UPI app, though network glitches cannot be fully ruled out.",
+  "root_cause": "The UPI payment was declined during authorization by the customer's bank or app."
+}

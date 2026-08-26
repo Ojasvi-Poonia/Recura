@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The razorpay source indicates customer involvement during authorization, swaying the distribution toward abandonment, while the credit_failed reason leaves room for transient network or UPI switch issues.",
+  "root_cause": "The UPI payment authorization failed during credit processing, likely due to a customer drop-off or transient gateway issue."
+}

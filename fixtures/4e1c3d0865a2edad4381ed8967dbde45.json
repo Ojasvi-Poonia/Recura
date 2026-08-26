@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.1
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The emandate method with a credit_failed reason points strongly toward insufficient funds during automated debit, though prior successful recoveries indicate a healthy underlying instrument.",
+  "root_cause": "The recurring mandate payment failed during authorization, likely due to insufficient balance or a bank-side auto-debit block."
+}

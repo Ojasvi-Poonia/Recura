@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer-side source and payment authorization step strongly point toward an abandoned authentication or lack of funds during mandate execution, though the opaque decline code leaves room for uncertainty.",
+  "root_cause": "The UPI mandate authorization failed at the payment step with an uncommunicated decline reason."
+}

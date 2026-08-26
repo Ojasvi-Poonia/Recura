@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The failure occurred specifically at the mandate creation step with a customer source origin, suggesting the user either dropped off during the authorization flow or used an unsupported card type for mandates.",
+  "root_cause": "The customer attempted to set up a card mandate during payment authorization, but the creation process failed."
+}

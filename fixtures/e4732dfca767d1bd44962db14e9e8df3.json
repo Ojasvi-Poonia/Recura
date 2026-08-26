@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.65
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The source is a customer-initiated mandate setup via UPI failing at the authorization step, which typically points to user drop-off or failure to approve the app notification. Transient gateway issues could also contribute, leaving a small remaining share to unknown causes.",
+  "root_cause": "The UPI mandate creation failed during payment authorization, likely due to customer drop-off or authorization cancellation."
+}

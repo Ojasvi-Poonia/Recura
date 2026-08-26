@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer-side source and payment authorization step strongly point towards an abandonment or session drop during netbanking authentication, though intermittent gateway connectivity issues cannot be ruled out.",
+  "root_cause": "The netbanking authorization failed during the bank redirect step without a clear reason provided."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.3
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The razorpay source points to the customer and the step is authorization, which heavily favors an authentication abandonment or timeout. However, the opaque decline code and night timing also leave room for transient infrastructure issues.",
+  "root_cause": "The UPI payment was declined at the authorization step during the night without a specific reason provided by the gateway."
+}

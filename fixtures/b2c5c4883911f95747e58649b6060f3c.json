@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "RISK_DECLINE",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.35,
+  "reasoning": "The opaque decline code and first-time attempt provide very little specific signal, leaving the failure distributed across insufficient funds, authorization drop-offs, and issuer risk rules.",
+  "root_cause": "The card payment was declined during authorization by the issuer without a specific reason provided."
+}

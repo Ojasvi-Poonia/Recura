@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer has a strong history of recovery and the failure occurred at payment authorization via netbanking, suggesting the user dropped off or encountered a bank session timeout. Infrastructure glitches at the bank are also plausible given the netbanking channel.",
+  "root_cause": "The netbanking authorization failed during the bank login or PIN entry stage despite prior successful recoveries."
+}

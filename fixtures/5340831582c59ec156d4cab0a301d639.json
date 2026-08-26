@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The mandate creation failure during authorization strongly points toward either insufficient funds for the initial micro-debit or an abandoned authentication step. Prior recovery history suggests the customer is otherwise capable of completing valid setups.",
+  "root_cause": "The recurring mandate creation failed during payment authorization, most likely due to customer drop-off or insufficient balance."
+}

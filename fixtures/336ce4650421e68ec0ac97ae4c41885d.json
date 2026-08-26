@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The emandate failure during payment authorization combined with the credit_failed reason heavily points toward a balance issue, though nighttime execution leaves room for bank infrastructure glitches.",
+  "root_cause": "The automated mandate debit failed at authorization, most likely due to insufficient funds or a dropped bank confirmation."
+}

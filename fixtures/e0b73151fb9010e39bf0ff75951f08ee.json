@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The UPI method and customer source point strongly toward an authorization abandonment or a transient infrastructure glitch during the PIN prompt, which is common for first-time attempts.",
+  "root_cause": "The UPI payment failed during authorization at the customer side, likely due to an uncompleted app PIN entry or a transient banking network issue."
+}

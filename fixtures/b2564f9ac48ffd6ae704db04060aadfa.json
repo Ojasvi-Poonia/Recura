@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The failure occurred during mandate creation and authorization on a wallet method with a customer who has past recoveries. This points toward an authentication drop or customer abandonment, though minor infrastructure issues with the wallet issuer cannot be ruled out.",
+  "root_cause": "The wallet mandate creation failed during payment authorization, preventing the transaction from proceeding."
+}

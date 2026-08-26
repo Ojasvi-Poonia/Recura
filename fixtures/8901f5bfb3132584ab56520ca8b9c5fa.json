@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The UPI method combined with payment authorization failure strongly suggests the customer dropped off or delayed the PIN entry. Insufficient funds is also a major contender for UPI failures in this amount band.",
+  "root_cause": "The UPI payment failed during authorization at the customer's bank, most likely due to authentication drop or insufficient funds."
+}

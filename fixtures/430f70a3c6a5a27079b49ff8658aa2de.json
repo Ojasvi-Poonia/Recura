@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failed at the authorization step with a customer source indicator, pointing towards friction during the authentication or setup flow. Prior recovery history suggests the instrument is generally viable, but mandate setups carry higher abandonment and card restriction rates.",
+  "root_cause": "The customer attempted to set up a recurring mandate using a card, but the authorization step failed during creation."
+}

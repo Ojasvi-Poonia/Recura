@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source being customer-initiated during payment authorization alongside a credit_failed reason points strongly toward a transient bank gateway issue or dropoff, though the exact cause remains somewhat opaque.",
+  "root_cause": "The netbanking mandate authorization failed during the customer step, likely due to a dropped connection or bank system timeout."
+}

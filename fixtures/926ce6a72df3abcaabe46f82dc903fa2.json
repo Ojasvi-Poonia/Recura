@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source is listed as customer at the authorization step, suggesting a drop-off or incomplete interaction, while prior recoveries indicate a capable user, giving weight to both abandonment and transient bank issues.",
+  "root_cause": "The netbanking payment failed during authorization with a generic error code, likely due to a customer drop-off or a bank-side communication timeout."
+}

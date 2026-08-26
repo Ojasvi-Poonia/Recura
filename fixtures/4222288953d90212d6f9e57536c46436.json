@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.6
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The failure occurred during mandate creation at the authorization step with a customer source origin, strongly indicating an abandonment or failure to complete the interactive UPI app flow. Transient infrastructure issues during setup also remain a possibility.",
+  "root_cause": "The customer was unable to complete the authorization step required to set up a new recurring UPI mandate."
+}

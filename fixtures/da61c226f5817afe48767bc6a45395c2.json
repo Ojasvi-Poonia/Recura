@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate_creation_failed reason and customer source strongly point to an issue during authorization setup, split between customer abandonment or card incompatibility for mandates.",
+  "root_cause": "The customer attempted to set up a card mandate during payment authorization, but the creation process failed."
+}

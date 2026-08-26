@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The customer source tag and authorization step point strongly toward an authentication drop or lack of funds during checkout. Prior failed attempts combined with a small transaction amount lean the distribution slightly heavier toward customer-side abandonment or insufficient balance.",
+  "root_cause": "The card authorization failed during checkout, most likely due to an authentication drop or insufficient funds."
+}

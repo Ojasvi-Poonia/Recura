@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure during authorization strongly points to an abandonment or an interrupted UPI app flow at night, though transient bank connectivity issues could also cause this step to fail despite the customer's strong recovery history.",
+  "root_cause": "The UPI mandate creation failed during payment authorization, preventing the setup of recurring payments."
+}

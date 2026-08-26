@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source is listed as customer at the payment authorization step for a netbanking transaction, pointing strongly toward an authentication drop-off or bank portal issue, but the opaque decline reason leaves room for transient infrastructure failure.",
+  "root_cause": "The netbanking transaction was declined by the bank or the customer dropped off during bank authorization."
+}

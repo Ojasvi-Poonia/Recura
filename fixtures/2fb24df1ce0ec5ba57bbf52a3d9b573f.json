@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.3
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "The payment source being customer and failing at the authorization step suggests an abandonment or drop-off, but lack of a specific code keeps uncertainty high.",
+  "root_cause": "The card transaction failed during authorization with an unspecified error from the gateway."
+}

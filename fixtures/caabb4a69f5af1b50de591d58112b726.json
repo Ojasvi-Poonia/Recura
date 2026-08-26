@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The Razorpay source pointing to the customer and the mandate creation step strongly suggest an authorization abandonment, though potential UPI infrastructure issues during evening hours cannot be entirely discounted.",
+  "root_cause": "The UPI mandate creation failed during payment authorization, likely due to a customer drop-off or authorization error."
+}

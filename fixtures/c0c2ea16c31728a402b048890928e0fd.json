@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source is customer-driven and fails at authorization via UPI, pointing strongly toward an authentication drop or user abandonment, though an unspecified balance or bank issue remains plausible.",
+  "root_cause": "The UPI payment was declined during authorization by the bank or app without a specific reason provided."
+}

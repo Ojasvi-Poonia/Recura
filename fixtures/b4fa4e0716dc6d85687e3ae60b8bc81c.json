@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The payment authorization step failure combined with the UPI method heavily suggests an abandoned authentication or app timeout, though general infrastructure glitches remain a strong secondary possibility given the opaque decline code.",
+  "root_cause": "The UPI payment authorization was declined by the customer's bank or app during the transaction."
+}

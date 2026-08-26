@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The razorpay_source as customer and step as payment_authorization point heavily towards user drop-off during mandate authentication, though transient gateway issues during mandate registration cannot be fully discounted.",
+  "root_cause": "The card mandate creation process failed during payment authorization, likely due to customer abandonment during the 3DS or authentication step."
+}

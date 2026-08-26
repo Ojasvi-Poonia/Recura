@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The authorization step failure and customer source strongly point toward an authentication abandonment or transient drop during the late hours, though the opaque reason code leaves room for uncertainty.",
+  "root_cause": "The card payment failed during authorization at night with an opaque status, likely due to an authentication drop or transient bank issue."
+}

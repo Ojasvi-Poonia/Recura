@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The UPI method, morning timing, and authorization step point heavily toward an authentication drop or insufficient balance during the prompt, though the opaque decline code leaves room for uncertainty.",
+  "root_cause": "The UPI payment was declined during authorization by the customer's bank with no specific reason provided."
+}

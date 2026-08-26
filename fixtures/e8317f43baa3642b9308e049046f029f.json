@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The authorization step failure and customer-side source heavily point to an abandonment or a silent drop during UPI PIN entry. However, the history of multiple prior failed attempts also leaves room for insufficient funds.",
+  "root_cause": "The UPI mandate authorization failed during the payment step, though the exact reason was not communicated by the gateway."
+}

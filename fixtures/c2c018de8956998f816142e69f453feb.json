@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source and payment authorization step strongly point towards an authentication drop or abandonment, supported by mid-month timing and moderate transaction size. Insufficient funds and transient gateway issues also remain plausible given the opaque credit failure reason.",
+  "root_cause": "The card payment failed during authorization at the customer step with an opaque credit failure indication."
+}

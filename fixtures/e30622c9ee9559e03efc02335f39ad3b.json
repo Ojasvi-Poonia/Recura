@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The authorization step failure and night timing point heavily toward user drop-off or balance issues, despite the generic failure code and prior failed attempts.",
+  "root_cause": "The payment failed during authorization with an opaque error, likely due to an authentication drop or insufficient funds on the card."
+}

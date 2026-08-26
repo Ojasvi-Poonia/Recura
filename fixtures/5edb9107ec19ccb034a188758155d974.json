@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source is listed as customer during payment authorization, leaning our belief toward abandonment or a silent decline. However, since the razorpay reason is opaque and prior failure history exists without recovery, we spread the remaining weight across transient infra and funds.",
+  "root_cause": "The UPI payment was declined during authorization by the customer's bank with an uncommunicated exact reason."
+}

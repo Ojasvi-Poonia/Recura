@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source and night timing point heavily toward an authorization abandonment such as an ignored UPI PIN prompt, while the opaque reason code leaves room for transient network or bank gateway hiccups.",
+  "root_cause": "The UPI payment failed during authorization at night with an unspecified error from the customer side."
+}

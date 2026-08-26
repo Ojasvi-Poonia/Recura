@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The credit_failed reason during authorization with a card points heavily toward balance issues or authentication drops, weighted by the customer's history of past failures.",
+  "root_cause": "The credit card authorization failed during the payment step, likely due to insufficient funds or authentication drop."
+}

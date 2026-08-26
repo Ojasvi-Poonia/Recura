@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The customer-side authorization failure combined with night-time checkout heavily points toward authentication abandonment or lack of funds after repeated attempts.",
+  "root_cause": "The card payment failed during authorization, potentially due to authentication dropouts or insufficient funds given the high prior failure count."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source is listed as customer and the step is authorization using UPI, which strongly suggests the user abandoned the flow or the UPI app timed out. Some weight is assigned to transient infrastructure due to the opaque payment_failed reason and first-attempt failure history.",
+  "root_cause": "The UPI payment failed during authorization with no specific gateway reason provided, pointing to a customer drop-off or a silent UPI app timeout."
+}

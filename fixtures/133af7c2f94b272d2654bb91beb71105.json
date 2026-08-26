@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure on UPI during authorization heavily points toward authentication abandonment or a bank-side transient issue, given the customer has successfully recovered before despite multiple prior failures.",
+  "root_cause": "The UPI mandate creation failed during payment authorization, preventing the setup of recurring payments."
+}

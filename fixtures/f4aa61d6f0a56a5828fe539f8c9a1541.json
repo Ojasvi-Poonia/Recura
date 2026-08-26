@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.1
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The credit_failed reason and customer source point strongly toward either a lack of funds or user drop-off during 3DS authorization, heavily weighted by the history of prior failed attempts.",
+  "root_cause": "The card transaction failed at authorization despite a customer-side source, likely due to insufficient funds or authentication abandonment."
+}

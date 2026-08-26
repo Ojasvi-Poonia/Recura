@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure on UPI during authorization points heavily toward user drop-off or an authorization timeout during the app redirect, while night timing also leaves room for bank infrastructure instability.",
+  "root_cause": "The customer attempted to set up a UPI mandate during night hours, but the mandate creation failed at authorization."
+}

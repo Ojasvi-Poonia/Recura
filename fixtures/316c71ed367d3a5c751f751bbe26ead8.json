@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.3
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer-side source and afternoon timing suggest an abandoned authentication step or minor gateway glitch, though prior recovery history shows past reliability.",
+  "root_cause": "The UPI payment failed during authorization due to an unknown customer-side issue."
+}

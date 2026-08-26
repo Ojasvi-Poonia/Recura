@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The source is listed as customer during payment authorization for a UPI transaction, pointing strongly toward authorization abandonment. Transient infra issues at the bank level are also common for UPI failures in this amount band.",
+  "root_cause": "The UPI payment authorization failed during the transaction, likely due to authentication abandonment or a transient banking issue."
+}

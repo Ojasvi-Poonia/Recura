@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source tag and authorization step point strongly toward an incomplete UPI PIN entry or app timeout, though upstream bank latency cannot be entirely ruled out.",
+  "root_cause": "The UPI payment was declined by the customer's bank during authorization with no specific reason provided."
+}

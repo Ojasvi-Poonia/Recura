@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.3
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The emandate method combined with an opaque payment_declined source suggests a balance shortfall during auto-debit, while historical recoveries indicate the instrument is generally valid.",
+  "root_cause": "The automated mandate debit failed during authorization with no specific reason provided by the bank or gateway."
+}

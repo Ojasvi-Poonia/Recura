@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The authorization step failure and UPI method strongly point toward customer drop-off during the app pin entry or a transient banking timeout, given the customer has successfully recovered payments before.",
+  "root_cause": "The UPI transaction failed during authorization, likely due to a customer drop-off or an intermittent bank response."
+}

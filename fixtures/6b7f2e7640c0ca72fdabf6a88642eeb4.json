@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source and authorization step strongly point toward an abandoned authentication flow, while the opaque failure code leaves room for a silent infrastructure drop.",
+  "root_cause": "The netbanking payment failed during authorization at night with an opaque status from the customer source."
+}

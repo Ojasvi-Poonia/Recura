@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer has a strong history of recovery despite multiple prior failures, suggesting a recurring issue with funds or authentication rather than a dead instrument. Since the error code is opaque, belief is distributed primarily between insufficient funds and authentication abandonment.",
+  "root_cause": "The card payment was declined during authorization by the issuer, but the precise reason was not communicated."
+}

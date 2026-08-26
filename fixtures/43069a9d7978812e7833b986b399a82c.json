@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The failure occurred at the payment authorization step using netbanking with a customer source, pointing strongly toward an authentication drop or customer abandonment. Prior recoveries suggest the customer knows how to pay, increasing the weight on transient or abandonment factors over permanent instrument failure.",
+  "root_cause": "The netbanking mandate authorization failed during the customer authorization step."
+}

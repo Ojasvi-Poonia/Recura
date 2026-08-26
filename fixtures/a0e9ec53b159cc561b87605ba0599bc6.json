@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The authorization step failure and UPI method point strongly toward an authentication abandonment or lack of funds, especially given the history of multiple failed attempts despite prior recoveries.",
+  "root_cause": "The UPI payment failed during authorization at night, likely due to authentication drop or insufficient funds given the high failure history."
+}

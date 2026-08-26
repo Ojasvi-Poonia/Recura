@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.5,
+  "reasoning": "The evening timing and UPI checkout context heavily suggest customer abandonment during the approval step, while the opaque failure code leaves room for a transient gateway or network issue.",
+  "root_cause": "The UPI payment failed during authorization with no specific error code provided by the gateway."
+}

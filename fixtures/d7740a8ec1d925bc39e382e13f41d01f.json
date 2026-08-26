@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The failure occurred during mandate creation and authorization via UPI at night, which commonly points to user drop-offs during app redirects or temporary bank downtime during off-peak hours, despite the customer's prior recovery history.",
+  "root_cause": "The UPI mandate creation process failed during payment authorization at night."
+}

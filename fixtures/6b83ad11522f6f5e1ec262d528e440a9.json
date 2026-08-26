@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The authorization step failure combined with customer source points towards an abandoned 3DS flow or timeout. Prior successful recoveries indicate a functional card instrument, discounting permanent card issues.",
+  "root_cause": "The payment failed during authorization with an opaque error from the gateway, likely due to an uncompleted authentication step or temporary network drop."
+}

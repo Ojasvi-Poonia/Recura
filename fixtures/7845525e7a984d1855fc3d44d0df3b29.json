@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.1
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The UPI method combined with the payment authorization step strongly points toward customer abandonment during the PIN entry or a transient gateway drop. Prior successful recoveries indicate a viable customer profile, discounting permanent instrument failure.",
+  "root_cause": "The UPI payment authorization failed, most likely due to an incomplete transaction flow or a temporary network issue during confirmation."
+}

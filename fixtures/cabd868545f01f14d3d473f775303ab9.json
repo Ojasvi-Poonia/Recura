@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The failure occurred during mandate creation on the customer step via UPI at night. Prior recoveries indicate a viable customer, shifting probability towards abandonment or minor infrastructure glitches.",
+  "root_cause": "The UPI mandate creation failed during payment authorization, likely due to a customer drop-off or bank processing issue."
+}

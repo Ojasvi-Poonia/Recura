@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The opaque decline during UPI authorization with a customer source points heavily toward an abandonment or PIN entry failure, while prior recoveries show the user knows how to pay successfully.",
+  "root_cause": "The UPI payment was declined during authorization by the customer's bank or app for an unspecified reason."
+}

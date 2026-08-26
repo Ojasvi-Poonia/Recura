@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The evening timing and customer-side source strongly suggest an authorization abandonment or pin entry timeout on UPI, while the mid-month position and moderate amount keep insufficient funds as a strong secondary possibility.",
+  "root_cause": "The UPI payment authorization was declined by the bank during the evening transaction attempt."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The failure occurred during authorization using netbanking at night, pointing towards customer drop-off or bank gateway timeout. Prior recovery history suggests the customer understands the flow.",
+  "root_cause": "The netbanking mandate authorization failed at night during the payment step."
+}

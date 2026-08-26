@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure during authorization points toward an authentication drop or app interaction timeout, though transient banking infrastructure issues at night cannot be ruled out.",
+  "root_cause": "The UPI mandate creation process failed during authorization at night."
+}

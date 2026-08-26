@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source and step point to an authorization failure by the customer, weighted toward abandonment given the source is customer-driven. Prior recoveries indicate a generally valid mandate, reducing instrument invalidity concerns.",
+  "root_cause": "The UPI mandate payment failed at authorization during the customer interaction step."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source is listed as customer during payment authorization, strongly pointing toward an authentication abandonment or user drop-off, though insufficient funds remains plausible given the opaque decline code.",
+  "root_cause": "The UPI payment was declined at authorization without a specific reason provided by the gateway."
+}

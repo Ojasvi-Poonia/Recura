@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.3
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The night timing and authorization step failure point toward customer drop-off or bank timeout, but the opaque decline reason keeps uncertainty high.",
+  "root_cause": "The netbanking payment was declined during authorization at night with no specific reason provided by the bank."
+}

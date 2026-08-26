@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure during authorization strongly points toward a customer drop-off during the redirect flow or a temporary bank glitch, given that prior history shows successful recoveries.",
+  "root_cause": "The netbanking mandate creation failed during payment authorization, most likely due to customer abandonment or bank processing issues."
+}

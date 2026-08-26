@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The source is listed as customer at the payment authorization step, strongly pointing to an authentication drop or abandonment despite prior recoveries. Some weight is given to transient infra issues due to the netbanking channel and credit_failed reason.",
+  "root_cause": "The netbanking authorization failed during the customer step, likely due to authentication drop or session timeout."
+}

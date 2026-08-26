@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The opaque decline code on a wallet transaction leaves the exact cause ambiguous, though past recovery suggests a viable instrument prone to occasional temporary issues or balance gaps.",
+  "root_cause": "The wallet payment was declined during authorization with no specific reason provided by the gateway."
+}

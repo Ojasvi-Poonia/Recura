@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The razorpay_source pointing to the customer during the payment_authorization step heavily suggests authentication abandonment. Mid-month timing and zero prior failures slightly weight the probability toward a user-side drop-off rather than strict fund depletion.",
+  "root_cause": "The customer was likely interrupted during payment authorization or abandoned the transaction before completion."
+}

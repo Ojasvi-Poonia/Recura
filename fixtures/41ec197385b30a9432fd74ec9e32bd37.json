@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The emandate setup failure during authorization points heavily toward customer drop-off during authentication or initial funding validation, weighed against minor infrastructure possibilities.",
+  "root_cause": "Mandate creation failed during payment authorization, most likely due to authentication drop or insufficient setup funds."
+}

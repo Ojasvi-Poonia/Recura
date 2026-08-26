@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The generic payment_declined error from a wallet method during authorization points toward insufficient balance or an abandoned authorization step, though limited telemetry leaves some uncertainty.",
+  "root_cause": "The wallet payment was declined during authorization by the issuer or provider without a specific reason."
+}

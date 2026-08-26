@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source indicator combined with the authorization step strongly suggests an abandoned or timed-out UPI PIN prompt, though potential morning infrastructure congestion keeps transient issues plausible.",
+  "root_cause": "The UPI mandate authorization failed during the payment step for an unknown reason."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source tag and authorization step point strongly toward an authentication drop, while the night timing suggests possible transient banking issues given the opaque error.",
+  "root_cause": "The payment failed during authorization at night with an opaque error code, likely due to an authentication drop or temporary bank glitch."
+}

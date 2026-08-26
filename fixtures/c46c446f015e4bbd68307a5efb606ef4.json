@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer source and authorization step point towards an abandonment or session drop during night hours, while potential bank infrastructure issues cannot be ruled out given the credit_failed reason.",
+  "root_cause": "The netbanking mandate authorization failed during the payment step at night."
+}

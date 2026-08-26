@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The source is flagged as customer and the step is payment_authorization, strongly suggesting authentication abandonment or a session drop on netbanking. However, the high amount band also keeps insufficient funds in strong contention.",
+  "root_cause": "The netbanking authorization failed during the customer-side step, likely due to authentication drop, session timeout, or insufficient balance."
+}

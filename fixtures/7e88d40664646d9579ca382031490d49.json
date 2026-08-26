@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The customer source and evening timing point heavily toward authorization drop-offs or insufficient funds, heavily supported by a history of multiple failed attempts.",
+  "root_cause": "The UPI payment failed during authorization after multiple prior failed attempts by the customer."
+}

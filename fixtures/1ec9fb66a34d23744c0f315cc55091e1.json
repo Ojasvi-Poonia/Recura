@@ -1,0 +1,27 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "RISK_DECLINE",
+      "probability": 0.1
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source is listed as customer during payment authorization, pointing strongly toward authentication abandonment or an issue with card input. Prior failed attempts combined with zero recoveries suggest lingering user friction.",
+  "root_cause": "The payment was declined during authorization by the card issuer, though the specific reason was not communicated."
+}

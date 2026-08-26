@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer-initiated UPI checkout source and authorization step point heavily toward an abandonment or app timeout issue, though prior failure history and opaque gateway responses leave room for infrastructure friction.",
+  "root_cause": "The UPI payment failed during authorization with no specific reason provided, following multiple previous failures."
+}

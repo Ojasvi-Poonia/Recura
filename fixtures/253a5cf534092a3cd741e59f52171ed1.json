@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure at authorization stage strongly points towards customer drop-off or an interactive PIN/approval timeout, though gateway infrastructure issues cannot be fully ruled out.",
+  "root_cause": "Mandate creation failed during UPI payment authorization, likely due to a customer drop-off or an authorization failure."
+}

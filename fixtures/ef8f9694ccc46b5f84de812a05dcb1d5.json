@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The generic card decline and customer source point towards an insufficient balance or an abandoned authorization step, while the prior recovery history indicates the instrument itself is generally valid.",
+  "root_cause": "The card payment was declined during authorization with no specific reason provided by the gateway."
+}

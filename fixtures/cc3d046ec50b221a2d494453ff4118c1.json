@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "The credit_failed reason and wallet method point toward either a temporary issuer/gateway communication issue or an underlying balance/funding constraint during authorization.",
+  "root_cause": "The wallet credit authorization failed during the payment step."
+}

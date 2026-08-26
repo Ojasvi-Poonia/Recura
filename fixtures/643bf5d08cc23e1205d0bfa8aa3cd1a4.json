@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate_creation_failed reason and customer source strongly point toward an authorization drop or user abandonment during setup. Minor weight is given to transient infrastructure issues or card eligibility limits.",
+  "root_cause": "The customer was unable to complete the mandate creation and authorization step for their card during checkout."
+}

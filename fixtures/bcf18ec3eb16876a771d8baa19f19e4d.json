@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source is listed as customer and the step is payment authorization, pointing heavily toward an abandoned UPI prompt or transient network glitch during the approval phase. Prior recovery history suggests a generally healthy payment setup, so instrument or fund issues are less likely.",
+  "root_cause": "The UPI payment failed during authorization due to an incomplete customer action or an uncommunicated gateway drop."
+}

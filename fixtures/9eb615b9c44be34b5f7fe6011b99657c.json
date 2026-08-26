@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The razorpay_source as customer and payment_authorization step strongly suggest the user dropped off during netbanking authentication, though general transient bank issues cannot be completely ruled out given the opaque reason code.",
+  "root_cause": "The customer initiated a netbanking payment in the evening but did not complete authorization at the bank portal."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The failure occurred specifically during mandate creation on UPI authorization by the customer. Since it is the first attempt with no history, abandonment during the app redirect or a temporary bank-side UPI latency are the most plausible explanations.",
+  "root_cause": "The customer was unable to successfully complete the UPI mandate creation step during authorization."
+}

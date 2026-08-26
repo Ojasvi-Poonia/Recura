@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The emandate method and high prior failure count despite past recoveries suggest bank communication issues or mandate registration state problems, while the early month position lowers the likelihood of an outright funds shortage.",
+  "root_cause": "The recurring mandate authorization failed during payment processing with an unspecified error from the bank."
+}

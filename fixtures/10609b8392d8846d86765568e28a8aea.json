@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The 'mandate_creation_failed' reason combined with a customer source and UPI method strongly points towards authentication abandonment during the app authorization step. Prior recoveries indicate a generally healthy customer profile, discounting instrument issues.",
+  "root_cause": "The UPI mandate creation process failed during payment authorization, likely due to a customer interruption or an app-level drop."
+}

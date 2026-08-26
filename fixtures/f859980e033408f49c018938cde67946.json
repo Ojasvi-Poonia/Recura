@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The razorpay source is customer and step is payment_authorization, pointing heavily toward abandonment or a low balance during the UPI interaction, though the opaque reason code limits certainty.",
+  "root_cause": "The UPI mandate payment authorization was declined by the customer's bank or source during night hours."
+}

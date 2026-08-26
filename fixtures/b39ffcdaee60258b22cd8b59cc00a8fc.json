@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The credit_failed reason and UPI method combined with the early month position strongly point towards a user abandonment during the UPI PIN entry or a short bank timeout during authorization.",
+  "root_cause": "The UPI payment failed during authorization due to an incomplete transaction or a temporary bank issue."
+}

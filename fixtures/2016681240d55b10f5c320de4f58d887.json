@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The authorization step failure combined with UPI points towards an incomplete customer app approval, though infrastructure latency cannot be ruled out. Prior recovery history suggests the customer is generally capable of completing transactions.",
+  "root_cause": "The UPI payment failed during authorization, likely due to a customer drop-off or a temporary banking network issue."
+}

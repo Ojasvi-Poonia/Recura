@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The opaque payment_declined code with a customer source points towards either a funds issue or dropped authentication, supported by prior recovery history.",
+  "root_cause": "The card payment failed at authorization with an uncommunicated decline reason, most likely due to insufficient funds or abandoned authentication."
+}

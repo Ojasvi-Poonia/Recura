@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source and payment authorization step strongly suggest an abandonment or drop during 3DS, while prior recovery history indicates the customer is familiar with the flow and makes transient infra or fund issues plausible.",
+  "root_cause": "The payment failed during authorization with an unspecified error while using a card."
+}

@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The vague decline source pointing to the customer during netbanking authorization typically indicates either an unnotified bank gateway timeout or an abandoned authentication step. Early month and prior recoveries suggest account health is generally good, lowering the weight on insufficient funds.",
+  "root_cause": "The netbanking payment was declined during authorization with an unspecified reason from the bank."
+}

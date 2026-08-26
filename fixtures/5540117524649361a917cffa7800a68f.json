@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "Given the customer-side authorization step and opaque failure reason, abandonment is the leading possibility, though transient infrastructure issues or simple insufficient funds remain plausible.",
+  "root_cause": "The payment failed during authorization with no specific reason provided by the gateway."
+}

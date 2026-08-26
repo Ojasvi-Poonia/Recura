@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure during payment authorization combined with a customer source points heavily toward an authentication drop or user abandonment. Prior recoveries indicate a generally valid instrument, reducing the likelihood of permanent instrument failure.",
+  "root_cause": "The customer likely abandoned the mandate authorization step or encountered an issue during card authentication at night."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.65
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The Razorpay source points to the customer during payment authorization for a mandate setup, heavily suggesting an abandonment during UPI app interaction, though minor gateway or app connectivity issues could also contribute.",
+  "root_cause": "The customer initiated a UPI mandate creation but failed to complete authorization, likely dropping off during the app pin entry."
+}

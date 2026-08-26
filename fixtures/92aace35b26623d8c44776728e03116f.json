@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The customer source tag and evening time heavily suggest an abandoned UPI authorization step, while the credit_failed reason leaves room for a transient infrastructure glitch.",
+  "root_cause": "The UPI payment authorization failed, likely due to a customer interruption during PIN entry or a transient banking timeout."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer-side source and payment authorization step strongly suggest an abandonment or timeout during UPI PIN entry, though transient infrastructure issues cannot be ruled out given the opaque failure code.",
+  "root_cause": "The UPI mandate authorization failed due to an unspecified customer-side interruption or bank communication issue."
+}

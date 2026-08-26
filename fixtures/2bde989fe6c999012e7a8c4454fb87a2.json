@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The razorpay source is customer and step is payment_authorization for a mandate creation, pointing strongly toward authorization abandonment. High prior failures without recovery indicate a struggling onboarding attempt.",
+  "root_cause": "The UPI mandate creation failed during payment authorization, likely due to customer drop-off or authorization failure."
+}

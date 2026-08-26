@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "RISK_DECLINE",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The higher amount band and prior failed attempts point towards balance issues or risk rules, while the customer history shows previous successful recoveries.",
+  "root_cause": "The card payment was declined by the bank during authorization, likely due to insufficient funds or risk triggers."
+}

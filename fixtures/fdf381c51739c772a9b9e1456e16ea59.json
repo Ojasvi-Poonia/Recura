@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.5,
+  "reasoning": "The emandate source and payment authorization step combined with an opaque decline point towards balance insufficiency during the mandate setup or customer drop-off during the process.",
+  "root_cause": "The emandate authorization was declined by the issuer during payment setup without a specific reason provided."
+}

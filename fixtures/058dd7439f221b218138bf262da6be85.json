@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.6
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The razorpay_source points to the customer during payment authorization for a UPI transaction, strongly suggesting user-side abandonment or delay, while transient gateway issues remain a plausible secondary factor.",
+  "root_cause": "The UPI payment authorization failed at the customer step, most likely due to an incomplete approval or an authentication timeout."
+}

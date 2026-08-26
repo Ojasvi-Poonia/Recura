@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The failure occurred during wallet authorization at night with a prior failed attempt, leaning towards a transient connectivity issue with the wallet issuer or an abandonment during the authorization step.",
+  "root_cause": "The wallet credit authorization failed during the payment step."
+}

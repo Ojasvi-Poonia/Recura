@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The payment failed at the authorization step using netbanking with a customer source origin. This strongly points towards the customer abandoning the netbanking flow or a temporary bank outage during redirection.",
+  "root_cause": "The netbanking authorization failed during the bank redirection step, likely due to a customer drop-off or a temporary bank connectivity issue."
+}

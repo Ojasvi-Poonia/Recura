@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The credit_failed reason during wallet authorization points heavily toward a temporary wallet-issuer downtime or insufficient funds in the wallet balance.",
+  "root_cause": "The wallet credit authorization failed during the payment step."
+}

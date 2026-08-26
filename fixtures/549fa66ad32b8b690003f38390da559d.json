@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The UPI method and failure at payment authorization point toward customer drop-off during the approval flow or a transient UPI handle timeout, despite the customer's history of past recoveries.",
+  "root_cause": "The UPI payment failed at authorization during the first attempt, likely due to a customer drop-off or temporary bank connectivity issue."
+}

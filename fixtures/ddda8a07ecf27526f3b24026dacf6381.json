@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The netbanking source and payment authorization step strongly point towards an abandoned or interrupted customer session, while the small amount and mid-month timing discount typical fund issues.",
+  "root_cause": "The netbanking authorization failed during the payment step, most likely due to an authentication drop or session timeout."
+}

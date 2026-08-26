@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source is customer-initiated during payment authorization on UPI, pointing strongly toward an abandonment or app timeout issue. However, given the opaque failure code and prior failed attempts, transient infrastructure issues cannot be ruled out.",
+  "root_cause": "The UPI payment failed during authorization with an unspecified error from the customer side."
+}

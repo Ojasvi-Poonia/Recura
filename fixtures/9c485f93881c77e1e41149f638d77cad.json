@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The failure occurred during mandate creation on a wallet method with a customer source, suggesting the user may have dropped off during authorization or experienced an integration timeout.",
+  "root_cause": "The customer attempted to set up a recurring wallet mandate during payment authorization, but the creation process failed."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source being customer and the step being payment_authorization strongly point toward customer drop-off or approval timeout, while the lack of a specific code leaves room for transient bank connectivity issues.",
+  "root_cause": "The UPI payment failed during authorization without a specific error code, likely due to a customer drop-off or transient bank issue."
+}

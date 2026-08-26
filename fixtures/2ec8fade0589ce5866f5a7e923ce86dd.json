@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer source and evening timing strongly suggest abandonment during UPI authorization steps, supported by prior recovery history. However, the opaque decline code leaves room for transient infrastructure issues.",
+  "root_cause": "The UPI mandate authorization was declined during payment execution, likely due to a customer drop-off or temporary bank connectivity issue."
+}

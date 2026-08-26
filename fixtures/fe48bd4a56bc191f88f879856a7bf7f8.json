@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure during authorization strongly points to user drop-off or app interaction issues during the UPI PIN entry, though underlying banking connectivity could also have dropped.",
+  "root_cause": "The customer failed to successfully complete the UPI mandate authorization step."
+}

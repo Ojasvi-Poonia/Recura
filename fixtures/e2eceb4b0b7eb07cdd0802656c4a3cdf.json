@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The payment source indicates customer involvement and the step points to authorization, strongly suggesting an abandonment or user drop-off at the netbanking page. Transient bank issues during the night are also plausible.",
+  "root_cause": "The customer initiated a netbanking transaction at night but likely dropped off or timed out during bank authorization."
+}

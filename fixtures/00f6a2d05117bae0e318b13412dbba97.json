@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate failure occurring at the authorization step via UPI strongly points to an authentication drop-off or timeout, while prior recovery history and mid-month timing keep transient gateway issues plausible.",
+  "root_cause": "The UPI mandate creation process failed during payment authorization, likely due to a customer drop-off or authorization error."
+}

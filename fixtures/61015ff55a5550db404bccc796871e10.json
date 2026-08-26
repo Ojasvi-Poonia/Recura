@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The failure occurred during mandate creation and authorization via UPI at night, strongly pointing toward customer drop-off or a transient banking network timeout during the app-switch flow.",
+  "root_cause": "The UPI mandate creation failed during the authorization step at night."
+}

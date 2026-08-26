@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source tag and authorization step point towards user abandonment or banking session drop-off, while the moderate-to-high amount band leaves sufficient room for an insufficient funds scenario. Given the opaque decline code, belief is spread across user-side drop-offs and bank-side limitations.",
+  "root_cause": "The netbanking payment was declined by the bank during authorization with no specific reason provided."
+}

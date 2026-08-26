@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure during payment authorization combined with a customer source points heavily toward an abandonment or an unsupported card instrument for recurring setups. Bank gateway issues were discounted as the primary cause due to the specific step involved.",
+  "root_cause": "The customer initiated a card payment that required mandate creation, but the authorization process failed during setup."
+}

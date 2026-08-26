@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The emandate authorization step failure points toward either insufficient funds for the initial penny drop or authentication abandonment by the customer. Prior recovery history suggests a generally valid instrument.",
+  "root_cause": "The recurring mandate authorization failed during setup, preventing the automatic collection."
+}

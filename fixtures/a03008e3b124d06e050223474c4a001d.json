@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source is listed as customer and the step is payment_authorization, strongly pointing toward an abandoned UPI prompt or app switch timeout. However, the opaque reason code and prior history leave room for an infrastructure glitch.",
+  "root_cause": "The UPI payment failed during authorization due to an incomplete customer action or an uncommunicated bank timeout."
+}

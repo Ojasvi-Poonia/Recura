@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "RISK_DECLINE",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The generic card decline at night with no prior recoveries points toward a lack of funds or an authentication drop, while the opaque gateway reason prevents higher certainty.",
+  "root_cause": "The card payment was declined during authorization by the issuer without an explicit reason provided to the gateway."
+}

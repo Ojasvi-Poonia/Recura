@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure originating from the customer step strongly suggests an authorization abandonment or app interaction drop, while accounting for potential UPI network hiccups.",
+  "root_cause": "The UPI mandate creation failed during payment authorization at the customer step."
+}

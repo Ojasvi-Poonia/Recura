@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer source tag and authorization step point strongly toward an abandoned UPI PIN entry or a short app timeout, though transient gateway issues cannot be fully discounted.",
+  "root_cause": "The UPI payment was declined during authorization by the bank or app without specifying the exact reason."
+}

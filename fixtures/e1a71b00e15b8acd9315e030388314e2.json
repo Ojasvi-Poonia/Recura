@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The UPI method and failure at the authorization step with a customer source point strongly toward an abandoned authentication or a temporary network glitch, given the prior recovery history.",
+  "root_cause": "The UPI payment failed during authorization despite a history of successful recoveries."
+}

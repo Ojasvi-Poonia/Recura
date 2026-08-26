@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The customer-initiated UPI mandate failure points strongly toward an authentication drop or insufficient funds at the time of debit, though the opaque reason code limits full certainty.",
+  "root_cause": "The UPI mandate authorization was declined by the customer's bank during payment processing."
+}

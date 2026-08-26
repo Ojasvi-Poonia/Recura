@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The mandate creation failure on a UPI checkout points toward an authorization drop by the user, though some weight is given to transient gateway issues during setup.",
+  "root_cause": "The UPI mandate creation failed during payment authorization, likely due to an incomplete setup or authentication drop by the customer."
+}

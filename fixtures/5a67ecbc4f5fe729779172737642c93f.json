@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The razorpay source points to the customer during authorization and the method is netbanking, suggesting an authentication abandonment or drop-off, though transient bank issues cannot be completely ruled out given the mandate creation failure.",
+  "root_cause": "The netbanking mandate creation failed during payment authorization, likely due to a customer drop-off or bank integration issue."
+}

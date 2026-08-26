@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source being customer and the step being payment_authorization strongly point toward an authentication drop or abandonment, though the opaque reason code leaves room for transient gateway issues.",
+  "root_cause": "The customer was likely unable to complete payment authorization due to an abandonment or an uncommunicated bank decline during the OTP or 3DS step."
+}

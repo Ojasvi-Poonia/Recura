@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The Razorpay source pointing to the customer and the authorization step strongly suggest an authentication drop or abandonment during UPI flow, with insufficient funds remaining a plausible alternative.",
+  "root_cause": "The UPI payment authorization failed during the credit check or PIN entry stage."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source is listed as customer at the payment authorization step for a UPI transaction, strongly pointing towards an app-level drop or authentication timeout. However, the opaque reason code leaves room for transient infrastructure issues.",
+  "root_cause": "The UPI payment failed during authorization with no specific reason provided by the gateway."
+}

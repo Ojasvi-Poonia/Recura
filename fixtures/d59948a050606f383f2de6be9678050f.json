@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The source is customer-driven at the payment authorization step for netbanking, strongly suggesting an authentication drop or user abandonment, though the opaque decline code leaves room for transient bank issues.",
+  "root_cause": "The netbanking authorization was declined by the bank during the payment step."
+}

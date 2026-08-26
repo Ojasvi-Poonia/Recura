@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The payment_authorization step and customer source strongly point to an authentication abandonment or interaction drop. Previous recoveries indicate a familiar user, reducing the likelihood of a permanent instrument issue.",
+  "root_cause": "The UPI payment failed during authorization, likely due to an authentication timeout or a user cancellation despite prior recovery history."
+}

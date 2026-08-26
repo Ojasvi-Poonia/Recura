@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "The source points to the customer during authorization, suggesting an abandoned or timed-out UPI PIN prompt, while the opaque decline reason leaves room for transient bank connectivity issues.",
+  "root_cause": "The UPI payment was declined during authorization by the customer's bank or app."
+}

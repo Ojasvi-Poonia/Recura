@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The opaque decline on a recurring mandate method with high prior failures heavily points toward either a balance issue or authorization abandonment.",
+  "root_cause": "The UPI mandate payment was declined at authorization, likely due to insufficient funds or customer drop-off during authentication."
+}

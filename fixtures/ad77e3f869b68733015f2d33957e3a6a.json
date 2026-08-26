@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.3
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The UPI method and night timing strongly suggest a user drop or authorization timeout, while the opaque decline reason leaves room for transient network issues.",
+  "root_cause": "The UPI payment was declined at authorization during the night with no specific reason provided by the gateway."
+}

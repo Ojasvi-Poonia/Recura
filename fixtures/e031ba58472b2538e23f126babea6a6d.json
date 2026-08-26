@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "The source is listed as customer and the step is payment_authorization, strongly pointing toward an authentication drop or app timeout, while the opaque razorpay_declined code leaves room for transient bank issues.",
+  "root_cause": "The UPI payment was declined at authorization by the customer's bank without an explicit reason."
+}

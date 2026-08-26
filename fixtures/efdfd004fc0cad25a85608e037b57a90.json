@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The failure occurred at the payment authorization step during mandate creation via emandate. This heavily points towards customer drop-off during authentication or a transient gateway-bank communication error.",
+  "root_cause": "The recurring mandate setup failed during authorization, likely due to authentication drop or bank processing rejection."
+}

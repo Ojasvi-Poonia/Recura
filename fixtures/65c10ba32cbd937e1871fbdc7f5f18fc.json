@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The explicit mandate creation failure combined with the customer source tag heavily suggests an authentication or drop-off issue during the e-mandate registration flow, though transient gateway communication errors cannot be fully ruled out given prior success history.",
+  "root_cause": "The customer attempted to set up a recurring card mandate during payment authorization, but the setup process failed at the bank level."
+}

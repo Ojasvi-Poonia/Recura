@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.25
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "The night timing, UPI method, and authorization step point strongly toward a customer drop or silent timeout, though the generic decline code and lack of explicit gateway signal leave room for infrastructure issues.",
+  "root_cause": "The UPI payment was declined during authorization by the issuing bank for an unspecified reason."
+}

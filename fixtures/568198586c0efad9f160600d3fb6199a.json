@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.3
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "The opaque payment_declined reason from the customer source during payment authorization points strongly toward an authentication drop or session timeout at night, though the history of multiple failures leaves room for infrastructure issues.",
+  "root_cause": "The netbanking payment authorization was declined by the bank during the checkout process after multiple prior failed attempts."
+}

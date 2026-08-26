@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source is listed as customer and the step is payment_authorization, strongly pointing towards an abandonment or drop-off during the UPI PIN entry. However, the opaque failure code leaves room for a transient gateway issue.",
+  "root_cause": "The UPI payment failed during authorization without a specific gateway error code, likely due to an authentication drop or customer cancellation."
+}

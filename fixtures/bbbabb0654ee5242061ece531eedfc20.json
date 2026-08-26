@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.6
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The source is designated as customer and the step is payment authorization, pointing strongly toward abandonment or authorization timeout during UPI PIN entry, though prior failures suggest minor infrastructure or repeated user error.",
+  "root_cause": "The UPI payment failed during authorization due to an issue on the customer side, likely related to PIN entry or app timeout."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The mandate creation failure on a card points heavily toward an unsupported or improperly configured card instrument, with authorization drop-off as a close alternative given the customer source.",
+  "root_cause": "The customer's card failed during mandate creation at the payment authorization step."
+}

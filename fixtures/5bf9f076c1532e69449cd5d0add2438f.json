@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.5,
+  "reasoning": "The customer-side source and authorization step point toward an abandoned authentication or missing funds, despite the opaque decline reason. History of successful recoveries indicates a familiar user, reducing the likelihood of a fundamental instrument issue.",
+  "root_cause": "The payment was declined at authorization by the customer's UPI app, likely due to an authentication timeout or insufficient balance."
+}

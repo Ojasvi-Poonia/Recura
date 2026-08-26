@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The vague customer-side decline on an emandate setup points toward possible account balance issues or silent friction during authorization, though the opaque reason code prevents certainty.",
+  "root_cause": "The emandate authorization failed during checkout with an unspecified decline reason from the customer side."
+}

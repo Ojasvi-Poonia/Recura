@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure during UPI authorization strongly points to either the customer dropping off during the complex approval flow or a transient banking/app infrastructure timeout. The lack of prior history leaves some ambiguity.",
+  "root_cause": "The UPI recurring mandate creation failed during payment authorization, preventing the setup."
+}

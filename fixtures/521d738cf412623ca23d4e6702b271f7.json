@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The UPI method, night timing, and authorization step strongly point towards an abandoned or timed-out user interaction, though prior failures and opaque decline codes leave room for transient infrastructure issues.",
+  "root_cause": "The UPI payment was declined during authorization at night with multiple prior failed attempts."
+}

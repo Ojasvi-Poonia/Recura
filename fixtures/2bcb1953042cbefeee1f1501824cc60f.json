@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The razorpay_source pointing to customer and failure at payment_authorization strongly suggest an authentication abandonment such as a delayed PIN entry or app switch timeout. Prior failed attempts and mid-month timing slightly temper the certainty, leaving room for transient UPI infrastructure issues.",
+  "root_cause": "The UPI payment failed during authorization at the customer side, likely due to an authentication drop or app timeout."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The night timing and UPI method point toward a possible user drop-off during authorization or a transient network issue, while prior recoveries suggest the customer profile is generally viable.",
+  "root_cause": "The UPI payment authorization failed during the attempt, likely due to a customer drop-off or a temporary banking glitch."
+}

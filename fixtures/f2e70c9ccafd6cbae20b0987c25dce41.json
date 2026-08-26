@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.5
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The razorpay source is customer and step is payment_authorization, heavily pointing towards an authentication drop-off, while the early month position and past recoveries keep transient infra plausible.",
+  "root_cause": "The UPI mandate creation failed during payment authorization, likely due to a customer drop-off during approval or a transient banking issue."
+}

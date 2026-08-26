@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The mandate creation failure originating from the customer during the authorization step strongly points toward an abandoned or incomplete user flow, such as a dropped UPI PIN entry. Some weight is given to transient infrastructure issues due to the nature of real-time UPI callbacks.",
+  "root_cause": "The customer was unable to complete the UPI mandate creation during payment authorization."
+}

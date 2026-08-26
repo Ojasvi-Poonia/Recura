@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The source is listed as customer with mandate creation failing during authorization, heavily pointing toward authentication abandonment or a bank-side transient issue during setup, while prior history indicates the customer is generally capable of completing transactions.",
+  "root_cause": "The customer attempted to set up a recurring card mandate during payment authorization, but the creation process failed."
+}

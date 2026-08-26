@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.1
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The Razorpay source indicating customer involvement during payment authorization strongly points toward an abandoned or timed-out UPI approval. Prior successful recoveries show the customer is generally capable of completing transactions.",
+  "root_cause": "The UPI payment failed during authorization, most likely due to an authentication timeout or dropped connection by the customer."
+}

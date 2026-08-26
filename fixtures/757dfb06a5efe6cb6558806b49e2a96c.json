@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The netbanking method combined with the payment_authorization step and source from customer strongly points to an abandonment or session drop during authentication, supported by prior recovery history indicating a familiar user.",
+  "root_cause": "The customer likely encountered a bank authentication timeout or dropped connection during netbanking authorization."
+}

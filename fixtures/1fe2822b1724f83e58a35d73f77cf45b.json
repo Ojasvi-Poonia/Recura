@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The Razorpay source is customer and step is payment_authorization, strongly indicating an abandonment during the app approval stage, despite the customer's history of successful recoveries.",
+  "root_cause": "The customer initiated a UPI mandate authorization but failed to complete the approval step within the required timeframe."
+}

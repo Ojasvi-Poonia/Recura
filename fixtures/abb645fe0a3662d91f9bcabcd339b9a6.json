@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "The customer-side source and payment authorization step strongly point toward an abandoned or timed-out UPI pin entry, while the opaque reason leaves room for transient network or gateway connectivity issues.",
+  "root_cause": "The UPI payment failed during authorization with an opaque error from the customer side."
+}

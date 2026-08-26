@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "The failure occurred during mandate creation and authorization on UPI. Given the customer has a strong prior recovery history, abandonment during the authentication step or a temporary bank infrastructure issue is most likely.",
+  "root_cause": "The customer attempted to set up a recurring UPI mandate during the night, but the authorization or creation step failed at the bank level."
+}

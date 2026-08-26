@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.15
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.05
+    }
+  ],
+  "confidence": 0.65,
+  "reasoning": "The emandate creation failure during authorization strongly points toward an abandoned authentication step or initial verification balance issue, moderated by the customer's prior recovery history.",
+  "root_cause": "Mandate creation failed during payment authorization, most likely due to authentication drop or insufficient setup funds."
+}

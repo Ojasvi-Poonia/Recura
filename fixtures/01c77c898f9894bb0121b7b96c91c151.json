@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.2
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.15
+    }
+  ],
+  "confidence": 0.45,
+  "reasoning": "Given the opaque decline at authorization with a prior history of recovery, the failure could stem from an authentication drop or an insufficient balance. Since the exact reason is uncommunicated and past recovery shows a valid customer, belief is spread across user-side dropoffs and fund limitations.",
+  "root_cause": "The card payment was declined during authorization by the issuer without an explicit reason provided."
+}

@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The netbanking method combined with failure at the payment authorization step strongly points toward customer abandonment during the bank login or OTP stage, though temporary gateway or bank connectivity issues remain plausible.",
+  "root_cause": "The netbanking payment failed during authorization at the bank's end, likely due to an incomplete authentication step or a temporary bank interface issue."
+}

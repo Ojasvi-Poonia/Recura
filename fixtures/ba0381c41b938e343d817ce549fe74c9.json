@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.45
+    },
+    {
+      "failure_class": "INSTRUMENT_INVALID",
+      "probability": 0.35
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.2
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The explicit failure during mandate creation strongly points toward an authentication drop or an unsupported card for recurring transactions. Prior recoveries suggest a valid customer profile, reducing likelihood of permanent instrument issues.",
+  "root_cause": "The card mandate creation failed during payment authorization at night."
+}

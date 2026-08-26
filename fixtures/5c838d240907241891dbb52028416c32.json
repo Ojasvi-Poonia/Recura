@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.1
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The source is listed as customer at the payment authorization step, which strongly points toward abandonment or an uncompleted UPI PIN prompt. Transient network issues are also considered due to the opaque credit_failed message.",
+  "root_cause": "The UPI payment failed at authorization during the morning hours, most likely due to an authentication drop or customer abandonment."
+}

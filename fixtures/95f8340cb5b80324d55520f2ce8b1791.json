@@ -1,0 +1,19 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.4
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.3
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.3
+    }
+  ],
+  "confidence": 0.4,
+  "reasoning": "The razorpay source points to the customer and the step is payment authorization, suggesting an authentication drop or balance issue, but the opaque decline reason leaves considerable uncertainty.",
+  "root_cause": "The payment was declined at the authorization step, but the exact reason was not communicated by the gateway."
+}

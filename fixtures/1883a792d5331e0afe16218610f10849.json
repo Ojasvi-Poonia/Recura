@@ -1,0 +1,23 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "AUTH_ABANDON",
+      "probability": 0.55
+    },
+    {
+      "failure_class": "TRANSIENT_INFRA",
+      "probability": 0.25
+    },
+    {
+      "failure_class": "FUNDS",
+      "probability": 0.1
+    },
+    {
+      "failure_class": "UNKNOWN",
+      "probability": 0.1
+    }
+  ],
+  "confidence": 0.55,
+  "reasoning": "The authorization step failure combined with a UPI method strongly suggests an authentication drop-off, though a transient gateway issue remains possible despite the customer having prior recoveries.",
+  "root_cause": "The UPI payment failed during authorization, likely due to a customer drop-off or an authentication timeout."
+}
