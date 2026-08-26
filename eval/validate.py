@@ -153,8 +153,8 @@ def check_aa_test() -> Check:
 
     rng = np.random.default_rng(4242)
     mask = rng.random(len(results)) < 0.5
-    a = [r for r, m in zip(results, mask) if m]
-    b = [r for r, m in zip(results, mask) if not m]
+    a = [r for r, m in zip(results, mask, strict=True) if m]
+    b = [r for r, m in zip(results, mask, strict=True) if not m]
     lift = (summarise("a", a).recovery_rate - summarise("b", b).recovery_rate) * 100
     low, high = bootstrap_lift_ci(a, b)
     return Check(

@@ -6,7 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from src.clock import IST, SystemClock, VirtualClock
-from src.models import ErrorObject, RiskEvent, rupees
+from src.models import RiskEvent, rupees
 
 
 def _event(**kw):

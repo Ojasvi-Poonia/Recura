@@ -3,7 +3,6 @@
 from datetime import datetime, timedelta
 
 import numpy as np
-import pytest
 
 from src.clock import IST
 from src.decide.bandit import BetaPosterior, PropensityModel
@@ -15,7 +14,6 @@ from src.models import (
     CustomerHistory,
     ErrorObject,
     FailureClass,
-    Recoverability,
     RiskEvent,
 )
 from src.taxonomy.mapping import classify
@@ -331,3 +329,30 @@ def test_aged_receivables_route_to_a_human():
 
 def test_days_overdue_is_zero_for_non_receivables():
     assert mk_ctx().event.days_overdue(NOW) == 0
+
+
+def test_margin_comes_from_the_merchant_not_a_global_constant():
+    """MerchantContext.margin_bps existed from the start and was silently ignored.
+
+    Razorpay's merchants are not homogeneous: the same failed payment is worth very
+    different amounts to chase for a SaaS subscription and a food-delivery order.
+    """
+    from src.models import MerchantContext
+    model = PropensityModel()
+
+    def best_gross(margin):
+        event = mk_ctx().event.model_copy(update={
+            "merchant_context": MerchantContext(merchant_id="m", margin_bps=margin)})
+        ctx = DecisionContext(**{**mk_ctx().__dict__, "event": event})
+        return max(c.gross_value_paise
+                   for c in score_candidates(ctx, model, np.random.default_rng(5)))
+
+    thin, fat = best_gross(500), best_gross(6000)
+    assert fat > thin * 5, "margin must scale expected value"
+
+
+def test_missing_merchant_context_falls_back_to_the_configured_default():
+    event = mk_ctx().event.model_copy(update={"merchant_context": None})
+    ctx = DecisionContext(**{**mk_ctx().__dict__, "event": event})
+    scored = score_candidates(ctx, PropensityModel(), np.random.default_rng(5))
+    assert scored  # does not raise

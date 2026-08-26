@@ -23,7 +23,9 @@ from typing import Any, Callable
 
 import yaml
 
-from src.clock import IST
+from zoneinfo import ZoneInfo
+
+from src.market import get_market
 from src.models import (
     ActionType,
     BlockedRule,
@@ -31,7 +33,6 @@ from src.models import (
     Decision,
     FailureClass,
     PolicyVerdict,
-    Recoverability,
 )
 
 POLICY_PATH = Path(__file__).resolve().parents[2] / "policy.yaml"
@@ -103,14 +104,19 @@ def _hhmm(value: str) -> time:
     return time(int(hh), int(mm))
 
 
-def _in_quiet_hours(at: datetime, start: time, end: time) -> bool:
-    """Quiet window wraps midnight: 19:00 -> 09:00."""
-    t = at.astimezone(IST).time()
+def _in_quiet_hours(at: datetime, start: time, end: time,
+                    tz: ZoneInfo | None = None) -> bool:
+    """Quiet window wraps midnight: 19:00 -> 09:00.
+
+    Evaluated in the MARKET's timezone, not a hardcoded IST. Getting this wrong sends
+    a message at 03:00 local while believing the rule was honoured.
+    """
+    t = at.astimezone(tz or get_market().timezone).time()
     return t >= start or t < end
 
 
-def _next_allowed(at: datetime, end: time) -> datetime:
-    at = at.astimezone(IST)
+def _next_allowed(at: datetime, end: time, tz: ZoneInfo | None = None) -> datetime:
+    at = at.astimezone(tz or get_market().timezone)
     candidate = at.replace(hour=end.hour, minute=end.minute, second=0, microsecond=0)
     if candidate <= at:
         candidate += timedelta(days=1)
@@ -329,9 +335,10 @@ def _quiet_hours(ctx: Ctx) -> RuleOutcome:
         return RuleOutcome()
     cfg = ctx.policy["contact"]["quiet_hours"]
     start, end = _hhmm(cfg["start"]), _hhmm(cfg["end"])
+    tz = get_market(cfg.get("tz_market", "IN")).timezone
     at = _scheduled_at(ctx)
-    if _in_quiet_hours(at, start, end):
-        shifted = _next_allowed(at, end)
+    if _in_quiet_hours(at, start, end, tz):
+        shifted = _next_allowed(at, end, tz)
         return RuleOutcome(modified={
             "scheduled_at": shifted,
             "_quiet_hours_shift": f"{at.isoformat()} -> {shifted.isoformat()}",

@@ -23,8 +23,8 @@ def test_parameterisation_restores_every_constant():
 
     assert dict(lat.BASELINE_RECOVERY) == before_baseline
     assert dict(gen.FAILURE_MIX) == before_mix
-    assert (gen.P_OPAQUE, gen.P_MISLEADING) == before_noise
-    assert lat.NUDGE_INTENT_WEIGHT == before_efficacy
+    assert before_noise == (gen.P_OPAQUE, gen.P_MISLEADING)
+    assert before_efficacy == lat.NUDGE_INTENT_WEIGHT
 
 
 def test_parameterisation_restores_even_after_an_error():

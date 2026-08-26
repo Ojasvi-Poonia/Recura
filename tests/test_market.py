@@ -86,3 +86,30 @@ def test_shipped_market_is_verified():
 
 def test_default_market_is_india():
     assert DEFAULT_MARKET == "IN" and get_market().code == "IN"
+
+
+def test_policy_window_matches_the_market_profile():
+    """Two files state the lawful contact window; they must never disagree.
+
+    policy.yaml is the human-readable contract a merchant signs; markets.yaml is the
+    regulatory source. Both are legitimate, but silent drift between them would mean
+    the contract says one thing and the engine enforces another.
+    """
+    from src.policy.engine import load_policy
+    market = get_market("IN")
+    quiet = load_policy()["contact"]["quiet_hours"]
+    assert quiet["start"] == market.contact_window_end.strftime("%H:%M")
+    assert quiet["end"] == market.contact_window_start.strftime("%H:%M")
+    assert quiet["tz"] == str(market.timezone)
+
+
+def test_pre_debit_notice_matches_the_market_profile():
+    from src.policy.engine import load_policy
+    assert (load_policy()["retry"]["pre_debit_notification_hours"]
+            == get_market("IN").pre_debit_notification_hours)
+
+
+def test_registered_template_channels_match_the_market_profile():
+    from src.policy.engine import load_policy
+    assert (set(load_policy()["contact"]["require_registered_template"])
+            == set(get_market("IN").registered_template_channels))

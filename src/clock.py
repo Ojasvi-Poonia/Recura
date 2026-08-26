@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from typing import Protocol
 from zoneinfo import ZoneInfo
 
-IST = ZoneInfo("Asia/Kolkata")  # India default; see tz_for() for other markets
+IST = ZoneInfo("Asia/Kolkata")  # India default; policy windows resolve via tz_for()
 
 
 def tz_for(market_code: str = "IN") -> ZoneInfo:

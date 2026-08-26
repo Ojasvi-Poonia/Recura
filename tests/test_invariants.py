@@ -156,6 +156,6 @@ def test_no_hardcoded_currency_symbols_outside_the_market_module():
             if isinstance(node, ast.Constant) and isinstance(node.value, str):
                 if node.value in docstrings:
                     continue
-                if "₹" in node.value or "RM" == node.value or "S$" in node.value:
+                if "₹" in node.value or node.value == "RM" or "S$" in node.value:
                     offenders.append(f"{path.name}:{node.lineno}")
     assert not offenders, f"hardcoded currency symbol: {offenders}"

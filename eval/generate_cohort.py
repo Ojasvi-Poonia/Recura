@@ -260,7 +260,7 @@ def main() -> None:
 
     COHORT_PATH.write_text(
         json.dumps(
-            [{"arm": a, **json.loads(e.model_dump_json())} for e, a in zip(events, arms)],
+            [{"arm": a, **json.loads(e.model_dump_json())} for e, a in zip(events, arms, strict=True)],
             indent=2, sort_keys=True,
         ),
         encoding="utf-8",

@@ -22,13 +22,12 @@ from __future__ import annotations
 
 import json
 from contextlib import contextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from eval import generate_cohort as gen
 from eval import latents as lat
-from eval.metrics import compare
-from eval.run_batch import RunConfig, make_observe, run
+from eval.run_batch import RunConfig, run
 from src.models import FailureClass as FC
 from src.models import rupees
 
@@ -110,7 +109,7 @@ def parameterisation(params: Parameterisation):
 def run_one(params: Parameterisation):
     with parameterisation(params):
         events, latents, arms = gen.generate()
-        cohort = list(zip(events, arms))
+        cohort = list(zip(events, arms, strict=True))
         cohort.sort(key=lambda pair: (pair[0].observed_at, pair[0].event_id))
         return run(RunConfig(label=params.label), quiet=True,
                    cohort=cohort, latents=latents)[0]

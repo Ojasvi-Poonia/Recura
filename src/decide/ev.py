@@ -231,7 +231,15 @@ def score_candidates(
     explore: bool = True,
 ) -> list[CandidateEV]:
     """Price every candidate. Returns them ALL - section 4 requires logging runner-ups."""
-    margin = margin_bps() / 10_000.0
+    # Per-merchant margin, falling back to the configured default.
+    #
+    # This field existed on MerchantContext from the start and was silently ignored:
+    # every merchant was priced at one global 30%. Margin multiplies straight through
+    # every expected-value calculation, and Razorpay's merchants are not homogeneous -
+    # a subscription SaaS and a food-delivery order have nothing like the same margin,
+    # so the same failed payment is worth very different amounts to chase.
+    merchant = ctx.event.merchant_context
+    margin = (merchant.margin_bps if merchant is not None else margin_bps()) / 10_000.0
     amount = ctx.event.amount_paise
     contacts = ctx.event.customer_history.contacts_last_7d
 

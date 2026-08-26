@@ -3,7 +3,6 @@
 from datetime import datetime, timedelta
 
 import numpy as np
-import pytest
 
 from src.act.provider import SimulatedProvider
 from src.agent import MAX_DECISIONS, Agent

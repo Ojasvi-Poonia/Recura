@@ -102,7 +102,7 @@ def test_attention_cost_prices_the_opt_out_risk():
     Annoyance is cheap; losing the customer is not. Pricing only fatigue let the agent
     contact people almost freely.
     """
-    from src.act.costs import opt_out_probability, opt_out_risk_paise
+    from src.act.costs import opt_out_probability
     cost = attention_cost_paise(ActionType.NUDGE, 0)
     fatigue_only = 150  # base_paise from config/costs.yaml
     assert cost > fatigue_only
