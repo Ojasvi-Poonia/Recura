@@ -22,6 +22,12 @@ fixtures: seed  ## one-off: generate the committed LLM fixture set (needs a prov
 fixtures-plan: seed  ## how many model calls the fixture set still needs
 	$(VENV)/python -m eval.generate_fixtures --dry-run
 
+voice:  ## render Hinglish recovery voice samples (demo only)
+	$(VENV)/python -m src.act.voice
+
+calibration: seed  ## is the model's stated confidence trustworthy?
+	$(VENV)/python -m eval.calibration
+
 validate: seed  ## benchmark validity suite: negative controls + randomisation checks
 	$(VENV)/python -m eval.validate
 

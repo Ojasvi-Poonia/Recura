@@ -1,0 +1,75 @@
+# DLT-registered message templates.
+#
+# WHY THIS FILE EXISTS AT ALL
+# TRAI requires every commercial message to match a template registered on the DLT
+# platform, with the variable fields matching what the message actually says. Free-form
+# copy is not merely bad practice - it is a breach, and mixing promotional content into
+# a transactional message reclassifies the whole message and pulls it under DND and the
+# time window (eval/CALIBRATION.md section 1.3).
+#
+# So the LLM does NOT write messages. It selects a registered template and fills its
+# declared slots. That boundary is enforced in code and asserted by tests: no text the
+# model produces can reach a customer except inside a slot of a registered template.
+#
+# HINGLISH
+# `hi` here is Hinglish - Hindi-English code-mixing written in Latin script - not
+# Devanagari Hindi. That is what Indian consumers actually read in payment messages,
+# and Devanagari rendering is inconsistent across handsets. A `deva` variant is carried
+# for voice, where script does not matter and pronunciation does.
+#
+# dlt_id values are SIMULATED. Real registration is a merchant onboarding step; nothing
+# here is ever sent (CLAUDE.md section 2).
+
+FUNDS:
+  dlt_id: "1107160000000000101"
+  channels: [sms, whatsapp, voice]
+  slots: [name, amount, merchant, link]
+  variants:
+    en: "Hi {name}, your {amount} payment to {merchant} didn't go through due to insufficient balance. Complete it here: {link}"
+    hi: "Hi {name}, {merchant} ko aapka {amount} ka payment balance kam hone ki wajah se nahi hua. Yahan complete karein: {link}"
+    deva: "नमस्ते {name}, {merchant} को आपका {amount} का पेमेंट बैलेंस कम होने की वजह से नहीं हुआ।"
+
+AUTH_ABANDON:
+  dlt_id: "1107160000000000102"
+  channels: [sms, whatsapp, voice]
+  slots: [name, amount, merchant, link]
+  variants:
+    en: "Hi {name}, you were one step away from paying {amount} to {merchant}. Finish here: {link}"
+    hi: "Hi {name}, {merchant} ko {amount} ka payment bas ek step door tha. Yahan poora karein: {link}"
+    deva: "नमस्ते {name}, {merchant} को {amount} का पेमेंट बस एक कदम दूर था।"
+
+INSTRUMENT_INVALID:
+  dlt_id: "1107160000000000103"
+  channels: [sms, whatsapp, voice]
+  slots: [name, amount, merchant, rail, link]
+  variants:
+    en: "Hi {name}, your saved card can't be used for the {amount} payment to {merchant}. Try {rail} instead: {link}"
+    hi: "Hi {name}, aapka saved card {merchant} ke {amount} payment ke liye kaam nahi kar raha. {rail} try karein: {link}"
+    deva: "नमस्ते {name}, आपका सेव किया कार्ड काम नहीं कर रहा। कृपया {rail} आज़माएँ।"
+
+TRANSIENT_INFRA:
+  dlt_id: "1107160000000000104"
+  channels: [sms, whatsapp, voice]
+  slots: [name, amount, merchant, link]
+  variants:
+    en: "Hi {name}, your bank was briefly unavailable for the {amount} payment to {merchant}. It should work now: {link}"
+    hi: "Hi {name}, {merchant} ke {amount} payment ke waqt aapka bank thodi der ke liye down tha. Ab try karein: {link}"
+    deva: "नमस्ते {name}, पेमेंट के समय आपका बैंक कुछ देर के लिए उपलब्ध नहीं था।"
+
+LIMIT_EXCEEDED:
+  dlt_id: "1107160000000000105"
+  channels: [sms, whatsapp, voice]
+  slots: [name, amount, merchant, link]
+  variants:
+    en: "Hi {name}, the {amount} payment to {merchant} crossed your card's limit. It resets tomorrow: {link}"
+    hi: "Hi {name}, {merchant} ka {amount} payment aapke card ki limit se zyada tha. Kal reset hoga: {link}"
+    deva: "नमस्ते {name}, यह पेमेंट आपके कार्ड की सीमा से अधिक था। कल दोबारा कोशिश करें।"
+
+RECEIVABLE:
+  dlt_id: "1107160000000000106"
+  channels: [sms, whatsapp, voice]
+  slots: [name, amount, merchant, days, link]
+  variants:
+    en: "Hi {name}, invoice for {amount} from {merchant} is {days} days past due. Settle here: {link}"
+    hi: "Hi {name}, {merchant} ka {amount} ka invoice {days} din se pending hai. Yahan settle karein: {link}"
+    deva: "नमस्ते {name}, {merchant} का {amount} का इनवॉइस {days} दिन से बकाया है।"

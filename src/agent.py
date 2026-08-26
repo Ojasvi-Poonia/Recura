@@ -27,7 +27,7 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Callable, Protocol
+from typing import Protocol
 
 import numpy as np
 
@@ -38,12 +38,13 @@ from src.decide.bandit import PropensityModel
 from src.decide.ev import DecisionContext, choose, score_candidates
 from src.decide.llm import ProposalSource, propose_root_cause
 from src.decide.providers import LLMProvider, NullProvider
+from src.act.messaging import TemplateViolation
+from src.act.messaging import render as render_message
 from src.ledger.store import Ledger, make_entry
 from src.market import Market, get_market
 from src.models import (
     ActionType,
     Channel,
-    CustomerHistory,
     Decision,
     FailureClass,
     PolicyVerdict,
@@ -94,6 +95,7 @@ class EpisodeResult:
     escalated: bool = False
     opted_out: bool = False
     contacts: int = 0
+    messages_sent: int = 0
     broken_promises: int = 0
     llm_consulted: int = 0
     llm_fallbacks: int = 0
@@ -248,6 +250,7 @@ class Agent:
         now = started
         history = event.customer_history
         attempts = contacts = 0
+        messages_sent = 0
         promise_due_at: datetime | None = None
         broken_promises = 0
         refused_actions: set[ActionType] = set()
@@ -350,11 +353,17 @@ class Agent:
             # ---- step 5 (act) ----------------------------------------------
             action_cost = self._cost_of(decision, contacts)
             if decision.action is ActionType.NUDGE:
-                self.executor.send_nudge(
-                    event.event_id, Channel(decision.params.get("channel", "sms")),
-                    decision.params.get("template_id", "tpl"), history.language,
-                    idempotency_key(event.event_id, seq, decision.action),
-                )
+                # Render the ACTUAL copy through the DLT template registry. If no
+                # registered template covers this diagnosis, no message goes out -
+                # we do not improvise copy to fill a gap (src/act/messaging.py).
+                rendered = self._render_message(event, decision, history)
+                if rendered is not None:
+                    self.executor.send_nudge(
+                        event.event_id, Channel(decision.params.get("channel", "sms")),
+                        rendered.template_key, rendered.language,
+                        idempotency_key(event.event_id, seq, decision.action),
+                    )
+                    messages_sent += 1
 
             cost += action_cost
             taken += 1
@@ -404,8 +413,8 @@ class Agent:
 
         return EpisodeResult(
             event.event_id, arm, recovered, cost, seq + 1, taken, blocked, refused,
-            escalated, opted_out, contacts, broken_promises, llm_consulted,
-            llm_fallbacks, stop_reason,
+            escalated, opted_out, contacts, messages_sent, broken_promises,
+            llm_consulted, llm_fallbacks, stop_reason,
         )
 
     # ---- helpers ----------------------------------------------------------
@@ -418,6 +427,27 @@ class Agent:
             self._merchant_actions = 0
             self._merchant_spend_paise = 0
             self._merchant_escalations = 0
+
+    def _render_message(self, event: RiskEvent, decision: Decision,
+                        history: CustomerHistory):
+        """Fill a registered template. Returns None when none applies - never guesses."""
+        try:
+            return render_message(
+                decision.failure_class,
+                history.language,
+                Channel(decision.params.get("channel", "sms")),
+                {
+                    "name": "Customer",
+                    "amount": self.market.money(event.amount_paise),
+                    "merchant": event.merchant_id,
+                    "link": f"https://rzp.io/i/{event.event_id}",
+                    "rail": decision.params.get("suggested_rail", "UPI"),
+                    "days": str(event.days_overdue(decision.decided_at)),
+                },
+                source_type=event.source_type,
+            )
+        except TemplateViolation:
+            return None
 
     @staticmethod
     def _is_customer_contact(decision: Decision) -> bool:

@@ -353,3 +353,29 @@ def test_a_converting_nudge_clears_the_promise_window():
     agent = mk_agent(promise_window_hours=1.0)
     result = agent.run_episode(mk_event(), "treatment", always)
     assert result.broken_promises == 0
+
+
+def test_nudges_render_a_registered_template():
+    """Copy that reaches a customer must be a DLT-registered template, filled."""
+    from src.act.messaging import verify_compliance
+    agent = mk_agent()
+    event = mk_event(reason="insufficient_funds")
+    decision, _ = agent._decide(event, NOW, 0)
+    rendered = agent._render_message(
+        event, decision.model_copy(update={"params": {"channel": "sms"},
+                                           "failure_class": FailureClass.FUNDS}),
+        event.customer_history)
+    assert rendered is not None
+    assert verify_compliance(rendered.text, rendered.language) == rendered.template_key
+
+
+def test_no_message_is_invented_when_no_template_applies():
+    """RISK_DECLINE has no registered template - so nothing is sent, not something made up."""
+    agent = mk_agent()
+    event = mk_event(reason="payment_risk_check_failed")
+    decision, _ = agent._decide(event, NOW, 0)
+    rendered = agent._render_message(
+        event, decision.model_copy(update={"failure_class": FailureClass.RISK_DECLINE,
+                                           "params": {"channel": "sms"}}),
+        event.customer_history)
+    assert rendered is None
