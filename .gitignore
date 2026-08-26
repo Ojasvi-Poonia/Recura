@@ -22,3 +22,5 @@ BUILD_NOTES.md
 data/sweep.json
 data/replay.json
 data/validity.json
+data/calibration.json
+data/tier1.json

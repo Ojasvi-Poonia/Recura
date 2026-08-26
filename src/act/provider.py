@@ -14,12 +14,16 @@ Two hard safety rules, enforced in code rather than by convention (section 2):
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict
 
 from src.models import ActionResult, ActionType, Channel
+
+
+# The instrument identifier Razorpay uses, by rail. Module-level rather than a class
+# attribute because Pydantic would treat the latter as a model field.
+INSTRUMENT_KEYS = ("bank", "issuer", "vpa_handle", "psp")
 
 
 class Downtime(BaseModel):
@@ -39,21 +43,42 @@ class Downtime(BaseModel):
     status: str | None = None         # "started" | "resolved"
     scheduled: bool = False
     severity: str | None = None       # "low" | "medium" | "high"
-    instrument: dict | None = None    # {"issuer": "SBIN"} or {"psp": "..."}
+    # VERIFIED against the live API 2026-08-27: the instrument key DIFFERS BY RAIL.
+    #   netbanking -> {"bank": "DLXB"}
+    #   card       -> {"issuer": "BKID"}
+    #   upi        -> {"vpa_handle": "kotak811"}
+    # Our first implementation only read "issuer", which silently missed every
+    # netbanking and UPI downtime - i.e. most of Indian payment volume. Caught by
+    # Tier 1 against real data; no amount of reading the docs would have shown it.
+    instrument: dict | None = None
 
     def is_active(self) -> bool:
         return self.status == "started" or self.end is None
 
+    def instrument_code(self) -> str | None:
+        """Whichever identifier this rail uses, normalised."""
+        for key in INSTRUMENT_KEYS:
+            value = (self.instrument or {}).get(key)
+            if value:
+                return str(value).upper()
+        return None
+
     def affects(self, method: str | None, bank: str | None) -> bool:
-        """Does this downtime bear on the rail we are about to retry?"""
+        """Does this downtime bear on the rail we are about to use?"""
         if not self.is_active():
             return False
         if self.method and method and self.method.lower() != method.lower():
             return False
-        issuer = (self.instrument or {}).get("issuer")
-        if issuer and bank and issuer.upper() not in bank.upper():
-            return False
-        return True
+        code = self.instrument_code()
+        if not code or not bank:
+            # A downtime with no instrument is rail-wide; treat it as affecting the rail.
+            return True
+        # Razorpay reports IFSC-style four-letter codes (ICIC, SBIN, UTIB) while merchant
+        # data commonly carries friendly names (ICICI, SBI, AXIS). Compare on the shared
+        # prefix rather than demanding an exact match.
+        other = bank.upper()
+        n = min(4, len(code), len(other))
+        return code[:n] == other[:n]
 
 
 class PaymentProvider(Protocol):

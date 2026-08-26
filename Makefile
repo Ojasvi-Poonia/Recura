@@ -32,6 +32,9 @@ voice:  ## render Hinglish recovery voice samples (demo only)
 calibration: seed  ## is the model's stated confidence trustworthy?
 	$(VENV)/python -m eval.calibration
 
+tier1:  ## Tier 1: prove the Razorpay integration is authentic (needs test keys)
+	$(VENV)/python -m eval.tier1 $(if $(ORDER),--order)
+
 validate: seed  ## benchmark validity suite: negative controls + randomisation checks
 	$(VENV)/python -m eval.validate
 

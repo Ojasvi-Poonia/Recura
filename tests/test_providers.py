@@ -120,3 +120,52 @@ def test_fifth_contact_costs_far_more_than_the_first():
     first = attention_cost_paise(ActionType.NUDGE, 0)
     fifth = attention_cost_paise(ActionType.NUDGE, 4)
     assert fifth > first * 20
+
+
+# --- shapes VERIFIED against the live Razorpay API on 2026-08-27 ---------------
+
+REAL_DOWNTIMES = [
+    {"id": "down_a", "entity": "payment.downtime", "method": "netbanking",
+     "begin": 1777389900, "end": None, "status": "started", "scheduled": False,
+     "severity": "high", "instrument": {"bank": "DLXB"}},
+    {"id": "down_b", "entity": "payment.downtime", "method": "card",
+     "begin": 1777389900, "end": None, "status": "started", "scheduled": False,
+     "severity": "high", "instrument": {"issuer": "BKID"}},
+    {"id": "down_c", "entity": "payment.downtime", "method": "upi",
+     "begin": 1777389900, "end": None, "status": "started", "scheduled": False,
+     "severity": "high", "instrument": {"vpa_handle": "kotak811"}},
+]
+
+
+@pytest.mark.parametrize("payload", REAL_DOWNTIMES)
+def test_real_downtime_payloads_parse(payload):
+    assert Downtime.model_validate(payload).id == payload["id"]
+
+
+def test_every_instrument_key_razorpay_uses_is_read():
+    """REGRESSION: the instrument key differs by rail.
+
+    Our first implementation read only "issuer", so netbanking ({"bank": ...}) and UPI
+    ({"vpa_handle": ...}) downtimes were silently invisible - most of Indian payment
+    volume. Found by running Tier 1 against the live API, not by reading the docs.
+    """
+    codes = [Downtime.model_validate(p).instrument_code() for p in REAL_DOWNTIMES]
+    assert codes == ["DLXB", "BKID", "KOTAK811"]
+
+
+def test_netbanking_downtime_is_matched():
+    d = Downtime.model_validate(REAL_DOWNTIMES[0])
+    assert d.affects("netbanking", "DLXB")
+    assert not d.affects("card", "DLXB")
+
+
+def test_bank_codes_match_on_prefix_not_exact_string():
+    """Razorpay reports IFSC-style codes (ICIC); merchant data carries names (ICICI)."""
+    d = Downtime.model_validate({**REAL_DOWNTIMES[1], "instrument": {"issuer": "ICIC"}})
+    assert d.affects("card", "ICICI")
+
+
+def test_rail_wide_downtime_with_no_instrument_affects_the_rail():
+    d = Downtime.model_validate({"id": "d", "method": "upi", "status": "started",
+                                 "end": None, "instrument": None})
+    assert d.affects("upi", "ANYBANK")
