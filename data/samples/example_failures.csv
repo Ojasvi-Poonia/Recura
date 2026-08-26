@@ -1,0 +1,11 @@
+event_id,amount,failed_at,error_reason,method,bank,customer_id,source_type,attempt_number,prior_failed_attempts,prior_recoveries,consented_channels,language
+pay_001,2499,2026-03-10T14:22:00,insufficient_funds,upi,HDFC,cust_a,payment,1,2,1,"sms,email",hi
+pay_002,15000,2026-03-10T15:01:00,card_expired,card,ICICI,cust_b,payment,1,0,0,email,en
+pay_003,349,2026-03-10T16:40:00,payment_failed,upi,SBI,cust_c,payment,2,3,0,sms,hi
+pay_004,7800,2026-03-11T09:15:00,payment_risk_check_failed,card,AXIS,cust_d,payment,1,1,0,"sms,email",en
+pay_005,1200,2026-03-11T11:30:00,bank_technical_error,netbanking,KOTAK,cust_e,payment,1,0,2,email,en
+pay_006,4500,2026-03-11T12:05:00,,,,cust_f,checkout,1,0,1,"sms,email",hi
+pay_007,98000,2026-03-01T00:00:00,,,,cust_g,invoice,1,0,3,email,en
+pay_008,2200,2026-03-11T18:45:00,transaction_daily_limit_exceeded,card,HDFC,cust_h,payment,1,1,1,sms,hi
+pay_009,650,2026-03-11T19:10:00,incorrect_otp,card,YES,cust_i,payment,1,0,0,"sms,email",hi
+pay_010,3300,2026-03-12T10:00:00,some_code_we_do_not_know,upi,IDFC,cust_j,payment,1,2,0,email,en

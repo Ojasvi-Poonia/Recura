@@ -23,6 +23,9 @@ fixtures: seed  ## one-off: generate the committed LLM fixture set (needs a prov
 fixtures-plan: seed  ## how many model calls the fixture set still needs
 	$(VENV)/python -m eval.generate_fixtures --dry-run
 
+import:  ## run Recura against YOUR data: make import FILE=failures.csv [DECIDE=1]
+	$(VENV)/python -m src.ingest.import_file --file $(FILE) $(if $(MAJOR),--major) $(if $(DECIDE),--decide)
+
 voice:  ## render Hinglish recovery voice samples (demo only)
 	$(VENV)/python -m src.act.voice
 
