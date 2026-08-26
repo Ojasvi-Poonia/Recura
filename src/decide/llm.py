@@ -39,7 +39,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -209,8 +208,34 @@ def cache_key(payload: dict, system_prompt: str, model: str = MODEL) -> str:
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:32]
 
 
+MANIFEST_NAME = "MANIFEST.json"
+
+
 def _fixture_path(key: str, fixtures_dir: Path) -> Path:
     return fixtures_dir / f"{key}.json"
+
+
+def write_manifest(model_id: str, fixtures_dir: Path = FIXTURES_DIR) -> None:
+    fixtures_dir.mkdir(parents=True, exist_ok=True)
+    (fixtures_dir / MANIFEST_NAME).write_text(
+        json.dumps({"model": model_id}, indent=2), encoding="utf-8")
+
+
+def fixture_model_id(fixtures_dir: Path = FIXTURES_DIR) -> str | None:
+    """Which model produced the committed fixture set.
+
+    Cache keys are model-scoped, so replay must key against the model that WROTE the
+    fixtures - not against whatever provider happens to be configured locally. Without
+    this, a reviewer with no API key computes keys against "null", misses every
+    fixture, and silently gets rules-only numbers with nothing in the output saying so.
+    """
+    path = fixtures_dir / MANIFEST_NAME
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8")).get("model")
+    except Exception:
+        return None
 
 
 def read_fixture(key: str, fixtures_dir: Path = FIXTURES_DIR) -> RootCauseProposal | None:
@@ -262,8 +287,10 @@ def propose_root_cause(
 
     if provider is None:
         provider = resolve_provider() if allow_network else NullProvider()
-    model_id = getattr(provider, "model", provider.name)
-    key = cache_key(payload, system_prompt, model_id)
+    live_model = getattr(provider, "model", provider.name)
+    # Look up against the model that WROTE the fixtures; fall back to the live one when
+    # there is no committed set (i.e. we are about to generate it).
+    key = cache_key(payload, system_prompt, fixture_model_id(fixtures_dir) or live_model)
 
     # Routing gate: where the code is diagnostic, the lookup already has the answer.
     if not should_consult_llm(mapping, reason, event.amount_paise,

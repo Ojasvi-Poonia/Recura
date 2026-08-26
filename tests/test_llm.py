@@ -351,3 +351,36 @@ def test_checkout_and_receivable_events_do_not_consult_the_model():
     for source in ("checkout", "invoice"):
         mapping = cls(None, source_type=source)
         assert not llm.should_consult_llm(mapping, None, 500_000)
+
+
+def test_fixtures_replay_without_any_provider_configured(tmp_path, monkeypatch):
+    """REGRESSION: a reviewer with no API key must get the SAME numbers as the README.
+
+    Cache keys are model-scoped. Before the manifest existed, an unconfigured
+    environment resolved to NullProvider, computed keys against the model id "null",
+    missed every committed fixture, and silently produced rules-only results - with
+    nothing in the output indicating the degradation.
+    """
+    for var in ("RECURA_LLM_PROVIDER", "GEMINI_API_KEYS", "GEMINI_API_KEY",
+                "GOOGLE_API_KEY", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN"):
+        monkeypatch.delenv(var, raising=False)
+
+    event, mapping = mk()
+    llm.write_manifest("some-real-model", tmp_path)
+    key = llm.cache_key(llm.observable_payload(event, mapping),
+                        llm.load_system_prompt(), "some-real-model")
+    llm.write_fixture(key, llm.RootCauseProposal(
+        root_cause="Cached.", beliefs=[], confidence=0.6, reasoning="r"), tmp_path)
+
+    result = llm.propose_root_cause(event, mapping, fixtures_dir=tmp_path)
+    assert result.source is llm.ProposalSource.FIXTURE
+    assert result.proposal.root_cause == "Cached."
+
+
+def test_committed_fixture_set_declares_its_model():
+    """Without the manifest, `make eval` silently degrades for anyone without a key."""
+    assert llm.fixture_model_id() is not None, "fixtures/MANIFEST.json is missing"
+
+
+def test_missing_manifest_falls_back_to_the_live_model(tmp_path):
+    assert llm.fixture_model_id(tmp_path) is None
