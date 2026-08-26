@@ -80,3 +80,33 @@ def test_roi_is_recovered_per_rupee_spent():
 def test_roi_is_infinite_when_nothing_was_spent():
     c = compare(arm(100, 40), arm(100, 25))
     assert c.roi == float("inf")
+
+
+def test_live_stream_cannot_change_the_result():
+    """The stream is instrumentation, not a code path.
+
+    If rendering could alter the run, the numbers on screen would not be the numbers
+    `make eval` reports - and the whole point of streaming the real batch is lost.
+    """
+    from eval.live import LiveStream
+    from eval.run_batch import RunConfig, run
+    from src.market import get_market
+
+    silent, _ = run(RunConfig(label="silent"), quiet=True)
+    stream = LiveStream(market=get_market(), pace=0.0, limit=0)
+    streamed, _ = run(RunConfig(label="streamed"), quiet=True, live=stream)
+
+    assert streamed.lift_pp == silent.lift_pp
+    assert streamed.treatment.recovered_paise == silent.treatment.recovered_paise
+    assert streamed.lift_ci_low_pp == silent.lift_ci_low_pp
+
+
+def test_live_stream_observer_never_raises_into_the_run():
+    """A rendering bug must not take down a batch."""
+    from eval.run_batch import RunConfig, run
+
+    def exploding(*args, **kwargs):
+        raise RuntimeError("render failed")
+
+    result, _ = run(RunConfig(label="boom"), quiet=True, live=exploding)
+    assert result.lift_pp != 0.0

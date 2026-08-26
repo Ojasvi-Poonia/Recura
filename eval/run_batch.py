@@ -84,7 +84,7 @@ class RunConfig:
 
 
 def run(config: RunConfig, ledger_url: str | None = None, quiet: bool = False,
-        cohort=None, latents=None):
+        cohort=None, latents=None, live=None):
     """Run one configuration.
 
     `cohort`/`latents` may be supplied in memory. The sensitivity sweep uses that to
@@ -109,6 +109,7 @@ def run(config: RunConfig, ledger_url: str | None = None, quiet: bool = False,
         use_taxonomy=config.use_taxonomy,
         use_policy=config.use_policy,
         policy=config.policy,
+        observer=live,
         random_chooser=config.random_chooser,
         allow_network=False,   # eval NEVER calls out; fixtures only (section 8)
     )
@@ -121,6 +122,9 @@ def run(config: RunConfig, ledger_url: str | None = None, quiet: bool = False,
         result = agent.run_episode(event, arm, make_observe(latent))
         (treatment if arm == "treatment" else holdout).append(result)
 
+    # `live` need only be callable; a footer is optional.
+    if live is not None and hasattr(live, "footer"):
+        live.footer()
     comparison = compare(treatment, holdout)
     if not quiet:
         report(config, comparison, agent)
@@ -161,9 +165,19 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--ledger", default=None, help="sqlite URL to write the ledger to")
     ap.add_argument("--json", action="store_true", help="also write data/results.json")
+    ap.add_argument("--live", action="store_true", help="stream every decision as it is made")
+    ap.add_argument("--pace", type=float, default=0.0, help="seconds between lines")
+    ap.add_argument("--limit", type=int, default=None, help="stop streaming after N lines")
     args = ap.parse_args()
 
-    comparison, _ = run(RunConfig(), ledger_url=args.ledger)
+    stream = None
+    if args.live:
+        from eval.live import LiveStream
+        from src.market import get_market
+        stream = LiveStream(market=get_market(), pace=args.pace, limit=args.limit)
+        stream.header()
+
+    comparison, _ = run(RunConfig(), ledger_url=args.ledger, live=stream)
     if args.json:
         RESULTS_PATH.write_text(json.dumps(as_dict(comparison), indent=2, sort_keys=True),
                                 encoding="utf-8")

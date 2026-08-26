@@ -17,14 +17,14 @@ exactly, offline, with no API key.
 | Metric | Treatment | Holdout |
 |---|---:|---:|
 | Events | 8,053 | 1,947 |
-| Recovery rate | **77.2%** | 73.0% |
-| Recovered | ₹2,35,20,510 | ₹50,28,349 |
-| Intervention cost | ₹2,31,427 | ₹0 |
-| Contacts per customer | 0.26 | 0 |
-| Actions blocked by policy | 8,675 | — |
-| Refused, EV < 0 | 2,633 | — |
-| Escalated to human | 1,474 | — |
-| Opted out | 24 | 0 |
+| Recovery rate | **77.4%** | 73.0% |
+| Recovered | ₹2,35,25,176 | ₹50,28,349 |
+| Intervention cost | ₹2,32,692 | ₹0 |
+| Contacts per customer | 0.27 | 0 |
+| Actions blocked by policy | 8,663 | — |
+| Refused, EV < 0 | 2,551 | — |
+| Escalated to human | 1,459 | — |
+| Opted out | 30 | 0 |
 
 > ### +4.33 percentage points — 95% CI [+2.13, +6.51]
 > **₹13,15,809 incremental recovered · ₹10,83,117 net · 5.7× return on spend**
@@ -66,6 +66,17 @@ make install     # venv + dependencies
 make eval        # the table above, from committed fixtures - no API key needed
 make validate    # the negative controls that prove the table means something
 ```
+
+Watch the batch actually decide, rather than just reading its output:
+
+```bash
+make eval LIVE=1                # stream every decision as it is made
+make eval LIVE=1 PACE=0.06      # slow enough to record
+```
+
+Each line is one decision. `BLOCKED` marks positive expected value that the policy
+contract vetoed anyway — the design in one screen. The stream is a read-only observer,
+so the numbers it prints are exactly the numbers `make eval` reports; a test asserts it.
 
 Then:
 
@@ -222,6 +233,13 @@ money, no agent-framework imports, no locale hardcoded in the decision core, `sr
 cannot reach the simulator's hidden state.
 
 ---
+
+## Why it is built this way
+
+Ten [architecture decision records](docs/adr/) cover the contestable choices — no agent
+framework, expected value over rules, the policy gate outside the model's reach,
+determinism from fixtures rather than temperature, and the calibration study that made us
+shrink our own model's confidence. Each records what we rejected and why.
 
 ## Repository
 

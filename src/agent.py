@@ -135,6 +135,10 @@ class Agent:
     random_chooser: bool = False         # True  = ablation 1: ignore EV entirely
     allow_network: bool = True
     policy: dict | None = None   # None = load policy.yaml
+    # Optional read-only hook, called after every decision. Used by the live view.
+    # It receives a snapshot and returns nothing; it cannot influence the run, so
+    # streaming output can never change the numbers it is streaming.
+    observer: object | None = None
     market: Market = field(default_factory=get_market)
 
     # Merchant-level daily counters, carried ACROSS episodes.
@@ -328,6 +332,7 @@ class Agent:
             scheduled = self._scheduled_at(decision, verdict, now)
 
             if decision.action is ActionType.NO_ACTION:
+                self._emit(event, decision, verdict, "refused", 0)
                 # Refusing is a DECISION, not an exit. Two things follow from that:
                 #
                 # 1. The money does not vanish. A customer we chose not to chase may
@@ -357,6 +362,7 @@ class Agent:
                 continue
 
             if not verdict.allowed:
+                self._emit(event, decision, verdict, "blocked", 0)
                 blocked += 1
                 refused_actions.add(decision.action)
                 # The contract stopped US, not the customer. They still have their own
@@ -424,6 +430,8 @@ class Agent:
 
             recovered_now = margin_amount if got_it else 0
             recovered += recovered_now
+            self._emit(event, decision, verdict,
+                       "recovered" if got_it else "acted", action_cost)
             self._log(event, arm, seq, decision, verdict, action_cost, recovered_now,
                       scheduled)
 
@@ -447,6 +455,15 @@ class Agent:
         )
 
     # ---- helpers ----------------------------------------------------------
+
+    def _emit(self, event, decision, verdict, outcome: str, cost: int) -> None:
+        """Notify the observer, if any. Never raises into the run."""
+        if self.observer is None:
+            return
+        try:
+            self.observer(event, decision, verdict, outcome, cost)
+        except Exception:
+            pass
 
     def _roll_merchant_day(self, now: datetime) -> None:
         """Reset the merchant's daily counters when the virtual date advances."""
