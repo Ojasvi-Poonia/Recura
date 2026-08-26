@@ -62,7 +62,7 @@ VARIANTS: list[Variant] = [
         {"merchant.daily_spend_cap_paise": 100000}),
     Variant(
         "no merchant spend cap at all",
-        "Does the shipped budget cost anything? (the agent stops on its own first)",
+        "Does the shipped budget cost anything, or does the agent stop first?",
         {"merchant.daily_spend_cap_paise": 10**12}),
     Variant(
         "retry risk declines anyway",

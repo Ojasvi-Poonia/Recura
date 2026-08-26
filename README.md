@@ -122,17 +122,18 @@ to *"why?"* is a number in the ledger, not a policy line.
 
 `make ablate` — deliberately cripple the agent and measure the damage.
 
-| Configuration | Lift | vs full | Cost/recovery |
-|---|---:|---:|---:|
-| **Full agent** | **+4.33pp** | — | ₹669 |
-| Random action chooser | **−4.70pp** | −209% | ₹7,61,736 |
-| No taxonomy | +3.69pp | −15% | ₹934 |
-| No policy gate | +3.72pp | −14% | ₹596 |
-| No LLM, rules only | +3.98pp | −8% | ₹676 |
+| Configuration | Lift | 95% CI | vs full | Cost/recovery |
+|---|---:|---|---:|---:|
+| **Full agent** | **+4.33pp** | [+2.13, +6.51] | — | ₹669 |
+| Random action chooser | **−2.09pp** | [−4.30, +0.14] | −148% | ₹5,67,412 |
+| No taxonomy | +3.50pp | [+1.33, +5.70] | −19% | ₹915 |
+| No policy gate | +3.72pp | [+1.51, +5.95] | −14% | ₹596 |
+| No LLM, rules only | +3.98pp | [+1.78, +6.16] | −8% | ₹676 |
 
-**Acting without expected-value reasoning is worse than doing nothing** — a random
-chooser destroys ₹20.9 lakh. That is the clearest evidence the decision layer is doing
-real work.
+**Acting without expected-value reasoning destroys value** — a random chooser posts
+−2.09pp and loses ₹11.7 lakh, at 850× our cost per recovery. Note its interval just
+touches zero, so "significantly negative" would be overclaiming; what is unambiguous is
+the cost, which is not close.
 
 The policy gate *costs nothing* — removing it makes results slightly worse, because it
 stops the agent doing counterproductive things. Compliance is not a tax here.
@@ -167,11 +168,11 @@ Every grade-C parameter in [`eval/CALIBRATION.md`](eval/CALIBRATION.md) is an as
 |---|---:|---:|
 | baseline (calibrated) | 73.0% | +4.33pp |
 | pessimistic: high self-recovery | 82.7% | +2.97pp |
-| optimistic: low self-recovery | 53.9% | +5.96pp |
+| optimistic: low self-recovery | 53.9% | +5.91pp |
 | **weak interventions** | 73.0% | **−2.07pp** |
-| hard failure mix + noisier labels | 58.3% | +6.21pp |
+| hard failure mix + noisier labels | 58.3% | +6.23pp |
 
-**Envelope: −2.07 to +6.21pp.** Under a pessimistic view of what dunning can achieve at
+**Envelope: −2.07 to +6.23pp.** Under a pessimistic view of what dunning can achieve at
 all, Recura **loses money**. That is in the table because it is true.
 
 `make replay` answers the adjacent question — what a different *contract* would cost:
@@ -179,7 +180,16 @@ all, Recura **loses money**. That is in the table because it is true.
 | Policy variant | Net incremental | vs shipped |
 |---|---:|---:|
 | as committed | ₹10,83,117 | — |
+| looser: 5 contacts per week | ₹10,83,117 | **₹0** |
+| **no merchant spend cap at all** | ₹10,83,117 | **₹0** |
+| spend cap 5× tighter | ₹6,28,894 | −₹4,54,223 |
+| spend cap 25× tighter | −₹1,54,079 | −₹12,37,195 |
 | no human escalation at all | ₹98,961 | **−₹9,84,156** |
+
+**Loosening the contact cap and removing the spend cap entirely both buy exactly ₹0.**
+The agent's own attention-cost arithmetic binds before either contract limit does — the
+gate is a backstop, not the thing doing the work. Under-budget it, though, and the agent
+becomes value-destroying: at a 25× tighter cap it posts −0.44pp.
 
 ---
 
