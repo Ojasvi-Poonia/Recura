@@ -6,6 +6,16 @@ separate commit with a stated reason in the message.
 
 POST-FREEZE CHANGE LOG
 ----------------------
+2. 2026-08-26 - Checkout and invoice events no longer fabricate a gateway error.
+   Reason: REALISM, not tuning. A dropped checkout never reached the gateway and an
+   overdue invoice was never charged, so neither can carry a Razorpay error code -
+   yet the generator attached one to every event, which made "checkout abandonment"
+   and "overdue receivables" indistinguishable from payment failures. Both are named
+   Track 03 directions. Invoices additionally carry `due_at`, because ageing is their
+   only real signal. True-class assignment for these sources is deliberately NOISY
+   (75%/70% aligned) so the inference problem is preserved rather than made trivially
+   solvable by reading `source_type`.
+
 1. 2026-08-26 - COHORT_SIZE 2,000 -> 10,000. Reason: STATISTICAL POWER, not tuning.
    The first Tier 2 run measured a +4.47pp lift with a 95% bootstrap CI of
    [-0.51, +9.42] - an interval containing zero. An a-priori two-proportion power
@@ -139,7 +149,23 @@ def generate() -> tuple[list[RiskEvent], dict[str, LatentState], list[str]]:
 
     for i in range(COHORT_SIZE):
         event_id = f"evt_{i:05d}"
+        source_type = SOURCE_TYPES[int(rng.choice(len(SOURCE_TYPES), p=SOURCE_TYPE_P))]
         true_class = classes[int(rng.choice(len(classes), p=weights))]
+
+        # A dropped checkout never reached the gateway; an overdue invoice was never
+        # charged. Neither can carry an error code.
+        no_gateway_attempt = (
+            (source_type == "checkout" and rng.random() < 0.60)
+            or source_type == "invoice"
+        )
+        # Only NON-gateway events get their truth constrained by source. A checkout
+        # that did attempt payment and was declined belongs to the decline population
+        # and must follow the calibrated mix, or the cited NPCI figures stop applying.
+        if no_gateway_attempt:
+            if source_type == "invoice" and rng.random() < 0.75:
+                true_class = FC.FUNDS          # working-capital timing
+            elif source_type == "checkout" and rng.random() < 0.70:
+                true_class = FC.AUTH_ABANDON   # present, engaged, left
 
         # ---- latent truth (never observable) ----------------------------
         latent_intent = float(rng.beta(2.0, 2.0))
@@ -165,7 +191,7 @@ def generate() -> tuple[list[RiskEvent], dict[str, LatentState], list[str]]:
         )
 
         # ---- observables -------------------------------------------------
-        reason, _kind = _emit_reason(rng, true_class)
+        reason = None if no_gateway_attempt else _emit_reason(rng, true_class)[0]
         amount_paise = int(np.clip(rng.lognormal(mean=7.4, sigma=1.25) * 100, 1000, 50_000_00))
         observed_at = EPOCH + timedelta(
             days=float(rng.integers(0, 21)), hours=float(rng.integers(0, 24)),
@@ -196,10 +222,12 @@ def generate() -> tuple[list[RiskEvent], dict[str, LatentState], list[str]]:
                 event_id=event_id,
                 merchant_id="merchant_demo",
                 customer_id=f"cust_{int(rng.integers(0, 1400)):05d}",
-                source_type=SOURCE_TYPES[int(rng.choice(len(SOURCE_TYPES), p=SOURCE_TYPE_P))],
+                source_type=source_type,
                 amount_paise=amount_paise,
                 observed_at=observed_at,
-                razorpay_error=ErrorObject(
+                due_at=(observed_at - timedelta(days=int(rng.integers(1, 95))))
+                if source_type == "invoice" else None,
+                razorpay_error=None if reason is None else ErrorObject(
                     code="BAD_REQUEST_ERROR",
                     reason=reason,
                     source="customer",

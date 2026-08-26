@@ -98,6 +98,26 @@ definitionally customer/instrument-side, this gives:
 Only the `TRANSIENT_INFRA` share and the existence of a large `UNKNOWN` bucket are
 well-grounded. **The interior split is swept across five parameterisations in Tier 3.**
 
+### Scope of this mix (added 2026-08-26)
+
+NPCI's TD/BD statistics describe **declines** — transactions that reached a gateway and
+were refused. That is not the whole population of revenue-at-risk. Two of Track 03's
+named sources never reach a gateway at all:
+
+- a **dropped checkout** is abandoned before any charge is attempted
+- an **overdue invoice** was never charged; it simply passed its terms
+
+Applying a decline-derived mix to those events would be a category error. They are
+generated with their own distribution — checkout leaning to `AUTH_ABANDON`, receivables
+to `FUNDS` — and both are deliberately noisy (70% / 75% aligned) so that `source_type`
+constrains the truth without revealing it.
+
+The consequence is that the **cohort-wide** mix no longer equals the table above: with
+~20% checkout and ~10% invoice events, `AUTH_ABANDON` rises to roughly 31%. The table
+above remains the calibration target for **gateway-attempted events**, which is the
+population the cited sources actually describe, and that is what the generator test
+asserts against.
+
 ---
 
 ## 3. Baseline recovery without intervention (grade C — swept, load-bearing)
