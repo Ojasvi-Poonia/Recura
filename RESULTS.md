@@ -15,23 +15,23 @@ Parameter provenance: [`eval/CALIBRATION.md`](eval/CALIBRATION.md).
 | Metric | Treatment | Holdout |
 |---|---:|---:|
 | Events | 8,053 | 1,947 |
-| Recovery rate | 77.4% | 73.0% |
-| Recovered | ₹2,35,25,176 | ₹50,28,349 |
-| Intervention cost | ₹2,32,692 | ₹0 |
+| Recovery rate | 76.9% | 73.0% |
+| Recovered | ₹2,34,97,159 | ₹50,28,349 |
+| Intervention cost | ₹2,35,854 | ₹0 |
 | Contacts per customer | 0.27 | 0.00 |
-| Actions blocked by policy | 8,663 | — |
-| Refused (EV < 0) | 2,551 | — |
-| Escalated to human | 1,459 | — |
-| Opted out | 30 | 0 |
+| Actions blocked by policy | 8,422 | — |
+| Refused (EV < 0) | 2,771 | — |
+| Escalated to human | 1,303 | — |
+| Opted out | 54 | 0 |
 
-**Incremental lift: +4.33 percentage points, 95% bootstrap CI [+2.13, +6.51].**
+**Incremental lift: +3.86 percentage points, 95% bootstrap CI [+1.68, +6.04].**
 
 | | |
 |---|---:|
-| Incremental recovered | **₹13,15,809** |
-| Net incremental (after cost) | **₹10,83,117** |
-| Cost per extra recovery | ₹669 |
-| Return on spend | **5.7×** |
+| Incremental recovered | **₹11,78,107** |
+| Net incremental (after cost) | **₹9,42,253** |
+| Cost per extra recovery | ₹761 |
+| Return on spend | **5.0×** |
 
 The interval excludes zero, so the effect is significant at 95%. It is a **bootstrap
 percentile interval** over 10,000 resamples with a fixed seed, not a normal
@@ -92,11 +92,11 @@ headline.
 
 | Configuration | Lift | 95% CI | vs full | Net incremental | Cost/recovery |
 |---|---:|---|---:|---:|---:|
-| **Full agent** | **+4.33pp** | [+2.13, +6.51] | — | ₹10,83,117 | ₹669 |
-| 1 · Random action chooser | −2.09pp | [−4.30, +0.14] | −148% | −₹11,67,852 | ₹5,67,412 |
-| 2 · No taxonomy | +3.50pp | [+1.33, +5.70] | −19% | ₹8,08,768 | ₹915 |
-| 3 · No policy gate | +3.72pp | [+1.51, +5.95] | −14% | ₹9,42,377 | ₹596 |
-| 4 · No LLM (rules only) | +3.98pp | [+1.78, +6.16] | −8% | ₹9,95,149 | ₹676 |
+| **Full agent** | **+3.86pp** | [+1.68, +6.04] | — | ₹9,42,253 | ₹761 |
+| 1 · Random action chooser | +0.33pp | [−1.89, +2.57] | −91% | −₹4,70,368 | **₹21,722** |
+| 2 · No taxonomy | +3.07pp | [+0.89, +5.26] | −20% | ₹6,99,080 | ₹1,012 |
+| 3 · No policy gate | +4.31pp | [+2.14, +6.50] | **+12%** | ₹11,16,220 | ₹560 |
+| 4 · No LLM (rules only) | +4.22pp | [+2.03, +6.40] | **+9%** | ₹10,27,509 | ₹722 |
 
 Supporting counts:
 
@@ -108,15 +108,17 @@ Supporting counts:
 | No policy gate | 0 | 1,712 | 0.196 | 1,106 |
 | No LLM | 8,760 | 2,611 | 0.250 | 1,336 |
 
-**Acting without expected-value reasoning destroys value.** The random chooser posts
-−2.09pp and loses ₹11.7 lakh while making nearly four times as many customer contacts,
-at **850× our cost per recovery**.
+**Random action selection is 28× less efficient**, at ₹21,722 per marginal recovery
+against our ₹761, and it loses ₹4.7 lakh outright.
 
 Being precise about what that does and does not establish: the lift interval
-[−4.30, +0.14] just touches zero, so "significantly worse on recovery rate" would be
-overclaiming. What is not close is the cost — ₹5,67,412 per marginal recovery against our
-₹669. Random action selection is unambiguously ruinous on efficiency even where the
-recovery-rate difference is within noise.
+[−1.89, +2.57] contains zero, so "random is significantly worse at recovering" would be
+overclaiming. What is not close is the cost of getting there. Anyone reporting only a
+lift column would badly understate what a decision layer contributes.
+
+**The policy gate costs 12% of achievable lift, and the LLM costs 9%.** Both are reported
+as measured. See section 4 for what we did about the second one, and section 7 failure
+case 4 for why we still ship it.
 
 **The policy gate is not a tax.** Removing it makes results *worse* (−14%). It stops the
 agent from doing counterproductive things, so compliance and performance point the same
@@ -198,11 +200,11 @@ evaluation is re-run across five parameterisations.
 
 | Parameterisation | Holdout | Lift | 95% CI | Net incremental |
 |---|---:|---:|---|---:|
-| baseline (calibrated) | 73.0% | +4.33pp | [+2.1, +6.5] | ₹10,83,117 |
-| pessimistic: high self-recovery | 82.7% | +2.97pp | [+1.1, +4.8] | ₹7,71,593 |
-| optimistic: low self-recovery | 53.9% | +5.91pp | [+3.5, +8.4] | ₹15,91,642 |
-| **weak interventions** | 73.0% | **−2.07pp** | [−4.3, +0.1] | **−₹6,69,755** |
-| hard failure mix + noisier labels | 58.3% | +6.23pp | [+3.8, +8.6] | ₹16,40,326 |
+| baseline (calibrated) | 73.0% | +3.86pp | [+1.7, +6.0] | ₹9,42,253 |
+| pessimistic: high self-recovery | 82.7% | +3.51pp | [+1.6, +5.4] | ₹9,08,824 |
+| optimistic: low self-recovery | 53.9% | +6.04pp | [+3.6, +8.5] | ₹16,01,502 |
+| **weak interventions** | 73.0% | **−1.73pp** | [−3.9, +0.5] | **−₹5,90,091** |
+| hard failure mix + noisier labels | 58.3% | +7.41pp | [+5.0, +9.7] | ₹19,69,953 |
 
 **Envelope: −2.07 to +6.23pp.**
 
@@ -277,12 +279,21 @@ customers self-select — someone who did not pay on attempt one is less likely 
 unprompted on attempt four. The error is conservative in direction but the absolute
 rates are not forecasts.
 
-### 4. The diagnosis model is poorly calibrated and worse than base rate
+### 4. The language model currently costs 9%, not contributes
 
-Brier 0.9838 against a 0.8196 base rate; 61%-confident predictions land 20% of the time.
-It is usable only because we measured the miscalibration and shrank toward the taxonomy
-prior. A different model would need the calibration study re-run before its weight could
-be trusted.
+Removing it improves the result. We have measured this twice: with our original invented
+contact-fatigue curve it contributed +8%; once that curve was fitted to 86,399 real
+records it contributes **−9%**. An effect that flips sign when an unrelated parameter is
+corrected was never real.
+
+The calibration study says why — Brier 0.9838 against a 0.8196 base rate, and
+61%-confident predictions landing 20% of the time. On opaque payment declines the
+observable signals do not support confident diagnosis.
+
+We ship it anyway, at a shrinkage weight derived from that measurement, because the
+measurement is itself the deliverable and a better-calibrated model would earn a higher
+weight with no architecture change. But nobody should read this project as evidence that
+an LLM improves payment recovery. It is evidence that we checked.
 
 ### 5. Per-merchant margin is implemented but untested
 

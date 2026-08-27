@@ -181,9 +181,9 @@ Honesty beats coverage:
 - **Salary-cycle effect size** — the *direction* (month-start replenishment) is
   well-established; the magnitude is assumed.
 - **Downtime windows** — shape taken from Razorpay's Downtime API semantics; frequency assumed.
-- **Attention cost** — no published source exists for the monetary cost of annoying a
-  customer. It is a modelling choice, documented in `config/costs.yaml`, and it is what
-  makes the agent stop. It is swept.
+- **Attention cost in rupees** — no published source exists for the monetary cost of
+  annoying a customer. It remains a modelling choice, documented in `config/costs.yaml`,
+  and it is swept. Its *shape* is no longer an assumption — see section 7.
 
 ---
 
@@ -225,3 +225,76 @@ correctly measure **zero** contribution. The noise is what creates an inference 
 for the agent to solve — and therefore what makes the ablation study informative rather
 than decorative. It is deliberately grounded in Razorpay's own documented behaviour so
 that it reads as realism rather than as a handicap chosen to flatter the agent.
+
+
+---
+
+## 7. Contact fatigue — fitted from real data (added 2026-08-27)
+
+**Grade B.** This was the project's weakest load-bearing parameter and is no longer an
+invention.
+
+`CONTACT_FATIGUE_DECAY` models how much less a second, third or fourth contact converts
+than the first. We had assumed **0.70** with no source.
+
+### The data
+
+**UCI Machine Learning Repository — Bank Marketing** (Moro, Cortez & Rita), the best
+public data on contact-count versus conversion. Two releases, **86,399 records total**,
+each row a real marketing contact with the number of contacts in that campaign and
+whether the customer converted.
+
+Weighted log-linear fit through the origin, on conversion rate by contact number,
+restricted to buckets with n ≥ 100:
+
+| dataset | records | fitted decay |
+|---|---:|---:|
+| `bank-additional-full.csv` | 41,188 | 0.889 |
+| `bank-full.csv` | 45,211 | 0.866 |
+| **pooled** | **86,399** | **0.877** |
+
+The observed rates:
+
+| contact # | conversion | vs first contact |
+|---:|---:|---:|
+| 1 | 13.04% | 1.00 |
+| 2 | 11.46% | 0.88 |
+| 3 | 10.75% | 0.82 |
+| 4 | 9.39% | 0.72 |
+| 5 | 7.50% | 0.58 |
+| 8 | 4.25% | 0.33 |
+
+**Our 0.70 assumption over-penalised a fifth contact by 2.5x.**
+
+The per-bucket aggregates this fit derives from are committed as
+`data/calibration/contact_fatigue_uci.json`, so the number is checkable without
+redownloading anything.
+
+### Two caveats, both of which make this conservative
+
+**Domain transfer.** This is term-deposit marketing, not payment recovery. A customer
+being sold a product and a customer who already owes money are not the same person in
+the same posture. We would expect recovery to sustain repeat contact at least as well as
+cold marketing, not worse — so if the transfer is wrong, it is wrong in the direction of
+understating persistence.
+
+**Selection, not just fatigue.** Contact counts are *not randomised*. Prospects who
+receive more contacts are, on average, harder to convert — that is why they were
+contacted again. The observed decay therefore conflates fatigue with selection, and the
+**true fatigue effect is weaker than 0.877**, meaning the true constant is higher.
+
+Both caveats push the same way. 0.877 is a lower bound on the decay constant and an upper
+bound on fatigue, so using it keeps the agent conservative about repeat contact.
+
+### What each component uses
+
+The simulator's truth and the agent's belief are deliberately **not** equal — an agent
+whose parameters exactly match the simulator is a circular experiment:
+
+| | value | why |
+|---|---:|---|
+| Agent belief (`src/decide/multipliers.py`) | 0.877 | the naive fit a merchant could make from public data |
+| Simulator truth (`eval/latents.py`) | 0.90 | selection-corrected; the world is slightly kinder than the agent thinks |
+
+This changes outcomes, not events, so the frozen cohort and the committed fixture set are
+unaffected.

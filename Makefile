@@ -35,6 +35,9 @@ calibration: seed  ## is the model's stated confidence trustworthy?
 tier1:  ## Tier 1: prove the Razorpay integration is authentic (needs test keys)
 	$(VENV)/python -m eval.tier1 $(if $(ORDER),--order)
 
+mutants:  ## mutation testing: plant known bugs, check the suite notices
+	$(VENV)/python -m eval.mutants
+
 validate: seed  ## benchmark validity suite: negative controls + randomisation checks
 	$(VENV)/python -m eval.validate
 

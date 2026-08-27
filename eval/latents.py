@@ -53,8 +53,19 @@ NUDGE_HOUR_MATCH_BONUS = 1.35  # sent in the customer's historical success hour
 NUDGE_HOUR_MISS_PENALTY = 0.80 # sent outside it
 ESCALATE_EFFICACY = 2.60       # a human is effective and expensive
 
-# Superlinear fatigue: the Nth contact is worth less than the first.
-FATIGUE_DECAY = 0.62           # efficacy multiplier per prior contact in the window
+# Fatigue: the Nth contact is worth less than the first.
+#
+# POST-FREEZE CHANGE 3 (2026-08-27). Reason: REALISM. 0.62 was invented; UCI Bank
+# Marketing (86,399 real records) fits an observed decay of 0.877. The observed figure
+# conflates fatigue with SELECTION - harder prospects get contacted more often - so true
+# fatigue is weaker than 0.877 and the constant is correspondingly higher. We use 0.90
+# here and let the agent believe the naive 0.877 (src/decide/multipliers.py), so the
+# world stays slightly kinder than the agent's model of it. An agent whose parameters
+# exactly matched the simulator would be a circular experiment.
+#
+# This changes OUTCOMES, not events: the cohort and the committed fixture set are
+# unaffected, because fixture keys are derived from observables.
+FATIGUE_DECAY = 0.90           # efficacy multiplier per prior contact in the window
 
 MAX_P = 0.97                   # nothing is certain
 

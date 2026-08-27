@@ -17,18 +17,18 @@ exactly, offline, with no API key.
 | Metric | Treatment | Holdout |
 |---|---:|---:|
 | Events | 8,053 | 1,947 |
-| Recovery rate | **77.4%** | 73.0% |
-| Recovered | ₹2,35,25,176 | ₹50,28,349 |
-| Intervention cost | ₹2,32,692 | ₹0 |
+| Recovery rate | **76.9%** | 73.0% |
+| Recovered | ₹2,34,97,159 | ₹50,28,349 |
+| Intervention cost | ₹2,35,854 | ₹0 |
 | Contacts per customer | 0.27 | 0 |
-| Actions blocked by policy | 8,663 | — |
-| Refused, EV < 0 | 2,551 | — |
-| Escalated to human | 1,459 | — |
-| Opted out | 30 | 0 |
+| Actions blocked by policy | 8,422 | — |
+| Refused, EV < 0 | 2,771 | — |
+| Escalated to human | 1,303 | — |
+| Opted out | 54 | 0 |
 
-> ### +4.33 percentage points — 95% CI [+2.13, +6.51]
-> **₹13,15,809 incremental recovered · ₹10,83,117 net · 5.7× return on spend**
-> Cost per extra recovery: ₹669. Runs in 4 seconds. Byte-identical across runs.
+> ### +3.86 percentage points — 95% CI [+1.68, +6.04]
+> **₹11,78,107 incremental recovered · ₹9,42,253 net · 5.0× return on spend**
+> Cost per extra recovery: ₹761. Runs in 4 seconds. Byte-identical across runs.
 
 ---
 
@@ -65,6 +65,7 @@ conservative.
 make install     # venv + dependencies
 make eval        # the table above, from committed fixtures - no API key needed
 make validate    # the negative controls that prove the table means something
+make mutants     # plant known bugs and check the suite notices
 ```
 
 Watch the batch actually decide, rather than just reading its output:
@@ -124,24 +125,32 @@ to *"why?"* is a number in the ledger, not a policy line.
 
 | Configuration | Lift | 95% CI | vs full | Cost/recovery |
 |---|---:|---|---:|---:|
-| **Full agent** | **+4.33pp** | [+2.13, +6.51] | — | ₹669 |
-| Random action chooser | **−2.09pp** | [−4.30, +0.14] | −148% | ₹5,67,412 |
-| No taxonomy | +3.50pp | [+1.33, +5.70] | −19% | ₹915 |
-| No policy gate | +3.72pp | [+1.51, +5.95] | −14% | ₹596 |
-| No LLM, rules only | +3.98pp | [+1.78, +6.16] | −8% | ₹676 |
+| **Full agent** | **+3.86pp** | [+1.68, +6.04] | — | ₹761 |
+| Random action chooser | +0.33pp | [−1.89, +2.57] | −91% | **₹21,722** |
+| No taxonomy | +3.07pp | [+0.89, +5.26] | −20% | ₹1,012 |
+| No policy gate | +4.31pp | [+2.14, +6.50] | **+12%** | ₹560 |
+| No LLM, rules only | +4.22pp | [+2.03, +6.40] | **+9%** | ₹722 |
 
-**Acting without expected-value reasoning destroys value** — a random chooser posts
-−2.09pp and loses ₹11.7 lakh, at 850× our cost per recovery. Note its interval just
-touches zero, so "significantly negative" would be overclaiming; what is unambiguous is
-the cost, which is not close.
+**Random action selection is 28× less efficient**, at ₹21,722 per marginal recovery
+against our ₹761. Its *lift* interval contains zero, so "random is worse at recovering"
+would be overclaiming — what is not close is the cost of getting there.
 
-The policy gate *costs nothing* — removing it makes results slightly worse, because it
-stops the agent doing counterproductive things. Compliance is not a tax here.
+**The taxonomy contributes 20%**, and without it the result is barely significant.
 
-### The LLM contributes 8%, and we had to earn it
+**The policy gate costs 12% of achievable lift.** Compliance is not free. We would rather
+report that than pretend governance is costless.
 
-Our first honest measurement said the LLM made the agent **worse**. `make calibration`
-explains why:
+### The LLM does not currently earn its place, and we say so
+
+Ablation 4 is the one §8 says to publish honestly even when it is unflattering. Removing
+the language model **improves** the result by 9%.
+
+We have now measured this twice, under two different contact-fatigue assumptions. With
+our original invented fatigue curve the model contributed +8%; once that curve was fitted
+to 86,399 real records, it contributes **−9%**. A result that flips sign when an unrelated
+parameter is corrected was never a real effect.
+
+`make calibration` explains why:
 
 | | Model | Base rate |
 |---|---:|---:|
@@ -150,12 +159,18 @@ explains why:
 | Expected calibration error | **0.2742** | — |
 
 **When it said 61% confident, it was right 20% of the time.** Feeding probabilities like
-that into an expected-value calculation degrades the decision.
+that into an expected-value calculation degrades the decision, and shrinking them toward
+the taxonomy prior — with a weight set from that measurement rather than by taste — does
+not fully rescue it.
 
-So we shrink them toward the deterministic taxonomy prior, with a weight set *from that
-measurement* rather than by taste. The LLM then contributes +8%. That is a modest,
-measured, defensible number — and the loop that produced it (measure → diagnose → fix →
-re-measure) is more of the point than the number.
+**The honest conclusion: on opaque payment declines, a small language model adds nothing
+here.** The observable signals do not support confident diagnosis, and what the evidence
+supports is a rules-first architecture with the model as a measured, shrunk assist that
+currently costs more than it returns.
+
+We keep it in, and report that, because the measurement is the deliverable. A better-
+calibrated model would earn a higher shrinkage weight without an architecture change —
+and `make calibration` is the instrument that would tell you.
 
 ---
 
@@ -166,13 +181,13 @@ Every grade-C parameter in [`eval/CALIBRATION.md`](eval/CALIBRATION.md) is an as
 
 | Parameterisation | Holdout | Lift |
 |---|---:|---:|
-| baseline (calibrated) | 73.0% | +4.33pp |
-| pessimistic: high self-recovery | 82.7% | +2.97pp |
-| optimistic: low self-recovery | 53.9% | +5.91pp |
-| **weak interventions** | 73.0% | **−2.07pp** |
-| hard failure mix + noisier labels | 58.3% | +6.23pp |
+| baseline (calibrated) | 73.0% | +3.86pp |
+| pessimistic: high self-recovery | 82.7% | +3.51pp |
+| optimistic: low self-recovery | 53.9% | +6.04pp |
+| **weak interventions** | 73.0% | **−1.73pp** |
+| hard failure mix + noisier labels | 58.3% | +7.41pp |
 
-**Envelope: −2.07 to +6.23pp.** Under a pessimistic view of what dunning can achieve at
+**Envelope: −1.73 to +7.41pp.** Under a pessimistic view of what dunning can achieve at
 all, Recura **loses money**. That is in the table because it is true.
 
 `make replay` answers the adjacent question — what a different *contract* would cost:
@@ -233,6 +248,11 @@ unregistered. Same trick as the policy gate, applied to language.
 **The ledger is append-only at the database layer.** `UPDATE` and `DELETE` are refused
 by triggers, and that survives reconnection.
 
+**Contact fatigue is fitted, not invented.** `CONTACT_FATIGUE_DECAY` was our weakest
+load-bearing assumption. It is now fitted to 86,399 real records from the UCI Bank
+Marketing dataset (0.877, against the 0.70 we had assumed), with the domain-transfer and
+selection-bias caveats stated in `CALIBRATION.md` — both of which make it conservative.
+
 **115 real Razorpay error codes**, transcribed from their published documentation —
 not invented categories. Contact windows are the intersection of TRAI's messaging rules
 and RBI's Fair Practices Code (09:00–19:00, stricter than either alone); pre-debit
@@ -241,6 +261,16 @@ notification cites RBI's E-Mandate Framework 2026.
 **Anti-goals are enforced by tests**: no wall clock outside `clock.py`, no floats for
 money, no agent-framework imports, no locale hardcoded in the decision core, `src/`
 cannot reach the simulator's hidden state.
+
+**The tests are themselves tested.** `make mutants` plants eight bugs this project has
+actually shipped — the policy gate silently disabled, template slot validation removed,
+the horizon discount deleted — and checks the suite notices. A green suite proves the
+tests pass; mutation testing proves they would object. 8/8 caught.
+
+**The claims are red-teamed.** 71 adversarial tests attempt prompt injection through
+every attacker-influenceable field, feed the agent a deliberately hostile model, and try
+to smuggle phishing copy into a DLT-registered template. That last one found a real
+vulnerability, which is documented rather than quietly patched.
 
 ---
 
@@ -271,7 +301,7 @@ config/               costs, markets, DLT templates
 fixtures/             870 cached LLM responses - why eval needs no API key
 ```
 
-**319 tests.** Run `make test`.
+**480 tests.** Run `make test`.
 
 ---
 

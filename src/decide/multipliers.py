@@ -31,9 +31,24 @@ HOUR_MATCH_TOLERANCE = 1  # +/- 1 hour counts as a match
 DOWNTIME_ACTIVE_PENALTY = 0.35
 DOWNTIME_CLEARED_BONUS = 1.60
 
-# Each recent contact makes the next one land worse. Distinct from attention_cost,
-# which prices the annoyance; this models the drop in effectiveness.
-CONTACT_FATIGUE_DECAY = 0.70
+# Each recent contact makes the next one land worse. Distinct from attention_cost, which
+# prices the annoyance; this models the drop in EFFECTIVENESS.
+#
+# FITTED FROM REAL DATA (2026-08-27) - this was our weakest load-bearing assumption.
+# UCI Bank Marketing (Moro, Cortez & Rita), 86,399 records across two releases, is the
+# best public data on contact-count versus conversion. Weighted log-linear fit through
+# the origin on conversion rate by campaign contact number:
+#
+#     bank-additional-full.csv   41,188 records   d = 0.889
+#     bank-full.csv              45,211 records   d = 0.866
+#     pooled                                      d = 0.877
+#
+# We had assumed 0.70, which over-penalises a fifth contact by 2.5x. See
+# eval/CALIBRATION.md section 7 for the transfer caveats - it is term-deposit marketing,
+# not payment recovery, and contact counts are not randomised, so the observed decay
+# conflates fatigue with selection. Both caveats mean the TRUE decay constant is likely
+# HIGHER than 0.877 (less fatigue), so this remains conservative.
+CONTACT_FATIGUE_DECAY = 0.877
 
 # A customer who has recovered before is more likely to recover again.
 PRIOR_RECOVERY_BONUS = 1.20
