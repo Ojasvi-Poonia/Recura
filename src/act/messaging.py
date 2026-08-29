@@ -101,7 +101,12 @@ _ALLOWED_CATEGORIES = frozenset({
 def _allowed_currency_symbols() -> frozenset:
     from src.market import get_market, known_markets
     return frozenset(get_market(c).currency.symbol for c in known_markets())
-_ALLOWED_PUNCTUATION = frozenset(".,&'()-/+\u2019")
+# Underscore is here because merchant identifiers legitimately contain it
+# ("merchant_demo"). It is inert in a DLT template: it is not a delimiter, not a
+# control character, and _UNSAFE below still blocks the injection vectors that
+# matter (angle brackets, braces, backslash, newlines, bidi overrides).
+# Omitting it silently rejected EVERY message in the batch - see BUILD_NOTES.
+_ALLOWED_PUNCTUATION = frozenset(".,&'()-/+_\u2019")
 
 
 def _is_inert(text: str) -> bool:
@@ -162,6 +167,21 @@ def template_for(failure_class: FailureClass, source_type: str = "payment") -> s
     if source_type == "invoice":
         return "RECEIVABLE"
     return CLASS_TO_TEMPLATE.get(failure_class)
+
+
+def can_render(failure_class: FailureClass, channel: Channel,
+               source_type: str = "payment") -> bool:
+    """Is there a registered template that could actually carry this message?
+
+    The action space must contain only actions the system can perform. Offering a nudge
+    on a channel with no registered template means the agent spends a decision on
+    something that cannot happen - and, before this was enforced, the episode was still
+    charged for it and still scored as though a message had gone out.
+    """
+    key = template_for(failure_class, source_type)
+    if key is None:
+        return False
+    return channel.value in load_templates()[key]["channels"]
 
 
 def render(

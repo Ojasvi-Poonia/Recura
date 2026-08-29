@@ -61,7 +61,8 @@ BLOCK_SCENARIOS: dict[str, tuple] = {
     "retry.max_attempts_per_episode": (
         mk_decision(action=ActionType.RETRY_NOW), mk_state(attempts_made=3)),
     "retry.max_attempts_per_mandate_cycle": (
-        mk_decision(action=ActionType.RETRY_NOW), mk_state(attempts_this_mandate_cycle=2)),
+        mk_decision(action=ActionType.RETRY_NOW, source_type="mandate"),
+        mk_state(attempts_this_mandate_cycle=2)),
     "retry.pre_debit_notification_hours": (
         mk_decision(action=ActionType.RETRY_NOW, source_type="mandate"), mk_state()),
     "contact.max_per_customer_per_7d": (mk_decision(), mk_state(contacts_last_7d=3)),
@@ -231,3 +232,20 @@ def test_intact_promise_does_not_block():
     verdict = evaluate(mk_decision(), mk_state(broken_promise_to_pay=False), NOW)
     assert "escalation.after_broken_promise_to_pay" not in [
         b.rule_id for b in verdict.rules_blocked]
+
+
+def test_the_mandate_cycle_cap_does_not_apply_to_ordinary_payments():
+    """A mandate cycle only exists on a mandate.
+
+    This rule used to fire on every source type, so 4,336 of the batch's blocked
+    actions - 52% of the headline "actions blocked by policy" figure - were payment and
+    checkout retries stopped by a mandate-cycle limit that has no meaning for them. The
+    generic ceiling is `retry.max_attempts_per_episode`; this one is mandate-specific.
+    """
+    for source in ("payment", "checkout", "invoice"):
+        verdict = evaluate(
+            mk_decision(action=ActionType.RETRY_NOW, source_type=source),
+            mk_state(attempts_this_mandate_cycle=99), NOW)
+        blocked = {b.rule_id for b in verdict.rules_blocked}
+        assert "retry.max_attempts_per_mandate_cycle" not in blocked, (
+            f"mandate-cycle cap fired on a {source} event")

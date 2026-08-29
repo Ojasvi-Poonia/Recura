@@ -1,12 +1,19 @@
 # Overridable so the container can use its system interpreter.
 VENV ?= ./.venv/bin
+# pyproject declares >=3.11. This used to hardcode python3.13, so `make install` - the
+# FIRST command in the README quickstart - failed outright on 3.11 and 3.12.
+PYTHON ?= python3
 .PHONY: help install test seed run eval ablate sweep replay lint
 
 help:
 	@grep -E '^[a-z-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n",$$1,$$2}'
 
 install:  ## create venv and install dependencies
-	python3.13 -m venv .venv && $(VENV)/pip install -q -e ".[api,llm,dev]"
+	@$(PYTHON) -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' \
+	  || { echo "Recura needs Python 3.11+. Found: $$($(PYTHON) -V 2>&1)."; \
+	       echo "Point make at a newer one, e.g.  make install PYTHON=python3.12"; \
+	       exit 1; }
+	$(PYTHON) -m venv .venv && $(VENV)/pip install -q -e ".[api,llm,dev]"
 
 test:  ## run the test suite
 	$(VENV)/python -m pytest -q

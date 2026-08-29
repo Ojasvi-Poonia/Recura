@@ -103,7 +103,15 @@ added, the agent escalated 2,264 cases, 97% of all spend.
 annoyance; `P(opt_out | n) × lifetime_value` prices the relationship ending. Only the
 first was implemented for most of the build, which made contacting people nearly free in
 the arithmetic. With both, the first message costs ₹14 of attention and the fifth costs
-₹475. **This is what makes the agent stop** — not a rule.
+₹475, so the agent usually stops on arithmetic before any rule is consulted.
+
+**But not always, and we should be precise about it.** On *spend*, the arithmetic really
+does bind first: `make replay` with the merchant spend cap removed entirely changes the
+result by exactly ₹0. On *contact frequency* it does not — loosening the contact cap to
+five per week is worth ₹1,00,149, and removing the policy gate altogether is worth 29% of
+lift. The contract is a real constraint, not a formality the maths never reaches. An
+earlier version of this document claimed otherwise, on the strength of a contact cap that
+turned out to be structurally unenforceable.
 
 **`p_recover` is a marginal over a distribution.** The diagnosis layer returns
 probabilities across failure classes, not a label, and the propensity model marginalises:

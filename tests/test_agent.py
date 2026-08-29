@@ -310,12 +310,20 @@ def test_holdout_still_takes_no_action_and_spends_nothing():
     assert result.cost_paise == 0 and result.contacts == 0
 
 
-def test_both_arms_get_the_same_number_of_draws():
-    """The core fairness property of the whole benchmark.
+def test_treatment_never_gets_more_draws_than_the_holdout():
+    """The safety property the whole benchmark rests on.
 
-    Treatment and holdout must each get one recovery opportunity per step. Any
-    asymmetry shows up as lift that is pure repeated sampling - which is exactly what
-    eval/validate.py's placebo control exists to detect.
+    Every extra recovery opportunity handed to treatment is lift manufactured out of
+    repeated sampling. That is not hypothetical: with every action made inert, an
+    earlier version of this harness still reported +18.57pp, purely because treatment
+    was re-observed five times per episode and the control once.
+
+    Equality is NOT asserted, because it does not hold and pretending otherwise would
+    hide a real asymmetry. Treatment advances its clock to each action's scheduled_at,
+    so an episode that schedules far out can exhaust the 21-day horizon and end with
+    FEWER draws than the holdout (1.1% of episodes do - the `episode_expired` row in
+    the stop-reason census). That direction costs treatment chances and understates our
+    own result, which is why it is acceptable. The reverse would not be.
     """
     def counter(store):
         def observe(action, at, hours, prior, seq):
@@ -326,7 +334,10 @@ def test_both_arms_get_the_same_number_of_draws():
     t_draws, h_draws = [], []
     mk_agent().run_episode(mk_event(), "treatment", counter(t_draws))
     mk_agent().run_episode(mk_event(), "holdout", counter(h_draws))
-    assert len(t_draws) == len(h_draws) == MAX_DECISIONS
+    assert len(h_draws) == MAX_DECISIONS, "the control must get its full complement"
+    assert len(t_draws) <= len(h_draws), (
+        f"treatment got {len(t_draws)} draws against the control's {len(h_draws)} - "
+        "extra draws manufacture lift from nothing")
 
 
 def test_blocked_steps_still_give_the_customer_a_chance():
@@ -426,3 +437,25 @@ def test_the_agent_learns_which_diagnosis_source_to_trust(tmp_path):
     assert len(snapshot) > 1, (
         f"only {list(snapshot)} was ever chosen - trust is not being sampled"
     )
+
+
+def test_a_message_that_could_not_be_written_is_not_charged_or_credited(monkeypatch):
+    """The single worst defect this project shipped, now pinned by a test.
+
+    For several runs the agent selected 607 nudges, composed none of them, and was still
+    charged for all 607, counted all 607 against the customer's contact budget, and asked
+    the simulator to score the effect of messages that had never been written. Crediting
+    an unsent message is how a system reports recovery it did not cause.
+    """
+    baseline = mk_agent().run_episode(mk_event(), "treatment", never)
+    assert baseline.messages_sent > 0, "fixture must actually send, or this proves nothing"
+
+    monkeypatch.setattr(Agent, "_render_message", lambda self, event, decision, history: None)
+    silent = mk_agent().run_episode(mk_event(), "treatment", never)
+
+    assert silent.template_failures > 0, "the unwritable branch was never reached"
+    assert silent.messages_sent == 0
+    assert silent.contacts == 0, "an unsent message must not spend the contact budget"
+    assert silent.cost_paise < baseline.cost_paise, (
+        f"charged {silent.cost_paise}p for a message that was never composed "
+        f"(a sending run costs {baseline.cost_paise}p)")

@@ -10,6 +10,7 @@ The bootstrap RNG is seeded, so intervals are byte-identical across runs (sectio
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import asdict, dataclass
 
 import numpy as np
@@ -34,6 +35,11 @@ class ArmMetrics:
     refused_negative_ev: int
     opted_out: int
     llm_fallbacks: int
+    # Messages the system actually composed, and nudges it chose but could not write.
+    # Reported because a run where every message silently failed to render looked
+    # identical to a healthy one in every other number here - see BUILD_NOTES section R.
+    messages_sent: int = 0
+    template_failures: int = 0
 
 
 @dataclass(frozen=True)
@@ -66,6 +72,8 @@ def summarise(arm: str, results: list) -> ArmMetrics:
         refused_negative_ev=sum(r.refused_negative_ev for r in results),
         opted_out=sum(1 for r in results if r.opted_out),
         llm_fallbacks=sum(r.llm_fallbacks for r in results),
+        messages_sent=sum(getattr(r, "messages_sent", 0) for r in results),
+        template_failures=sum(getattr(r, "template_failures", 0) for r in results),
     )
 
 
@@ -113,3 +121,46 @@ def compare(treatment: list, holdout: list) -> Comparison:
 def as_dict(c: Comparison) -> dict:
     return {"treatment": asdict(c.treatment), "holdout": asdict(c.holdout),
             **{k: v for k, v in asdict(c).items() if k not in ("treatment", "holdout")}}
+
+
+# --------------------------------------------------------------------------------------
+# Segmentation and stopping rules.
+#
+# The pooled headline answers "did it recover money". It does not answer the problem
+# statement, which names three distinct surfaces - payment failures, checkout abandonment,
+# and overdue receivables - and asks for stopping rules. A single number silently averages
+# a surface we are good at with one we may be useless at. Both are reported below.
+# --------------------------------------------------------------------------------------
+
+
+def compare_segments(treatment: list, holdout: list, segment_of) -> dict:
+    """Run the whole randomised comparison independently within each segment.
+
+    `segment_of` maps an event_id to a segment label. Each segment is compared against
+    ITS OWN holdout, so a segment's lift is not contaminated by the arm mix of any other.
+    Segments with an empty arm are skipped rather than reported as zero - a lift needs
+    both arms to exist.
+    """
+    labelled = [(segment_of(r.event_id), r) for r in treatment]
+    labelled_h = [(segment_of(r.event_id), r) for r in holdout]
+    keys = sorted({k for k, _ in labelled} | {k for k, _ in labelled_h})
+
+    out = {}
+    for key in keys:
+        t = [r for k, r in labelled if k == key]
+        h = [r for k, r in labelled_h if k == key]
+        if not t or not h:
+            continue
+        out[key] = compare(t, h)
+    return out
+
+
+def stop_reasons(results: list) -> dict:
+    """Why every episode ended.
+
+    The judging bar asks for "stopping rules". This is the evidence that they exist, fire,
+    and which ones actually bind - an agent that only ever stops on `exhausted` has no
+    stopping rules worth the name, however many are written in the policy file.
+    """
+    counts = Counter(r.stop_reason for r in results)
+    return dict(sorted(counts.items(), key=lambda kv: (-kv[1], kv[0])))

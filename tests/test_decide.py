@@ -109,9 +109,28 @@ def test_hour_match_beats_hour_miss():
 
 
 def test_active_downtime_penalises_retry():
-    down = _adj(action=ActionType.RETRY_NOW, downtime_active=True)
-    up = _adj(action=ActionType.RETRY_NOW, downtime_active=False)
+    down = _adj(action=ActionType.RETRY_NOW, downtime_active=True, downtime_known=True)
+    up = _adj(action=ActionType.RETRY_NOW, downtime_active=False, downtime_known=True)
     assert down < up
+
+
+def test_no_reported_downtime_is_neutral_not_a_bonus():
+    """The absence of an outage must not be scored as an outage we cleverly waited out.
+
+    Downtime used to be a bool, so "no downtime reported anywhere" collected the same
+    1.6x "cleared" bonus as a retry deliberately timed to land after a known outage. No
+    code path ever populated the downtime list, so every retry in every run took the
+    phantom bonus on top of a posterior already fitted to outcomes.
+    """
+    base = 0.4
+    silent = adjust(base, action=ActionType.RETRY_NOW, failure_class=FailureClass.FUNDS,
+                    history=CustomerHistory(), attempt_number=1, at=NOW,
+                    downtime_active=False, downtime_known=False)
+    cleared = adjust(base, action=ActionType.RETRY_NOW, failure_class=FailureClass.FUNDS,
+                     history=CustomerHistory(), attempt_number=1, at=NOW,
+                     downtime_active=False, downtime_known=True)
+    assert abs(silent - base) < 1e-9, "no reported outage must be neutral"
+    assert cleared > silent, "waiting out a KNOWN outage should still be rewarded"
 
 
 def test_salary_window_only_boosts_funds():
@@ -166,9 +185,33 @@ def test_merchant_config_offers_only_escalation():
 
 
 def test_unconsented_channels_are_never_offered():
-    actions = candidate_actions(mk_ctx(channels=(Channel.EMAIL,)))
+    # WhatsApp, not email: email has no registered template, so an email-only test
+    # would pass for the wrong reason - the channel would be absent because we cannot
+    # write the message, not because consent was withheld.
+    actions = candidate_actions(mk_ctx(channels=(Channel.WHATSAPP,)))
     channels = {p.get("channel") for a, p in actions if a is ActionType.NUDGE}
-    assert channels == {"email"}
+    assert channels == {"whatsapp"}
+
+
+def test_a_channel_with_no_registered_template_is_not_an_available_action():
+    """Consent is the customer's permission; a template is our ability to speak at all.
+
+    Email is consented across the cohort but no DLT template carries it, so it must
+    never enter the candidate set. Before this was enforced the agent chose email,
+    failed to render, and was still charged and scored as though a message went out.
+    """
+    actions = candidate_actions(mk_ctx(channels=(Channel.EMAIL,)))
+    assert [p for a, p in actions if a is ActionType.NUDGE] == []
+
+
+def test_the_receivables_ladder_also_respects_what_we_can_write():
+    """The invoice path builds its own reminder ladder and needs the same guard.
+
+    It is a separate code path from the payment candidate set, so a guard on one says
+    nothing about the other - which is exactly what the mutation harness caught.
+    """
+    ctx = _receivable(channels=(Channel.EMAIL,))
+    assert [p for a, p in candidate_actions(ctx) if a is ActionType.NUDGE] == []
 
 
 def test_razorpay_cooldown_suppresses_retry_now():
@@ -272,13 +315,13 @@ def test_no_action_is_unaffected_by_the_horizon():
 
 # --- B2B receivables (Track 03: "overdue receivables", "B2B receivables chaser") ----
 
-def _receivable(days_overdue=45, amount=2_000_000):
+def _receivable(days_overdue=45, amount=2_000_000, channels=(Channel.SMS,)):
     from datetime import timedelta
     event = RiskEvent(
         event_id="inv1", merchant_id="m", customer_id="c", source_type="invoice",
         amount_paise=amount, observed_at=NOW, razorpay_error=None,
         due_at=NOW - timedelta(days=days_overdue),
-        customer_history=CustomerHistory(consented_channels=(Channel.EMAIL,)),
+        customer_history=CustomerHistory(consented_channels=channels),
     )
     mapping = classify(None, source_type="invoice")
     return DecisionContext(event=event, failure_class=mapping.failure_class,

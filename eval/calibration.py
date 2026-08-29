@@ -30,6 +30,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from eval.run_batch import load_cohort, load_latents
+from src.decide.llm import fixture_model_id
 from src.decide import llm
 from src.decide.providers import resolve_provider
 from src.models import FailureClass
@@ -125,8 +126,14 @@ def ece(rows: list[dict], total: int) -> float:
 
 
 def main() -> None:
-    provider = resolve_provider()
-    model_id = getattr(provider, "model", provider.name)
+    # Prefer the model that WROTE the committed fixtures over whatever provider happens
+    # to be configured. `make calibration` is documented as a no-API-key reproduction
+    # step, and resolving a live provider first made it exit with "no fixtures found for
+    # model 'null'" on any clean clone - the exact machine a judge would run it on.
+    model_id = fixture_model_id()
+    if model_id is None:
+        provider = resolve_provider()
+        model_id = getattr(provider, "model", provider.name)
     scored = collect(model_id)
     if not scored:
         raise SystemExit(

@@ -149,12 +149,22 @@ def check_aa_test() -> Check:
             continue
         latent = latents.get(event.event_id)
         if latent:
-            results.append(agent.run_episode(event, "treatment", make_observe(latent)))
+            results.append((event.customer_id,
+                            agent.run_episode(event, "treatment", make_observe(latent))))
 
+    # Split by CUSTOMER, not by event. The contact contract caps contacts per customer
+    # per 7 days, so two events belonging to one customer are not independent units - the
+    # earlier one consumes budget the later one then cannot use. Splitting those into
+    # opposite halves makes each half interfere with the other, and this A/A duly
+    # reported a spurious -1.83pp [-3.64, -0.04] the first time the cap was enforced for
+    # real. That is a genuine SUTVA violation, not a harness defect, and the textbook
+    # remedy is to cluster-randomise on the unit the interference runs through.
     rng = np.random.default_rng(4242)
-    mask = rng.random(len(results)) < 0.5
-    a = [r for r, m in zip(results, mask, strict=True) if m]
-    b = [r for r, m in zip(results, mask, strict=True) if not m]
+    customers = sorted({cid for cid, _ in results})
+    side = {cid: draw < 0.5 for cid, draw in zip(customers, rng.random(len(customers)),
+                                                 strict=True)}
+    a = [r for cid, r in results if side[cid]]
+    b = [r for cid, r in results if not side[cid]]
     lift = (summarise("a", a).recovery_rate - summarise("b", b).recovery_rate) * 100
     low, high = bootstrap_lift_ci(a, b)
     return Check(
@@ -224,6 +234,66 @@ def check_latent_isolation() -> Check:
     )
 
 
+def check_contact_contract() -> Check:
+    """Does the run actually obey the contact clauses policy.yaml asks a merchant to sign?
+
+    Both clauses were structurally unenforceable until an audit found them. The 7-day cap
+    was counted per EPISODE while the contract says per CUSTOMER, and `last_contact_at`
+    was fabricated as `now - 25 hours` - one hour past the 24-hour minimum, so the
+    spacing rule could never fire. 41 customers were over the cap and 209 contact pairs
+    were closer than the contract allows, one pair only six hours apart.
+
+    A rule nobody can violate is not a rule, and a rule nobody checks is not a contract.
+    """
+    import collections
+    from datetime import timedelta
+
+    from src.agent import Agent
+    from src.policy.engine import load_policy
+
+    log: dict[str, list] = collections.defaultdict(list)
+    original = Agent._record_contact
+
+    def spy(self, customer_id, at):
+        log[customer_id].append(at)
+        return original(self, customer_id, at)
+
+    Agent._record_contact = spy
+    try:
+        run(RunConfig(label="contact-contract"), quiet=True)
+    finally:
+        Agent._record_contact = original
+
+    policy = load_policy()
+    cap = policy["contact"]["max_per_customer_per_7d"]
+    min_hours = policy["contact"]["min_hours_between"]
+
+    over_cap = 0
+    too_close = 0
+    tightest = None
+    for stamps in log.values():
+        stamps = sorted(stamps)
+        worst = max((sum(1 for u in stamps if t - timedelta(days=7) < u <= t)
+                     for t in stamps), default=0)
+        if worst > cap:
+            over_cap += 1
+        for earlier, later in zip(stamps, stamps[1:]):
+            gap = (later - earlier).total_seconds() / 3600.0
+            tightest = gap if tightest is None else min(tightest, gap)
+            if gap < min_hours:
+                too_close += 1
+
+    passed = over_cap == 0 and too_close == 0
+    gap_note = f"{tightest:.1f}h" if tightest is not None else "n/a"
+    return Check(
+        "contact contract",
+        "Does any customer get contacted more often than policy.yaml permits?",
+        passed,
+        f"{len(log)} customers contacted | over {cap}-in-7d: {over_cap} | "
+        f"closer than {min_hours}h: {too_close} | tightest gap {gap_note}",
+    )
+
+
 def check_determinism() -> Check:
     a, _ = run(RunConfig(label="det-1"), quiet=True)
     b, _ = run(RunConfig(label="det-2"), quiet=True)
@@ -240,6 +310,7 @@ def check_determinism() -> Check:
 
 
 CHECKS = [check_arm_balance, check_latent_isolation, check_holdout_purity,
+          check_contact_contract,
           check_determinism, check_aa_test, check_placebo]
 
 

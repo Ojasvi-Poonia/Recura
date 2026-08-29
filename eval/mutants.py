@@ -70,6 +70,18 @@ MUTANTS: list[Mutant] = [
     Mutant("source=business triage dropped", "src/taxonomy/mapping.py",
            'MERCHANT_SOURCES = frozenset({"business"})', "MERCHANT_SOURCES = frozenset()",
            "customers get messaged about the merchant's own misconfiguration"),
+    Mutant("unsent messages are credited anyway", "src/agent.py",
+           "                if rendered is None:",
+           "                if False:",
+           "a nudge that could not be written is still charged, counted as a contact "
+           "and scored as though it had been sent"),
+    Mutant("the action space stops respecting what we can write", "src/decide/ev.py",
+           "        if not can_render(ctx.failure_class, channel, ev.source_type):\n"
+           "            continue\n"
+           "        for offset in NUDGE_OFFSETS_H:",
+           "        for offset in NUDGE_OFFSETS_H:",
+           "unwritable nudges re-enter the candidate set and compete on EV against "
+           "actions that can actually be executed"),
     Mutant("model trust stops being learned", "src/agent.py",
            "        trust = (self.model.sample_source(self.rng) if self.explore\n"
            "                 else self.model.expected_source())",

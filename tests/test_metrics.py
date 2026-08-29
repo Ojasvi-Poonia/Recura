@@ -4,7 +4,8 @@ from dataclasses import dataclass
 
 import pytest
 
-from eval.metrics import bootstrap_lift_ci, compare, summarise
+from eval.metrics import (bootstrap_lift_ci, compare, compare_segments,
+                          stop_reasons, summarise)
 
 
 @dataclass
@@ -110,3 +111,64 @@ def test_live_stream_observer_never_raises_into_the_run():
 
     result, _ = run(RunConfig(label="boom"), quiet=True, live=exploding)
     assert result.lift_pp != 0.0
+
+
+# --------------------------------------------------------------------------------------
+# Per-surface segmentation and stopping rules. The problem statement names three surfaces
+# and asks for stopping rules, so both are load-bearing for the submission.
+# --------------------------------------------------------------------------------------
+
+
+@dataclass
+class SegR(R):
+    event_id: str = "e"
+    stop_reason: str = "exhausted"
+
+
+def test_each_surface_is_compared_against_its_own_holdout():
+    """A segment's lift must not borrow the other segments' arms."""
+    t = ([SegR(event_id=f"a{i}", recovered_paise=100) for i in range(8)]
+         + [SegR(event_id=f"b{i}") for i in range(8)])
+    h = ([SegR(event_id=f"a{i}") for i in range(8)]
+         + [SegR(event_id=f"b{i}", recovered_paise=100) for i in range(8)])
+
+    segs = compare_segments(t, h, lambda eid: eid[0])
+
+    assert set(segs) == {"a", "b"}
+    # 'a' recovers in treatment only; 'b' recovers in holdout only. Opposite signs.
+    assert segs["a"].lift_pp > 0
+    assert segs["b"].lift_pp < 0
+
+
+def test_a_segment_missing_an_arm_is_skipped_not_reported_as_zero():
+    """A lift needs both arms. Reporting 0.0 for a one-armed segment would be a lie."""
+    t = [SegR(event_id="only1")]
+    h = [SegR(event_id="other1")]
+    segs = compare_segments(t, h, lambda eid: eid[:-1])
+    assert segs == {}
+
+
+def test_segments_partition_the_population():
+    t = [SegR(event_id=f"x{i}") for i in range(10)]
+    h = [SegR(event_id=f"x{i}") for i in range(6)]
+    segs = compare_segments(t, h, lambda eid: "all")
+    assert segs["all"].treatment.events == 10
+    assert segs["all"].holdout.events == 6
+
+
+def test_stop_reasons_census_is_complete_and_ordered():
+    """Every episode must be accounted for, most common first."""
+    rs = ([SegR(stop_reason="recovered")] * 5
+          + [SegR(stop_reason="opted_out")] * 2
+          + [SegR(stop_reason="exhausted")] * 9)
+    census = stop_reasons(rs)
+    assert sum(census.values()) == 16, "an episode ended for no recorded reason"
+    assert list(census) == ["exhausted", "recovered", "opted_out"]
+
+
+def test_stopping_rules_are_more_than_running_out_of_road():
+    """An agent that only ever stops on 'exhausted' has no stopping rules worth the name."""
+    census = stop_reasons([SegR(stop_reason="exhausted")] * 20)
+    assert list(census) == ["exhausted"]
+    census2 = stop_reasons([SegR(stop_reason="recovered"), SegR(stop_reason="opted_out")])
+    assert len(census2) == 2

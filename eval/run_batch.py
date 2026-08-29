@@ -22,7 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from eval.latents import LatentState, resolve
-from eval.metrics import as_dict, compare
+from eval.metrics import as_dict, compare, compare_segments, stop_reasons
 from src.act.provider import SimulatedProvider
 from src.agent import Agent
 from src.decide.bandit import PropensityModel
@@ -84,11 +84,15 @@ class RunConfig:
 
 
 def run(config: RunConfig, ledger_url: str | None = None, quiet: bool = False,
-        cohort=None, latents=None, live=None):
+        cohort=None, latents=None, live=None, collect: dict | None = None):
     """Run one configuration.
 
     `cohort`/`latents` may be supplied in memory. The sensitivity sweep uses that to
     vary generator parameters without ever overwriting the frozen files on disk.
+
+    `collect`, if given, is filled with the per-surface breakdown and stop-reason census.
+    It is an out-parameter rather than a third return value so that every existing caller
+    (`ablate`, `sweep`, `replay`, `validate`) keeps unpacking two values unchanged.
     """
     if cohort is None:
         cohort = load_cohort()
@@ -126,12 +130,33 @@ def run(config: RunConfig, ledger_url: str | None = None, quiet: bool = False,
     if live is not None and hasattr(live, "footer"):
         live.footer()
     comparison = compare(treatment, holdout)
+
+    # The problem statement names three surfaces by name, so segment by the one field
+    # that distinguishes them. Built here, in eval/, from the cohort the agent already saw.
+    surface = {event.event_id: event.source_type for event, _ in cohort}
+    segments = compare_segments(treatment, holdout, lambda eid: surface.get(eid, "unknown"))
+    stops = stop_reasons(treatment)
+
+    if collect is not None:
+        collect["segments"] = {k: as_dict(v) for k, v in segments.items()}
+        collect["stop_reasons"] = stops
+
     if not quiet:
-        report(config, comparison, agent)
+        report(config, comparison, agent, segments, stops)
     return comparison, agent
 
 
-def report(config: RunConfig, c, agent: Agent) -> None:
+# How Razorpay's four event sources map to the three surfaces the problem statement names.
+SURFACE_LABEL = {
+    "payment": "payment failure",
+    "checkout": "checkout abandonment",
+    "invoice": "overdue receivable",
+    "mandate": "mandate / subscription",
+}
+
+
+def report(config: RunConfig, c, agent: Agent,
+           segments: dict | None = None, stops: dict | None = None) -> None:
     t, h = c.treatment, c.holdout
     print(f"\n{'=' * 72}\n  RECURA - Tier 2 batch  [{config.label}]\n{'=' * 72}")
     print(f"{'metric':<32}{'TREATMENT':>19}{'HOLDOUT':>19}")
@@ -142,6 +167,8 @@ def report(config: RunConfig, c, agent: Agent) -> None:
         ("Recovered", rupees(t.recovered_paise), rupees(h.recovered_paise)),
         ("Intervention cost", rupees(t.cost_paise), rupees(h.cost_paise)),
         ("Contacts per customer", f"{t.contacts_per_customer:.2f}", f"{h.contacts_per_customer:.2f}"),
+        ("Messages actually sent", f"{t.messages_sent:,}", f"{h.messages_sent:,}"),
+        ("  unwritable (no template)", f"{t.template_failures:,}", "-"),
         ("Actions blocked by policy", f"{t.actions_blocked:,}", "-"),
         ("Escalated to human", f"{t.escalated:,}", "-"),
         ("Refused (EV < 0)", f"{t.refused_negative_ev:,}", "-"),
@@ -159,6 +186,28 @@ def report(config: RunConfig, c, agent: Agent) -> None:
     print(f"{'RETURN ON SPEND':<32}{f'{c.roi:.1f}x':>19}")
     print("=" * 72)
     print(f"bandit cells learned: {agent.model.cells_learned}")
+
+    if segments:
+        print("\n  BY SURFACE - the problem statement names these separately, so we report")
+        print("  them separately. Each is compared against its own randomised holdout.")
+        print(f"  {'surface':<24}{'N':>7}{'lift':>9}{'95% CI':>18}{'net':>16}")
+        print("  " + "-" * 72)
+        for key, seg in sorted(segments.items(),
+                               key=lambda kv: -kv[1].treatment.events):
+            label = SURFACE_LABEL.get(key, key)
+            ci = f"[{seg.lift_ci_low_pp:+.2f}, {seg.lift_ci_high_pp:+.2f}]"
+            mark = " " if seg.significant else "*"
+            print(f"  {label:<24}{seg.treatment.events:>7,}{seg.lift_pp:>+8.2f}{mark}"
+                  f"{ci:>17}{rupees(seg.net_incremental_paise):>16}")
+        print("  " + "-" * 72)
+        print("  * interval includes zero - not significant at 95% on this surface alone")
+
+    if stops:
+        total = sum(stops.values())
+        print("\n  STOPPING RULES - why each treated episode ended:")
+        for name, n in stops.items():
+            bar = "#" * int(n / max(1, total) * 40)
+            print(f"  {name:<24}{n:>7,}  {n / total:>6.1%}  {bar}")
     trust = agent.model.source_snapshot()
     if trust:
         print("\nhow much the agent LEARNED to trust its diagnosis model:")
@@ -183,10 +232,12 @@ def main() -> None:
         stream = LiveStream(market=get_market(), pace=args.pace, limit=args.limit)
         stream.header()
 
-    comparison, _ = run(RunConfig(), ledger_url=args.ledger, live=stream)
+    extras: dict = {}
+    comparison, _ = run(RunConfig(), ledger_url=args.ledger, live=stream, collect=extras)
     if args.json:
-        RESULTS_PATH.write_text(json.dumps(as_dict(comparison), indent=2, sort_keys=True),
-                                encoding="utf-8")
+        RESULTS_PATH.write_text(
+            json.dumps({**as_dict(comparison), **extras}, indent=2, sort_keys=True),
+            encoding="utf-8")
         print(f"wrote {RESULTS_PATH}")
 
 

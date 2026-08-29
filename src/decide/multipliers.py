@@ -72,6 +72,7 @@ def adjust(
     attempt_number: int,
     at: datetime,
     downtime_active: bool,
+    downtime_known: bool = False,
 ) -> float:
     """Apply every context multiplier to a sampled propensity. Clamped to [0, 0.97]."""
     adjusted = p
@@ -86,8 +87,16 @@ def adjust(
             matched = any(abs(at.hour - h) <= HOUR_MATCH_TOLERANCE for h in hours)
             adjusted *= HOUR_MATCH_BONUS if matched else HOUR_MISS_PENALTY
 
-    # Live downtime on the rail we are about to use.
-    if action in RETRY_ACTIONS:
+    # Live downtime on the rail we are about to use. Three states, not two: an outage we
+    # are retrying into, an outage we deliberately waited out, and - by far the most
+    # common - no reported outage at all, which must be NEUTRAL.
+    #
+    # This was previously a bool, so "no downtime anywhere" took the same 1.6x bonus as
+    # "we timed this retry to land after a known outage cleared". Since no code path ever
+    # populated the downtime list, every retry in every run collected a phantom 1.6x on
+    # top of a posterior already fitted to real outcomes. It tilted the agent toward
+    # retrying and cost roughly 0.8pp of measured lift.
+    if action in RETRY_ACTIONS and downtime_known:
         adjusted *= DOWNTIME_ACTIVE_PENALTY if downtime_active else DOWNTIME_CLEARED_BONUS
 
     # Contact fatigue.

@@ -233,6 +233,12 @@ def _max_attempts(ctx: Ctx) -> RuleOutcome:
 @rule("retry.max_attempts_per_mandate_cycle")
 def _max_mandate_attempts(ctx: Ctx) -> RuleOutcome:
     limit = ctx.policy["retry"]["max_attempts_per_mandate_cycle"]
+    # A mandate cycle only exists on a mandate. This rule previously applied to every
+    # source type, so 4,336 of the run's "actions blocked" - 52% of the headline figure -
+    # were payment and checkout retries blocked by a mandate-cycle limit that has no
+    # meaning for them. The generic per-episode ceiling is `retry.max_attempts_per_episode`.
+    if ctx.decision.params.get("source_type") != "mandate":
+        return RuleOutcome()
     if ctx.decision.action in RETRY_ACTIONS and ctx.state.attempts_this_mandate_cycle >= limit:
         return RuleOutcome(_block(
             "retry.max_attempts_per_mandate_cycle",

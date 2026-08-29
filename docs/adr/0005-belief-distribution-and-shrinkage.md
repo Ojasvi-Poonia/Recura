@@ -43,15 +43,33 @@ confirmed it, showing the agent scored **better with the model switched off**.
 TRANSIENT_INFRA 25%, AUTH_ABANDON 20%, UNKNOWN 5%", reasoning from position-in-month
 toward a salary-cycle explanation. That is genuinely useful even when nothing is certain.
 
-**The LLM's contribution went from −16% to +8%.** Modest, measured and defensible.
-
 **`w` is a measurement, not a taste parameter.** It must be re-derived whenever the
 diagnosis model changes. A better-calibrated model earns a higher weight.
 
 **We deliberately did not pick the best-scoring `w`.** Sweeping 0.0 / 0.2 / 0.35 / 0.6 /
 1.0 gave lifts that all sit inside each other's confidence intervals. Choosing the highest
-would be tuning on the test set, which our own credibility rules forbid. We kept the
-measurement-derived value and reported the sweep.
+would be tuning on the test set, which our own credibility rules forbid.
+
+## Superseded in part
+
+Two claims in the original decision have since been overtaken by measurement, and the
+record is left standing rather than rewritten.
+
+**`w` is no longer a constant we set.** It is an arm of a second Thompson-sampled bandit
+(`DiagnosisSource`: ignore / blend / believe), updated from whether acting on a diagnosis
+actually recovered the money. The reason is that the hand-picked value turned out to be
+the *worst* of the three: blended recovered 20.2% against 28.5% for taxonomy-only and
+28.9% for the model. Splitting the difference between two better options landed below both.
+A learned weight is also immune to the tuning objection above — it is updated from outcomes
+during the run, not chosen by us afterwards against the headline.
+
+**"The LLM's contribution went from −16% to +8%" no longer holds.** That figure has moved
+five times as unrelated defects were fixed elsewhere (fatigue calibration, learned trust,
+a messaging bug that meant no message was ever sent, and an unenforceable contact
+contract). It currently measures **zero** — removing the model entirely leaves the result
+statistically unchanged. The architecture in this ADR is still the one we would defend,
+because it isolates the model behind a measured weight; the specific number it was
+justified with did not survive contact with a more correct system.
 
 ## Alternatives considered
 

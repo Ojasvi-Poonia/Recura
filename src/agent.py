@@ -88,6 +88,10 @@ class Observe(Protocol):
 # "prune anything older than today" rule silently discards budgets that are still live
 # and resets them on re-entry. Evict by SIZE instead, oldest date first.
 MAX_MERCHANT_DAYS = 50_000
+# Contact history is per CUSTOMER and must outlive the episode: policy.yaml caps contacts
+# per customer per 7 days, and one customer can have several concurrent episodes. Bounded
+# the same way the merchant budgets are, so a long-lived process cannot grow without limit.
+MAX_CUSTOMERS_TRACKED = 100_000
 
 
 @dataclass
@@ -134,6 +138,10 @@ class EpisodeResult:
     llm_consulted: int = 0
     llm_fallbacks: int = 0
     stop_reason: str = "exhausted"
+    # Nudges the agent chose but could not compose a registered template for. These
+    # were NOT sent, NOT charged and NOT credited; the count is here so that a silent
+    # rendering failure shows up as a number instead of as missing messages.
+    template_failures: int = 0
 
 
 @dataclass
@@ -169,6 +177,7 @@ class Agent:
     # many merchants: a shared counter would let a busy merchant exhaust a quiet one's
     # budget, and neither would get the limit their contract promises.
     _merchant_days: dict = field(default_factory=dict)
+    _customer_contacts: dict = field(default_factory=dict)
 
     # Promise-to-pay window, in hours, opened when a nudge lands without immediate
     # payment. The customer has effectively said "I will pay" by engaging; if the
@@ -320,11 +329,13 @@ class Agent:
         attempts = contacts = 0
         messages_sent = 0
         promise_due_at: datetime | None = None
+        pre_debit_notice_at: datetime | None = None
         broken_promises = 0
         refused_actions: set[ActionType] = set()
         cost = recovered = 0
         blocked = refused = taken = 0
         llm_consulted = llm_fallbacks = 0
+        template_failures = 0
         escalated = opted_out = False
         stop_reason = "exhausted"
 
@@ -346,8 +357,10 @@ class Agent:
             state = EpisodeState(
                 event_id=event.event_id, episode_started_at=started,
                 attempts_made=attempts, attempts_this_mandate_cycle=attempts,
-                contacts_last_7d=contacts,
-                last_contact_at=self._last_contact_at(now, contacts),
+                contacts_last_7d=self._contacts_in_last_7d(event.customer_id, now,
+                                                          history.contacts_last_7d),
+                last_contact_at=self._last_contact_at(event.customer_id),
+                pre_debit_notice_sent_at=pre_debit_notice_at,
                 consented_channels=history.consented_channels,
                 # Seed from the INBOUND record, not just from opt-outs we caused this
                 # episode. A customer who unsubscribed last month arrives with
@@ -445,13 +458,44 @@ class Agent:
                 # registered template covers this diagnosis, no message goes out -
                 # we do not improvise copy to fill a gap (src/act/messaging.py).
                 rendered = self._render_message(event, decision, history)
-                if rendered is not None:
-                    self.executor.send_nudge(
-                        event.event_id, Channel(decision.params.get("channel", "sms")),
-                        rendered.template_key, rendered.language,
-                        idempotency_key(event.event_id, seq, decision.action),
-                    )
-                    messages_sent += 1
+                if rendered is None:
+                    # Nothing was composed, so nothing was sent. Treat this exactly like
+                    # a policy block: do not charge for an SMS that does not exist, do
+                    # not spend the customer's contact budget, and above all do not ask
+                    # the world to score the effect of a nudge that was never written.
+                    # Crediting an unsent message is how a system reports recovery it
+                    # did not cause.
+                    template_failures += 1
+                    refused_actions.add(decision.action)
+                    self._emit(event, decision, verdict, "no_template", 0)
+                    got_it, _ = observe(ActionType.NO_ACTION, now,
+                                        (now - started).total_seconds() / 3600.0,
+                                        contacts, seq)
+                    self.model.update_distribution(dx.beliefs, ActionType.NO_ACTION, got_it)
+                    recovered_now = margin_amount if got_it else 0
+                    recovered += recovered_now
+                    self._log(event, arm, seq, decision, verdict, 0, recovered_now, now)
+                    if got_it:
+                        stop_reason = "recovered_unprompted"
+                        break
+                    now = now + timedelta(hours=30)
+                    if (now - started).days > 21:
+                        stop_reason = "episode_expired"
+                        break
+                    continue
+                self.executor.send_nudge(
+                    event.event_id, Channel(decision.params.get("channel", "sms")),
+                    rendered.template_key, rendered.language,
+                    idempotency_key(event.event_id, seq, decision.action),
+                )
+                messages_sent += 1
+                # On a mandate, a delivered message IS the pre-debit notification the
+                # RBI E-Mandate Framework 2026 requires before a debit attempt. Recording
+                # it is what gives the agent a lawful route back to retrying: notify,
+                # wait the required window, then debit. Without this the pre-debit rule
+                # blocked every mandate retry forever, with no compliant path at all.
+                if event.source_type == "mandate":
+                    pre_debit_notice_at = scheduled
 
             cost += action_cost
             taken += 1
@@ -459,6 +503,7 @@ class Agent:
             budget.spend_paise += action_cost
             if self._is_customer_contact(decision):
                 contacts += 1
+                self._record_contact(event.customer_id, scheduled)
             if decision.action in RETRY_ACTIONS:
                 attempts += 1
             if decision.action is ActionType.ESCALATE_HUMAN:
@@ -507,7 +552,7 @@ class Agent:
         return EpisodeResult(
             event.event_id, arm, recovered, cost, seq + 1, taken, blocked, refused,
             escalated, opted_out, contacts, messages_sent, broken_promises,
-            llm_consulted, llm_fallbacks, stop_reason,
+            llm_consulted, llm_fallbacks, stop_reason, template_failures,
         )
 
     # ---- helpers ----------------------------------------------------------
@@ -583,10 +628,42 @@ class Agent:
                      if self._is_customer_contact(decision) else 0)
         return direct + attention
 
-    @staticmethod
-    def _last_contact_at(now: datetime, contacts: int) -> datetime | None:
-        # Contacts are spaced by the loop; policy re-checks the 24h gap itself.
-        return None if contacts == 0 else now - timedelta(hours=25)
+    def _last_contact_at(self, customer_id: str) -> datetime | None:
+        """When we last actually contacted this customer, across ALL their episodes.
+
+        This used to return `now - 25 hours` whenever the episode had made any contact.
+        Twenty-five is one more than the 24-hour minimum in policy.yaml, so the spacing
+        rule could never fire - it was structurally unreachable, and 209 of 335
+        consecutive contact pairs in the batch were closer together than the contract
+        the merchant is asked to sign. A hardcoded value that happens to satisfy a rule
+        is not compliance.
+        """
+        log = self._customer_contacts.get(customer_id)
+        return max(log) if log else None
+
+    def _contacts_in_last_7d(self, customer_id: str, now: datetime,
+                             inbound: int = 0) -> int:
+        """Rolling 7-day contact count for this customer, plus what we were told on entry.
+
+        Per CUSTOMER, not per episode. One customer averages seven events in this cohort
+        and their episodes overlap in time, so an episode-local counter let 41 customers
+        be contacted more often than the cap allows - one of them seven times.
+        """
+        log = self._customer_contacts.get(customer_id)
+        if not log:
+            return inbound
+        cutoff = now - timedelta(days=7)
+        return inbound + sum(1 for t in log if t > cutoff)
+
+    def _record_contact(self, customer_id: str, at: datetime) -> None:
+        log = self._customer_contacts.get(customer_id)
+        if log is None:
+            if len(self._customer_contacts) >= MAX_CUSTOMERS_TRACKED:
+                # Evict by size, never by recency: dropping the most recently seen
+                # customer would reset exactly the counters that are about to bind.
+                self._customer_contacts.pop(next(iter(self._customer_contacts)))
+            log = self._customer_contacts[customer_id] = []
+        log.append(at)
 
     @staticmethod
     def _scheduled_at(decision: Decision, verdict, now: datetime) -> datetime:

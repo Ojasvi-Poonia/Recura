@@ -54,6 +54,7 @@ from src.act.costs import attention_cost_paise, direct_cost_paise, margin_bps
 from src.decide.bandit import PropensityModel
 from src.decide.multipliers import adjust
 from src.market import Market, get_market
+from src.act.messaging import can_render
 from src.models import (
     ActionType,
     CandidateEV,
@@ -125,6 +126,10 @@ def _receivable_candidates(ctx: DecisionContext, base: dict) -> list[tuple[Actio
     out: list[tuple[ActionType, dict]] = []
 
     for channel in ev.customer_history.consented_channels:
+        # Same rule as the payment ladder: a reminder we have no registered template
+        # to carry is not an available action.
+        if not can_render(ctx.failure_class, channel, ev.source_type):
+            continue
         for offset in NUDGE_OFFSETS_H:
             out.append((ActionType.NUDGE, {
                 **base, "channel": channel.value,
@@ -189,9 +194,15 @@ def candidate_actions(ctx: DecisionContext) -> list[tuple[ActionType, dict]]:
     for rail in ctx.market.alternatives_to(ev.method)[:1]:
         out.append((ActionType.SWITCH_METHOD, {**base, "suggested_rail": rail}))
 
-    # Nudges, only on consented channels, only via a registered template.
+    # Nudges, only on consented channels, and only where a registered template can
+    # actually carry the message. Both halves are enforced: consent is the customer's
+    # permission, a template is our ability to say anything at all. An action we cannot
+    # execute must never enter the candidate set, or it competes on EV against actions
+    # we can.
     history = ev.customer_history
     for channel in history.consented_channels:
+        if not can_render(ctx.failure_class, channel, ev.source_type):
+            continue
         for offset in NUDGE_OFFSETS_H:
             out.append((ActionType.NUDGE, {
                 **base, "channel": channel.value,
@@ -220,7 +231,7 @@ def _p_for(ctx: DecisionContext, action: ActionType, params: dict,
         raw, action=action, failure_class=ctx.failure_class,
         history=ctx.event.customer_history,
         attempt_number=ctx.event.attempt_number + ctx.attempts_made,
-        at=at, downtime_active=still_down,
+        at=at, downtime_active=still_down, downtime_known=ctx.downtime_active,
     )
 
 
