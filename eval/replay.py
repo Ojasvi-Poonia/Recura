@@ -61,6 +61,11 @@ VARIANTS: list[Variant] = [
         "And at the point where the budget is purely symbolic?",
         {"merchant.daily_spend_cap_paise": 100000}),
     Variant(
+        "action budget 200/day",
+        "The shipped action budget of 2,500/day never binds against a peak of 638 - "
+        "what does the contract cost at a level where it actually does?",
+        {"merchant.daily_action_budget": 200}),
+    Variant(
         "no merchant spend cap at all",
         "Does the shipped budget cost anything, or does the agent stop first?",
         {"merchant.daily_spend_cap_paise": 10**12}),

@@ -180,11 +180,27 @@ def check_placebo() -> Check:
     with placebo():
         comparison, _ = run(RunConfig(label="placebo"), quiet=True)
     lift = comparison.lift_pp
-    # Conservative residuals are acceptable; optimistic ones are not.
-    passed = abs(lift) < NULL_TOLERANCE_PP and lift <= NULL_TOLERANCE_PP
-    direction = ("conservative - harness scores treatment BELOW control, so reported "
-                 "lift is understated") if lift < 0 else (
-                 "OPTIMISTIC - harness invents lift; headline is NOT trustworthy")
+    low, high = comparison.lift_ci_low_pp, comparison.lift_ci_high_pp
+
+    # The interval must contain zero, not merely the point estimate be small. A placebo
+    # whose CI excludes zero is a real artefact however modest its magnitude, and the
+    # previous condition would have passed it.
+    spans_zero = low <= 0.0 <= high
+    passed = abs(lift) < NULL_TOLERANCE_PP and spans_zero
+
+    # Describe the residual proportionately. This used to call any positive point
+    # estimate "OPTIMISTIC - headline is NOT trustworthy" and any negative one proof
+    # that we understate ourselves, on a quantity whose interval is two points wide
+    # either side of zero. Both readings treat noise as a verdict.
+    if not spans_zero:
+        direction = ("a REAL artefact - the interval excludes zero, so the pipeline "
+                     "manufactures lift and the headline is not trustworthy")
+    elif lift < 0:
+        direction = ("consistent with zero; the point estimate is negative, so if "
+                     "anything the harness understates the agent")
+    else:
+        direction = ("consistent with zero; the point estimate is positive, so we "
+                     "cannot claim the harness understates the agent")
     return Check(
         "placebo (inert actions)",
         "With actions made ineffective, does measured lift collapse to zero?",

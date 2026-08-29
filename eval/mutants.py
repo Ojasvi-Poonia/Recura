@@ -40,12 +40,22 @@ class Mutant:
     old: str
     new: str
     why: str
+    # A second (old, new) pair applied in the same file. Needed when a defence is read
+    # from more than one place: mutating one site leaves the other still enforcing it,
+    # and the mutant survives because the system is fine, not because a test is missing.
+    also: tuple[str, str] | None = None
 
 
 MUTANTS: list[Mutant] = [
+    # Both places the inbound flag is read. Seeding it in one and not the other still
+    # protects the customer, so a single-site mutant survives for the wrong reason: the
+    # remaining path catches it. This drops the inbound flag everywhere.
     Mutant("inbound opt-out ignored", "src/agent.py",
-           "opted_out=opted_out or history.opted_out,", "opted_out=opted_out,",
-           "a customer who unsubscribed last month gets contacted"),
+           "paid=paid, opted_out=opted_out or history.opted_out,",
+           "paid=paid, opted_out=opted_out,",
+           "a customer who unsubscribed last month gets contacted",
+           also=("                opted_out=opted_out or history.opted_out,",
+                 "                opted_out=opted_out,")),
     Mutant("policy gate bypassed entirely", "src/agent.py",
            "            if self.use_policy:\n"
            "                verdict = evaluate(decision, state, now, self.policy)",
@@ -125,12 +135,17 @@ def main() -> None:
     for m in MUTANTS:
         path = ROOT / m.path
         original = path.read_text()
+        if m.also and m.also[0] not in original:
+            raise SystemExit(f"mutant {m.label!r}: secondary anchor no longer present")
         if m.old not in original:
             skipped.append(m.label)
             print(f"  {m.label:<38}{'SKIP':<9}anchor no longer present - mutant is stale")
             continue
         try:
-            path.write_text(original.replace(m.old, m.new, 1))
+            mutated = original.replace(m.old, m.new, 1)
+            if m.also:
+                mutated = mutated.replace(m.also[0], m.also[1], 1)
+            path.write_text(mutated)
             failed = run_suite()
         finally:
             path.write_text(original)          # restored even if the run explodes

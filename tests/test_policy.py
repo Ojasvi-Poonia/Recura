@@ -289,3 +289,31 @@ def test_every_declared_policy_term_has_an_evaluator():
     assert not orphans, (
         f"policy.yaml declares terms with no evaluator: {sorted(orphans)}. "
         "Implement them, or list them in INFORMATIONAL_TERMS with a reason.")
+
+
+def test_every_quiet_rule_has_a_stated_reason_and_no_stale_entries():
+    """`make eval` explains why each non-firing rule does not fire. Those explanations
+    must refer to rules that exist, or the table is quietly lying about coverage."""
+    from eval.run_batch import WHY_QUIET
+
+    unknown = set(WHY_QUIET) - set(rule_ids())
+    assert not unknown, f"WHY_QUIET names rules that do not exist: {sorted(unknown)}"
+
+
+def test_a_merchant_config_failure_is_only_ever_offered_escalation():
+    """The backstop claim for `retry.forbidden_for_recoverability`, asserted directly.
+
+    That rule never fires in the batch, and the reason we publish is that the decision
+    layer already refuses to propose anything else. If that stops being true the rule
+    becomes load-bearing, and this test is what tells us.
+    """
+    from src.decide.ev import candidate_actions
+    from tests.test_decide import mk_ctx
+
+    ctx = mk_ctx(reason="invalid_order_id")
+    assert ctx.recoverability is not Recoverability.CUSTOMER_RECOVERABLE, (
+        "fixture is not a merchant-config failure; the test proves nothing")
+
+    offered = {a for a, _ in candidate_actions(ctx)}
+    assert offered <= {ActionType.NO_ACTION, ActionType.ESCALATE_HUMAN}, (
+        f"a merchant integration bug was offered customer-facing actions: {offered}")

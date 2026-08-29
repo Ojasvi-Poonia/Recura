@@ -36,6 +36,21 @@ POST-FREEZE CHANGE LOG
    The lognormal parameters are UNCHANGED; only the clip ceiling moved, so the bulk of
    the distribution is identical and only the tail is now allowed to exist.
 
+5. 2026-08-30 - Merchant-configuration failures are now emitted (4% of gateway
+   attempts), where previously only CUSTOMER_RECOVERABLE reasons were.
+   Reason: REALISM, and an untestable feature. The original filter reasoned that "a
+   merchant integration bug is a different phenomenon and would pollute a recovery
+   cohort" - but a merchant's real `payment.failed` stream is not pre-filtered, and
+   Tier 1 against the live test API returned `international_transaction_not_allowed`
+   with `source=business` as its very FIRST real failed payment. Excluding them meant
+   the entire Recoverability triage dimension (CLAUDE.md section 4, built specifically
+   for these) was exercised by 0 of 10,000 events, and
+   `retry.forbidden_for_recoverability` could never fire.
+   These events are unrecoverable by any customer-facing action in the response model;
+   only escalation to the merchant's own engineers helps. That is the behaviour under
+   test - nudging a customer about the merchant's malformed request would be
+   indefensible, and now there is a cohort that can catch us doing it.
+
 Design note - why this is not circular (CLAUDE.md section 9):
 
   The Razorpay `reason` is a NOISY EMISSION of the true underlying cause, not a
@@ -119,8 +134,8 @@ SOURCE_TYPE_P = (0.55, 0.20, 0.15, 0.10)
 def _reason_pools() -> dict[FailureClass, list[str]]:
     """Candidate reasons per class, taken from the real Razorpay mapping.
 
-    Only CUSTOMER_RECOVERABLE reasons are emitted: a merchant integration bug is a
-    different phenomenon and would pollute a recovery cohort.
+    Split by triage, not merged. See POST-FREEZE CHANGE LOG entry 5 for why merchant
+    integration bugs are now emitted rather than filtered out.
     """
     pools: dict[FailureClass, list[str]] = {c: [] for c in FailureClass}
     for reason, row in MAPPING.items():
@@ -131,7 +146,19 @@ def _reason_pools() -> dict[FailureClass, list[str]]:
     return pools
 
 
+def _merchant_config_reasons() -> list[str]:
+    """The reasons that are the MERCHANT's bug, from the same real Razorpay mapping."""
+    return sorted(r for r, row in MAPPING.items()
+                  if row.recoverability is Recoverability.MERCHANT_CONFIG)
+
+
 POOLS = _reason_pools()
+MERCHANT_CONFIG_REASONS = _merchant_config_reasons()
+
+# Share of a real `payment.failed` stream that is the merchant's own integration bug
+# rather than anything a customer could fix. See POST-FREEZE CHANGE LOG entry 5 and
+# CALIBRATION.md section 9. Grade C: small but deliberately non-zero.
+P_MERCHANT_CONFIG = 0.04
 
 
 def _emit_reason(rng: np.random.Generator, true_class: FailureClass) -> tuple[str, str]:
@@ -178,6 +205,14 @@ def generate() -> tuple[list[RiskEvent], dict[str, LatentState], list[str]]:
                 true_class = FC.AUTH_ABANDON   # present, engaged, left
 
         # ---- latent truth (never observable) ----------------------------
+        # A merchant integration bug reaches the same webhook stream as everything else -
+        # Tier 1 against the live test API returned exactly one of these as its FIRST
+        # real failed payment. Filtering them out made the whole Recoverability triage
+        # dimension untestable (POST-FREEZE CHANGE LOG entry 5). Drawn here, before the
+        # latents, so the RNG stream stays in one place.
+        merchant_config = (not no_gateway_attempt
+                           and bool(rng.random() < P_MERCHANT_CONFIG))
+
         latent_intent = float(rng.beta(2.0, 2.0))
         liquidity_day = int(rng.choice([1, 2, 3, 5, 7, 10, 25, 28, 30]))
         # An instrument is genuinely dead mostly-but-not-only in INSTRUMENT_INVALID.
@@ -197,11 +232,15 @@ def generate() -> tuple[list[RiskEvent], dict[str, LatentState], list[str]]:
             downtime_clears_hours=downtime_clears_hours,
             annoyance_threshold=annoyance_threshold,
             success_hour=success_hour,
+            merchant_config=merchant_config,
             draws=draws,
         )
 
         # ---- observables -------------------------------------------------
-        reason = None if no_gateway_attempt else _emit_reason(rng, true_class)[0]
+        if merchant_config:
+            reason = str(rng.choice(MERCHANT_CONFIG_REASONS))
+        else:
+            reason = None if no_gateway_attempt else _emit_reason(rng, true_class)[0]
         # Ceiling is 10x the escalation threshold, not equal to it - see POST-FREEZE
         # CHANGE LOG entry 4. Clipping at exactly `to_human_above_paise` made that rule
         # unreachable, because it tests `amount > threshold`.

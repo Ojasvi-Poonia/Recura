@@ -146,6 +146,27 @@ def run(config: RunConfig, ledger_url: str | None = None, quiet: bool = False,
     return comparison, agent
 
 
+# Why a rule does not fire in the baseline run. "Never fired" is not one fact but three,
+# and collapsing them reads as "half the contract is dead" when most of it is a backstop
+# doing exactly what a backstop should. Every rule here has a test proving it blocks when
+# its condition holds - see tests/test_policy.py::test_rule_blocks.
+WHY_QUIET = {
+    "contact.require_consent":
+        "backstop - candidate_actions only proposes consented channels",
+    "contact.require_registered_template":
+        "backstop - can_render() filters unwritable channels out of the action space",
+    "retry.forbidden_for_recoverability":
+        "backstop - a merchant-config event only ever gets ESCALATE_HUMAN proposed",
+    "merchant.daily_action_budget":
+        "headroom - 2,500/day vs a peak of 638; binds in `make replay` at 200/day",
+    "merchant.daily_spend_cap_paise":
+        "headroom - Rs 25k/day vs a peak of Rs 11.5k; binds in `make replay` at Rs 5k",
+    "episode.stop_on_late_authorisation":
+        "arrives by webhook, not by cohort replay - see tests/test_ingest.py",
+    "episode.stop_on_dispute":
+        "out of scope - disputes cannot be created in Razorpay test mode (section 7)",
+}
+
 # How Razorpay's four event sources map to the three surfaces the problem statement names.
 SURFACE_LABEL = {
     "payment": "payment failure",
@@ -210,12 +231,17 @@ def report(config: RunConfig, c, agent: Agent,
         print("\n  POLICY RULES - how often each clause bound (blocked or shifted) an action:")
         for rule_id in sorted(rule_ids(), key=lambda r: (-fired.get(r, 0), r)):
             n = fired.get(rule_id, 0)
-            mark = "   " if n else "  *"
-            print(f"{mark}{rule_id:<44}{n:>8,}")
-        dead = [r for r in rule_ids() if not fired.get(r)]
-        if dead:
-            print(f"  * {len(dead)} of {len(rule_ids())} rules never fired on this cohort - "
-                  "either untested or unreachable")
+            if n:
+                print(f"   {rule_id:<44}{n:>8,}")
+
+        quiet = [r for r in rule_ids() if not fired.get(r)]
+        if quiet:
+            print(f"\n  Not triggered by this cohort ({len(quiet)} of {len(rule_ids())}). "
+                  "Every one has a test proving it blocks;")
+            print("  these are the reasons the baseline run does not reach them:")
+            for rule_id in sorted(quiet):
+                why = WHY_QUIET.get(rule_id, "UNCATEGORISED - investigate")
+                print(f"    {rule_id:<44}{why}")
 
     if stops:
         total = sum(stops.values())

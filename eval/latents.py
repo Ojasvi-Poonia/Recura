@@ -51,7 +51,11 @@ SWITCH_WHEN_ALIVE = 1.10       # mild help; adds friction when the rail was fine
 NUDGE_INTENT_WEIGHT = 1.9      # a nudge converts intent; it cannot manufacture it
 NUDGE_HOUR_MATCH_BONUS = 1.35  # sent in the customer's historical success hour
 NUDGE_HOUR_MISS_PENALTY = 0.80 # sent outside it
-ESCALATE_EFFICACY = 2.60       # a human is effective and expensive
+ESCALATE_EFFICACY = 2.60
+# Routing a merchant-config bug to the merchant's engineers. Higher than the customer-side
+# escalation multiplier because the fix is deterministic once the right person sees it -
+# a malformed order id is not a matter of persuasion. Grade C, see CALIBRATION.md 9.
+MERCHANT_FIX_EFFICACY = 3.20       # a human is effective and expensive
 
 # Fatigue: the Nth contact is worth less than the first.
 #
@@ -83,6 +87,9 @@ class LatentState:
     annoyance_threshold: int          # contacts tolerated before opting out
     success_hour: int                 # hour (IST) this customer actually converts in
     draws: tuple[float, ...]          # pre-drawn uniforms, consumed by sequence number
+    # The failure is the MERCHANT's bug, not the customer's problem. Nothing the customer
+    # can be asked to do will fix it; only routing it to the merchant's engineers will.
+    merchant_config: bool = False
 
 
 @dataclass(frozen=True)
@@ -111,6 +118,15 @@ def success_probability(
     base = BASELINE_RECOVERY[cls] * intent_mult
 
     if action is ActionType.NO_ACTION:
+        return min(base, MAX_P)
+
+    # A merchant integration bug is immune to every customer-facing action. Retrying a
+    # malformed request reproduces the same malformed request; nudging asks the customer
+    # to fix something they have no access to. Only escalation - which routes to the
+    # merchant's own engineers, not to the customer - changes anything.
+    if latent.merchant_config:
+        if action is ActionType.ESCALATE_HUMAN:
+            return min(base * MERCHANT_FIX_EFFICACY, MAX_P)
         return min(base, MAX_P)
 
     if action in (ActionType.RETRY_NOW, ActionType.RETRY_SCHEDULED):
