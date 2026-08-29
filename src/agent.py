@@ -178,6 +178,10 @@ class Agent:
     # budget, and neither would get the limit their contract promises.
     _merchant_days: dict = field(default_factory=dict)
     _customer_contacts: dict = field(default_factory=dict)
+    # How often each policy.yaml rule actually blocked something. A rule that never
+    # fires across 10,000 events is either dead code or an untested clause, and both
+    # are worth knowing before a panel finds out for us.
+    rule_blocks: dict = field(default_factory=dict)
 
     # Promise-to-pay window, in hours, opened when a nudge lands without immediate
     # payment. The customer has effectively said "I will pay" by engaging; if the
@@ -420,16 +424,27 @@ class Agent:
                 if got_it:
                     stop_reason = "recovered_unprompted"
                     break
-                stop_reason = "refused_negative_ev"
+                # Do NOT latch this. A refusal at one step is not how the episode
+                # ended if the agent goes on to act at a later step - and 319 of 653
+                # `refused_negative_ev` episodes did exactly that, carrying a label that
+                # said they had done nothing. Only record it as terminal if the episode
+                # actually stops here.
                 now = now + timedelta(hours=30)
                 if (now - started).days > 21:
                     stop_reason = "episode_expired"
                     break
+                if seq == MAX_DECISIONS - 1:
+                    stop_reason = "refused_negative_ev"
                 continue
+
+            for rule_id in verdict.rules_modified:
+                self.rule_blocks[rule_id] = self.rule_blocks.get(rule_id, 0) + 1
 
             if not verdict.allowed:
                 self._emit(event, decision, verdict, "blocked", 0)
                 blocked += 1
+                for rule in verdict.rules_blocked:
+                    self.rule_blocks[rule.rule_id] = self.rule_blocks.get(rule.rule_id, 0) + 1
                 refused_actions.add(decision.action)
                 # The contract stopped US, not the customer. They still have their own
                 # chance to pay during this window, and the counterfactual arm gets one

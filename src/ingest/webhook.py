@@ -27,7 +27,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, ValidationError
 
 from src.clock import IST
 from src.models import (
@@ -67,6 +67,10 @@ class Outcome(StrEnum):
     STOP = "stop"
     DUPLICATE = "duplicate"
     IGNORED = "ignored"
+    # A payload we recognised but could not normalise. Distinct from IGNORED, which
+    # means "understood and deliberately not acted on". MALFORMED is never remembered
+    # in the idempotency store, so Razorpay's retry gets a real second attempt.
+    MALFORMED = "malformed"
 
 
 class RazorpayWebhook(BaseModel):
@@ -117,6 +121,16 @@ def _first_entity(hook: RazorpayWebhook) -> dict[str, Any]:
     return {}
 
 
+def _attempt_number(entity: dict) -> int:
+    """Attempt count from merchant `notes`, which is untrusted free text."""
+    raw = (entity.get("notes") or {}).get("attempt_number", 1)
+    try:
+        value = int(raw)
+    except (ValueError, TypeError):
+        return 1
+    return value if value >= 1 else 1
+
+
 def _epoch_to_ist(value: Any) -> datetime | None:
     if not isinstance(value, (int, float)):
         return None
@@ -161,9 +175,6 @@ def normalise(
                             note="already processed")
 
     hook = RazorpayWebhook.model_validate(json.loads(raw_body))
-    if store is not None:
-        store.remember(razorpay_event_id)
-
     entity = _first_entity(hook)
 
     if hook.event in SUCCESS_EVENTS:
@@ -193,20 +204,36 @@ def normalise(
         return IngestResult(Outcome.IGNORED, razorpay_event_id=razorpay_event_id,
                             note="payload carried no timestamp; cannot place on timeline")
 
-    risk = RiskEvent(
-        event_id=str(entity.get("id") or razorpay_event_id or "unknown"),
-        merchant_id=merchant_id,
-        customer_id=_customer_id(entity),
-        source_type=source_type,
-        amount_paise=int(entity.get("amount") or 0),  # Razorpay amounts are already paise
-        currency=str(entity.get("currency") or "INR"),
-        observed_at=observed_at,
-        razorpay_error=_error_object(entity),
-        method=entity.get("method"),
-        bank=entity.get("bank"),
-        attempt_number=int((entity.get("notes") or {}).get("attempt_number", 1)),
-        customer_history=CustomerHistory(),
-        merchant_context=MerchantContext(merchant_id=merchant_id),
-    )
+    try:
+        risk = RiskEvent(
+            event_id=str(entity.get("id") or razorpay_event_id or "unknown"),
+            merchant_id=merchant_id,
+            customer_id=_customer_id(entity),
+            source_type=source_type,
+            amount_paise=int(entity.get("amount") or 0),  # Razorpay amounts are paise
+            currency=str(entity.get("currency") or "INR"),
+            observed_at=observed_at,
+            razorpay_error=_error_object(entity),
+            method=entity.get("method"),
+            bank=entity.get("bank"),
+            # `notes` is arbitrary merchant-supplied free text. A merchant writing
+            # {"attempt_number": "3rd"} must not be able to raise here.
+            attempt_number=_attempt_number(entity),
+            customer_history=CustomerHistory(),
+            merchant_context=MerchantContext(merchant_id=merchant_id),
+        )
+    except (ValueError, TypeError, ValidationError) as exc:
+        return IngestResult(Outcome.MALFORMED, razorpay_event_id=razorpay_event_id,
+                            note=f"could not normalise payload: {exc}")
+
+    # Remember ONLY now, once the event has actually been built.
+    #
+    # This used to run immediately after the JSON parse, so any normalisation failure
+    # marked the id as processed on the way out. Razorpay's redelivery then hit the
+    # duplicate branch and the risk event was swallowed permanently: first delivery 500,
+    # every retry 200 "duplicate". An idempotency key must record work COMPLETED, never
+    # work merely attempted.
+    if store is not None:
+        store.remember(razorpay_event_id)
     return IngestResult(Outcome.RISK_EVENT, risk_event=risk,
                         razorpay_event_id=razorpay_event_id)

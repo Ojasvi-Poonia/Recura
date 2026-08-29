@@ -56,7 +56,7 @@ def main() -> None:
                  if baseline.lift_pp else "n/a")
         print(f"{label:<26}{c.lift_pp:>+10.2f}{ci:>18}"
               f"{rupees(c.net_incremental_paise):>20}"
-              f"{rupees(c.cost_per_recovery_paise):>14}{delta:>8}")
+              f"{(rupees(c.cost_per_recovery_paise) if c.cost_per_recovery_paise is not None else 'n/a'):>14}{delta:>8}")
     print("-" * 96)
 
     print("\nsupporting counts:")

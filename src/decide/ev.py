@@ -217,10 +217,33 @@ def candidate_actions(ctx: DecisionContext) -> list[tuple[ActionType, dict]]:
 
 
 def _p_for(ctx: DecisionContext, action: ActionType, params: dict,
-           model: PropensityModel, rng: np.random.Generator, explore: bool) -> float:
+           model: PropensityModel, rng: np.random.Generator, explore: bool,
+           draws: dict | None = None) -> float:
+    """Propensity for one candidate. `draws` memoises the Thompson sample PER ARM.
+
+    That memoisation is load-bearing, not an optimisation. The posterior is keyed on
+    `(failure_class, action_type)` - timing and channel are deliberately not in the key -
+    so several candidates of the same action type share one arm. Drawing independently
+    for each of them and then taking an argmax turns Thompson sampling into an order
+    statistic: for a Beta(1,1) prior the expected maximum of three draws is 0.75 against
+    a true mean of 0.5.
+
+    It was also unfair between arms rather than uniformly optimistic. Over the batch,
+    NUDGE appeared up to 6 times per decision and RETRY_SCHEDULED 3-4 times, while
+    RETRY_NOW and SWITCH_METHOD appeared exactly once - so the multi-candidate actions
+    were competing on their best-of-k while the single-candidate ones bet their mean.
+
+    One draw per arm per round, differentiated afterwards only by deterministic context
+    multipliers and costs, is what Thompson sampling actually specifies.
+    """
     beliefs = ctx.class_beliefs or ((ctx.failure_class, 1.0),)
-    raw = (model.sample_marginal(beliefs, action, rng) if explore
-           else model.expected_marginal(beliefs, action))
+    if draws is not None and action in draws:
+        raw = draws[action]
+    else:
+        raw = (model.sample_marginal(beliefs, action, rng) if explore
+               else model.expected_marginal(beliefs, action))
+        if draws is not None:
+            draws[action] = raw
     at = params.get("scheduled_at") or ctx.now
     if isinstance(at, str):
         at = datetime.fromisoformat(at)
@@ -264,12 +287,15 @@ def score_candidates(
     # point. (Caught by the ablation study: a random chooser was beating the optimiser.)
     p_no_action = _p_for(ctx, ActionType.NO_ACTION, {}, model, rng, explore=False)
 
+    # One Thompson draw per ARM, shared by every candidate of that action type.
+    draws: dict[ActionType, float] = {}
+
     scored: list[CandidateEV] = []
     for action, params in candidate_actions(ctx):
         if action is ActionType.NO_ACTION:
             p = p_no_action
         else:
-            p = _p_for(ctx, action, params, model, rng, explore)
+            p = _p_for(ctx, action, params, model, rng, explore, draws)
 
         channel = params.get("channel")
         direct = direct_cost_paise(action, Channel(channel) if channel else None)

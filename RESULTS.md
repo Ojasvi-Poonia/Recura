@@ -15,24 +15,24 @@ Parameter provenance: [`eval/CALIBRATION.md`](eval/CALIBRATION.md).
 | Metric | Treatment | Holdout |
 |---|---:|---:|
 | Events | 8,053 | 1,947 |
-| Recovery rate | 78.5% | 73.0% |
-| Recovered | ₹2,32,69,611 | ₹50,28,349 |
-| Intervention cost | ₹2,35,427 | ₹0 |
-| Contacts per customer | 0.25 | 0.00 |
-| Messages actually sent | 354 | 0 |
-| Actions blocked by policy | 6,536 | — |
-| Refused (EV < 0) | 2,835 | — |
-| Escalated to human | 1,595 | — |
-| Opted out | 7 | 0 |
+| Recovery rate | 78.4% | 73.0% |
+| Recovered | ₹2,44,53,999 | ₹51,25,121 |
+| Intervention cost | ₹2,63,582 | ₹0 |
+| Contacts per customer | 0.28 | 0.00 |
+| Messages actually sent | 419 | 0 |
+| Actions blocked by policy | 6,229 | — |
+| Refused (EV < 0) | 3,681 | — |
+| Escalated to human | 1,782 | — |
+| Opted out | 14 | 0 |
 
-**Incremental lift: +5.48 percentage points, 95% bootstrap CI [+3.30, +7.66].**
+**Incremental lift: +5.33 percentage points, 95% bootstrap CI [+3.14, +7.52].**
 
 | | |
 |---|---:|
-| Incremental recovered | **₹16,24,626** |
-| Net incremental (after cost) | **₹13,89,199** |
-| Cost per extra recovery | ₹534 |
-| Return on spend | **6.9×**  |
+| Incremental recovered | **₹16,64,066** |
+| Net incremental (after cost) | **₹14,00,484** |
+| Cost per extra recovery | ₹614 |
+| Return on spend | **6.3×** |
 
 The interval excludes zero, so the effect is significant at 95%. It is a **bootstrap
 percentile interval** over 10,000 resamples with a fixed seed, not a normal
@@ -61,13 +61,13 @@ a strong surface carry a weak one. Each is compared against its own randomised h
 
 | Surface | Treated | Holdout | Lift | 95% CI | Net incremental |
 |---|---:|---:|---:|---|---:|
-| Payment failure | 4,477 | 1,057 | +5.61pp | [+2.69, +8.56] | ₹8,02,274 |
-| Checkout abandonment | 1,629 | 414 | +5.52pp | [+0.88, +10.13] | ₹2,89,353 |
-| Mandate / subscription | 1,158 | 287 | +5.34pp | [−0.30, +11.19] | ₹1,86,768 |
-| Overdue receivable | 789 | 189 | +4.96pp | [−0.86, +11.16] | ₹1,11,214 |
+| Payment failure | 4,477 | 1,057 | +5.34pp | [+2.45, +8.28] | ₹8,09,708 |
+| Checkout abandonment | 1,629 | 414 | +5.70pp | [+0.97, +10.33] | ₹3,00,646 |
+| Mandate / subscription | 1,158 | 287 | +5.00pp | [−0.65, +10.76] | ₹1,70,772 |
+| Overdue receivable | 789 | 189 | +5.08pp | [−0.82, +11.26] | ₹1,21,179 |
 
 **The effect is consistent across all four surfaces** — every point estimate falls between
-+4.96 and +5.61pp. What differs is confidence, and that is sample size alone: mandate and
++5.00 and +5.70pp. What differs is confidence, and that is sample size alone: mandate and
 receivable have 287 and 189 holdout events respectively, which cannot exclude zero at 95%
 however real the effect.
 
@@ -102,26 +102,26 @@ treated episode records exactly one terminating reason and `make eval` prints th
 
 | Why the episode ended | Episodes | Share |
 |---|---:|---:|
-| `recovered` | 4,453 | 55.3% |
-| `recovered_unprompted` | 1,870 | 23.2% |
-| `exhausted` | 1,073 | 13.3% |
-| `refused_negative_ev` | 603 | 7.5% |
-| `episode_expired` | 47 | 0.6% |
-| `opted_out` | 7 | 0.1% |
+| `recovered` | 4,267 | 53.0% |
+| `recovered_unprompted` | 2,044 | 25.4% |
+| `exhausted` | 1,148 | 14.3% |
+| `refused_negative_ev` | 531 | 6.6% |
+| `episode_expired` | 49 | 0.6% |
+| `opted_out` | 14 | 0.2% |
 
 Two rows carry the argument.
 
-**`recovered_unprompted` — 23.2%.** The customer paid without us, and the agent noticed and
+**`recovered_unprompted` — 25.4%.** The customer paid without us, and the agent noticed and
 stood down. It re-observes state before every decision rather than executing a plan fixed at
-episode start, so these 1,870 episodes cost nothing beyond the observation. A
+episode start, so these 2,044 episodes cost nothing beyond the observation. A
 workflow-shaped system that queued three messages up front would have sent them all.
 
-**`exhausted` — only 13.3%.** That is the share that simply ran out of permitted actions.
+**`exhausted` — only 14.3%.** That is the share that simply ran out of permitted actions.
 An agent whose census was dominated by `exhausted` would not have stopping rules at all; it
 would have a budget it collided with. Most episodes here end because something true became
 true — the money arrived, the arithmetic turned negative, or the customer opted out.
 
-`refused_negative_ev` at 7.5% is the one that is a decision rather than an event: 603
+`refused_negative_ev` at 6.6% is the one that is a decision rather than an event: 531
 episodes where the agent computed the expected value of every available action, found them
 all negative, and did nothing. Section 5's ablation shows what happens without that
 restraint.
@@ -134,8 +134,8 @@ restraint.
 
 | Check | Result | What it rules out |
 |---|---|---|
-| **A/A test** (clustered by customer) | +0.21pp, CI [−1.58, +2.02] | The harness inventing a difference where none exists |
-| **Placebo (inert actions)** | −1.68pp, CI [−3.88, +0.56] | Lift that is an artefact of the pipeline rather than the agent |
+| **A/A test** (clustered by customer) | −0.09pp, CI [−1.89, +1.72] | The harness inventing a difference where none exists |
+| **Placebo (inert actions)** | −1.71pp, CI [−3.92, +0.52] | Lift that is an artefact of the pipeline rather than the agent |
 | Arm balance | worst standardised difference 0.054 (threshold 0.10) | Confounding from an unbalanced randomisation |
 | Holdout purity | cost 0, contacts 0, opt-outs 0 | Contamination of the control arm |
 | Latent isolation | no hidden field present in the observable cohort | The agent reading the answer |
@@ -155,7 +155,7 @@ actions scheduled beyond the episode horizon, which was silently expiring episod
 **The headline fell from +33.84pp to under +5pp.** Roughly 29 points of what we had been
 about to report was measurement artefact.
 
-The residual placebo reading is **−1.68pp** — negative. Direction matters more than
+The residual placebo reading is **−1.71pp** — negative. Direction matters more than
 magnitude here: under a placebo the harness scores treatment *below* control, so every
 number in this document is conservative. A positive residual would have invalidated the
 headline.
@@ -168,47 +168,73 @@ headline.
 
 | Configuration | Lift | 95% CI | vs full | Net incremental | Cost/recovery |
 |---|---:|---|---:|---:|---:|
-| **Full agent** | **+5.48pp** | [+3.30, +7.66] | — | ₹13,89,199 | **₹534** |
-| 1 · Random action chooser | +4.24pp | [+2.07, +6.44] | −23% | ₹9,04,235 | ₹919 |
-| 2 · No taxonomy | +5.52pp | [+3.34, +7.75] | +1% | ₹13,79,544 | ₹567 |
-| 3 · No policy gate | +7.10pp | [+4.93, +9.28] | **+29%** | ₹17,87,645 | ₹616 |
-| 4 · No LLM (rules only) | +5.67pp | [+3.50, +7.83] | +3% | ₹14,52,132 | ₹526 |
+| **Full agent** | **+5.33pp** | [+3.14, +7.52] | — | ₹14,00,484 | ₹614 |
+| 1 · Random action chooser | +3.74pp | [+1.60, +5.94] | **−30%** | ₹8,20,720 | ₹1,035 |
+| 2 · No taxonomy | +5.78pp | [+3.61, +7.98] | +8% | ₹15,50,063 | ₹521 |
+| 3 · No policy gate | +8.03pp | [+5.85, +10.23] | **+51%** | ₹21,60,846 | ₹583 |
+| 4 · No LLM (rules only) | +5.79pp | [+3.62, +7.96] | +9% | ₹15,55,478 | ₹550 |
 
 Supporting counts:
 
 | Configuration | Blocked | Refused | Contacts/customer | Escalated |
 |---|---:|---:|---:|---:|
-| Full agent | 6,536 | 2,835 | 0.248 | 1,595 |
-| Random chooser | 6,880 | 3,692 | 0.527 | 1,718 |
-| No taxonomy | 5,975 | 2,331 | 0.252 | 1,701 |
-| No policy gate | 0 | 2,480 | 0.328 | 1,811 |
-| No LLM | 6,475 | 2,770 | 0.245 | 1,613 |
+| Full agent | 6,229 | 3,681 | 0.281 | 1,782 |
+| Random chooser | 6,818 | 3,929 | 0.511 | 1,713 |
+| No taxonomy | 5,580 | 2,875 | 0.227 | 1,659 |
+| No policy gate | 0 | 2,627 | 0.329 | 1,975 |
+| No LLM | 6,383 | 3,084 | 0.256 | 1,770 |
 
-**Random action selection is 1.7× less efficient**, at ₹919 per marginal recovery against
-our ₹534, and it burns twice the contacts to get there.
+**Random action selection is 1.7× less efficient**, at ₹1,035 per marginal recovery against
+our ₹614, and it burns 1.8× the contacts to get there.
 
 Being precise about what that does and does not establish: random's own lift interval is
-[+2.07, +6.44], which **excludes zero**. Randomly chosen interventions, run through the
+[+1.60, +5.94], which **excludes zero**. Randomly chosen interventions, run through the
 same policy gate and the same stopping rules, genuinely recover money. We are not going to
 pretend otherwise — the honest claim is narrower and more useful: for a fixed contact
-budget the optimiser recovers **29% more per contact spent**, not that unstructured
+budget the optimiser recovers **43% more on 45% fewer contacts**, not that unstructured
 intervention does nothing.
 
-**Compliance costs 29% of achievable lift.** Removing the policy gate gives +7.10pp
-against our +5.48pp — the single largest improvement available to this agent. It contacts
-people more often than the contract permits and recovers more money by doing so.
+**Compliance costs 51% of achievable lift.** Removing the policy gate gives +8.03pp
+against our +5.33pp — by a wide margin the largest single improvement available to this
+agent. It contacts people more often than the contract permits, outside permitted hours,
+and recovers substantially more by doing so.
 
-Earlier revisions of this document reported that the gate was free, then that it cost 6%.
-Both were measured against a gate that was not working: two of its contact clauses were
-structurally incapable of firing (section 9.9). **Governance is expensive, and we can only
-quote the price now that the contract is genuinely enforced.**
+Earlier revisions of this document reported the gate as free, then as costing 6%, then 29%.
+Each was measured against a gate that was progressively less broken — two of its contact
+clauses could not fire at all until an audit found them (section 9.9). **Governance is
+expensive, and every previous number we published understated the price.**
 
-**Three of the four ablations recover more than the full agent.** Read the table by cost
-per recovery and contacts per customer, not by lift. Against a random chooser the agent
-recovers 29% more (+5.48 vs +4.24) using **53% fewer contacts** (0.248 vs 0.527) at
-**₹534 against ₹919** per marginal recovery. With a hard regulated contact budget, the
-question is not "can you recover more by messaging more" — it is what you do with the
-three contacts a customer is legally allowed.
+**Three of the four ablations recover more than the full agent.** That is the headline of
+this section and we are not going to bury it. Read the table by cost per recovery and
+contacts per customer as well as by lift: against a random chooser the agent recovers 43%
+more (+5.33 vs +3.74) using **45% fewer contacts** (0.281 vs 0.511) at **₹614 against
+₹1,035** per marginal recovery. With a hard regulated contact budget the question is not
+"can you recover more by messaging more" — it is what you do with the three contacts a
+customer is legally allowed.
+
+### The taxonomy does not pay for itself inside 10,000 events
+
+Removing it *improves* the result by 8%. That reverses what this document said when the
+contact cap was unenforced, and it deserves an explanation rather than a shrug.
+
+The taxonomy splits learning across **42 posterior cells** (7 failure classes × 6 action
+types). Without it the agent pools into roughly 6. On a 10,000-event run that is a real
+sample-size penalty which should vanish with more data. Splitting the run in half:
+
+| | first half | second half |
+|---|---:|---:|
+| with taxonomy | +6.88pp | +4.73pp |
+| no taxonomy | +7.57pp | +4.01pp |
+| **difference** | **−0.69pp** | **+0.72pp** |
+
+The taxonomy starts behind and finishes ahead, crossing over partway through — exactly what
+a learning-rate penalty looks like.
+
+**We are flagging this as a hypothesis, not a result.** These are within-half comparisons
+with no confidence intervals, both differences are small, and the declining lift across
+halves has its own cause (contact budgets accumulate, so later customers are harder to
+reach). The defensible claim today is narrow: *the taxonomy does not pay for itself inside
+10,000 events, and we have a specific, testable reason to expect it would at scale.*
 
 We were prepared to report the opposite, and did for several runs: earlier revisions of
 this document said the gate cost 12% of achievable lift. That number came from a
@@ -239,8 +265,8 @@ It earned its place before it produced a single reportable number:
 ## 6. What the LLM actually contributes
 
 **Nothing measurable, on lift.** Ablation 4 removes the language model entirely and the
-result is **+5.67pp against the full agent's +5.48pp** — marginally *better* without it,
-well inside the interval ([+3.50, +7.83] against [+3.30, +7.66]).
+result is **+5.67pp against the full agent's +5.33pp** — marginally *better* without it,
+well inside the interval ([+3.50, +7.83] against [+3.14, +7.52]).
 
 ### The number has moved four times, and that is the finding
 
@@ -250,7 +276,8 @@ well inside the interval ([+3.50, +7.83] against [+3.30, +7.66]).
 | fatigue curve fitted to 86,399 real records | −9% |
 | trust weight learned by a meta-bandit instead of chosen | +5% |
 | every customer message actually sending | +0% |
-| **the compliance contract actually enforced** | **−3%** |
+| the compliance contract actually enforced | −3% |
+| **Thompson sampling drawing once per arm** | **−9%** |
 
 Every row is a real defect fixed somewhere *other than* the model. The fourth is the most
 embarrassing and the most instructive: for several runs the agent selected 607 nudges,
@@ -267,8 +294,8 @@ not an effect.
 
 Two things, neither of them a headline.
 
-**Cost efficiency.** Even this is now marginal: the full agent recovers at ₹534 per
-marginal recovery against the rules-only ₹526 — very slightly *worse*. Whatever edge the model had on efficiency has
+**Cost efficiency.** This has gone too: the full agent recovers at ₹614 per marginal
+recovery against the rules-only ₹550 — meaningfully *worse*. Whatever edge the model had on efficiency has
 gone the same way as its edge on lift. We are not building an argument on it.
 
 **The architecture is still the right one.** The model is isolated behind a learned trust
@@ -302,30 +329,57 @@ evaluation is re-run across five parameterisations.
 
 | Parameterisation | Holdout | Lift | 95% CI | Net incremental |
 |---|---:|---:|---|---:|
-| baseline (calibrated) | 73.0% | +5.48pp | [+3.30, +7.66] | ₹13,89,199 |
-| pessimistic: high self-recovery | 82.7% | +5.13pp | [+3.28, +6.97] | ₹13,28,671 |
-| optimistic: low self-recovery | 53.9% | +7.52pp | [+5.08, +9.97] | ₹19,89,953 |
-| **weak interventions** | 73.0% | **+0.32pp** | **[−1.91, +2.54]** | **₹6,363** |
-| hard failure mix + noisier labels | 58.3% | +9.36pp | [+6.97, +11.71] | ₹25,02,039 |
+| baseline (calibrated) | 73.0% | +5.33pp | [+3.14, +7.52] | ₹14,00,484 |
+| pessimistic: high self-recovery | 82.7% | +5.10pp | [+3.26, +6.96] | ₹13,87,123 |
+| optimistic: low self-recovery | 53.9% | +7.71pp | [+5.27, +10.18] | ₹22,23,548 |
+| **weak interventions** | 73.0% | **+0.71pp** | **[−1.50, +2.94]** | ₹1,30,770 |
+| hard failure mix + noisier labels | 58.3% | +9.17pp | [+6.79, +11.52] | ₹24,72,965 |
+| **sceptical human escalation** | 73.0% | **+2.86pp** | **[+0.67, +5.06]** | ₹7,97,641 |
+| optimistic human escalation | 73.0% | +8.11pp | [+5.95, +10.28] | ₹22,35,989 |
+| cheap human review (₹60) | 73.0% | +5.99pp | [+3.81, +8.18] | ₹16,78,133 |
+| expensive human review (₹240) | 73.0% | +4.71pp | [+2.52, +6.89] | ₹11,90,777 |
+| thin margin (10%) | 73.0% | +4.10pp | [+1.92, +6.30] | ₹11,90,550 |
 
-**Envelope: +0.32 to +9.36pp. Worst-case 95% lower bound: −1.91pp.**
+**Envelope: +0.71 to +9.17pp. Worst-case 95% lower bound: −1.50pp.** Nine
+parameterisations, eight of which exclude zero.
 
-Under a pessimistic model of what dunning can achieve *at all*, the effect collapses to
-+0.32pp on an interval comfortably containing zero. It is no longer *negative* — earlier
-revisions of this table showed −1.58pp, measured before the messaging and compliance
-defects were fixed — but "if messages barely move anyone, we cannot show this works"
-remains true and remains here.
+### The one-parameter sensitivity that matters
 
-The row to read sceptically is the last one. "Hard failure mix + noisier labels" was built
-to be the worst realistic world — mostly dead instruments and risk declines, with an
-unreliable reason code — and Recura posts its **highest** lift there, +9.36pp. That is not
-the agent doing better; it is the holdout doing worse. Self-recovery falls to 58.3%, so
-there is more left on the table. Lift is a difference, and differences grow when the
-baseline drops. Read the net-incremental column alongside it.
+`ESCALATE_EFFICACY = 2.60` is the largest efficacy constant in the simulator, and removing
+human escalation costs 38% of net value — so the result leans on that number harder than on
+anything else. It was **uncited** until an audit caught it, and the sweep moved it only as
+part of a four-constant group, so no row could isolate it.
 
-Note that the sweep runs the deterministic rules path, since a re-parameterised cohort
-cannot hit the committed fixture cache. Given that ablation 4 measures the LLM's
-contribution at zero, that is no longer a meaningful caveat.
+It now moves alone, with the other three held fixed:
+
+| | `ESCALATE_EFFICACY` | Lift | 95% CI |
+|---|---:|---:|---|
+| sceptical | 1.30 | +2.86pp | [+0.67, +5.06] |
+| baseline | 2.60 | +5.33pp | [+3.14, +7.52] |
+| optimistic | 4.00 | +8.11pp | [+5.95, +10.28] |
+
+**Halve it and the result halves but survives.** At 1.30 — a human agent no more effective
+than an automated contact — Recura still posts +2.86pp on an interval excluding zero. The
+*magnitude* of our headline depends on this constant; its *existence* does not. Grounding
+and grade in `CALIBRATION.md` section 8.
+
+### Cost and margin are now genuinely swept
+
+`config/costs.yaml` carried three comments claiming costs, the attention curve and margin
+were "swept in Tier 3". No harness varied any of them. Two of those claims are now true —
+escalation priced at ₹60 and ₹240, and margin at 10% — and the third has been corrected to
+say plainly that the attention exponent is held fixed everywhere and remains an untested
+assumption.
+
+Doubling the price of human review costs 0.62pp; a 10% merchant margin instead of 30% costs
+1.23pp. Neither changes the sign.
+
+### Read the last row sceptically
+
+"Hard failure mix + noisier labels" was built to be the worst realistic world and posts our
+**highest** lift, +9.17pp. That is not the agent doing better — it is the holdout doing
+worse. Self-recovery falls to 58.3%, so more is left on the table. Lift is a difference, and
+differences grow when the baseline drops.
 
 ---
 
@@ -336,46 +390,46 @@ re-run the cohort under an altered contract and diff the outcome.
 
 | Policy variant | Lift | Net incremental | vs shipped | Blocked | Contacts/cust |
 |---|---:|---:|---:|---:|---:|
-| **as committed** | +5.48pp | ₹13,89,199 | — | 6,536 | 0.248 |
-| TRAI-only window (to 21:00) | +5.05pp | ₹12,67,538 | **−₹1,21,661** | 6,491 | 0.248 |
-| stricter: 1 contact / week | +4.75pp | ₹12,19,337 | −₹1,69,862 | 6,714 | 0.207 |
-| looser: 5 contacts / week | +5.13pp | ₹12,89,050 | −₹1,00,149 | 6,577 | 0.245 |
-| **no merchant spend cap at all** | +5.48pp | ₹13,89,199 | **₹0** | 6,536 | 0.248 |
-| spend cap 5× tighter (₹5k/day) | +4.07pp | ₹10,59,673 | −₹3,29,526 | 9,947 | 0.156 |
-| spend cap 25× tighter (₹1k/day) | **−0.29pp** | −₹1,10,634 | −₹14,99,833 | 15,216 | 0.044 |
-| no human escalation at all | +1.96pp | ₹5,48,910 | **−₹8,40,288** | 8,016 | 0.065 |
-| retry risk declines anyway | +5.46pp | ₹13,71,651 | −₹17,548 | 5,913 | 0.247 |
+| **as committed** | +5.33pp | ₹14,00,484 | — | 6,229 | 0.281 |
+| TRAI-only window (to 21:00) | +5.92pp | ₹15,84,181 | **+₹1,83,697** | 6,311 | 0.258 |
+| stricter: 1 contact / week | +5.12pp | ₹13,85,210 | −₹15,273 | 6,707 | 0.219 |
+| looser: 5 contacts / week | +5.22pp | ₹13,55,555 | −₹44,929 | 6,251 | 0.278 |
+| **no merchant spend cap at all** | +5.33pp | ₹14,00,484 | **₹0** | 6,229 | 0.281 |
+| spend cap 5× tighter (₹5k/day) | +4.08pp | ₹11,15,266 | −₹2,85,218 | 10,228 | 0.150 |
+| spend cap 25× tighter (₹1k/day) | **−0.32pp** | −₹1,22,719 | −₹15,23,202 | 15,359 | 0.049 |
+| no human escalation at all | +2.90pp | ₹8,62,665 | **−₹5,37,818** | 8,128 | 0.070 |
+| retry risk declines anyway | +5.53pp | ₹14,60,852 | +₹60,368 | 6,030 | 0.255 |
 
 Four of these are worth stating plainly.
-
-**The stricter regulatory reading is not a cost — it earns ₹1,21,661.** We contact between
-09:00 and 19:00, taking RBI's Fair Practices bound rather than TRAI's more permissive
-21:00. Replaying under the looser window recovers *less*. Once a per-customer contact cap
-binds, extra evening hours do not buy extra contacts; they only move the same permitted
-contacts into hours that convert worse.
-
-This reverses what this document said in an earlier revision, when the looser window
-appeared to gain ₹61,981. That measurement was taken while the contact cap was counted per
-episode rather than per customer, so extra hours really did buy extra contacts — contacts
-the contract did not permit. **We were quoting the benefit of a compliance bug.**
 
 **Removing the merchant spend cap entirely changes the result by exactly ₹0.** The agent
 already stops below that limit on its own: attention cost prices the risk of losing the
 customer, and expected value prices the rest. **On spend, the arithmetic binds before the
-contract does** — the gate is a backstop, not the thing doing the work.
+contract does.** This row has read ₹0 across every revision of the cohort, and it is the
+strongest single piece of evidence that this is a decision system and not a rules engine.
 
-Note carefully that this is no longer true of the *contact* cap. Loosening it to five per
-week costs ₹1,00,149, which means the contact contract is now genuinely binding rather than
-decorative. An earlier revision claimed both limits bought exactly ₹0 and called it the
-strongest single demonstration in the document. Half of that claim was an artefact of the
-cap not working; the half that survives is the spend cap.
+**The stricter regulatory reading costs ₹1,83,697 — and that number is not stable.** We
+contact 09:00–19:00 on RBI's Fair Practices bound rather than TRAI's 21:00. Across cohort
+revisions this row has read **+₹61,981, then −₹1,21,661, now +₹1,83,697**. Its sign has
+flipped twice.
+
+We report the instability rather than the latest value, because quoting a single figure
+would imply a precision this benchmark does not have. The defensible statement is that
+**the cost of the conservative regulatory reading is small relative to run-to-run variation
+in our own harness** — and we ship it regardless, because a contestable interpretation of
+TRAI's exemption is not something anyone wants to defend to a regulator.
+
+**Retrying risk declines would earn ₹60,368, and we forbid it anyway.** An issuer risk
+decline is a signal about the cardholder, not a transient failure, and hammering it is how
+merchants get their MIDs reviewed. This is the clearest case in the repo of the contract
+deliberately overriding the arithmetic: the EV says yes and the answer is still no.
 
 **Under-budgeting is actively value-destroying.** At a 25× tighter spend cap the agent
-posts −0.29pp and a cost per recovery of ₹25,949: it exhausts a symbolic budget on whatever
-it reaches first and never gets to the cases that matter. A merchant's instinct to cap
-recovery spend tightly is exactly wrong.
+posts −0.32pp and a negative net — it exhausts a symbolic budget on whatever it reaches
+first and never gets to the cases that matter. A merchant's instinct to cap recovery spend
+tightly is exactly wrong.
 
-**Removing human escalation costs 60% of the value** — ₹8,40,288 of ₹13,89,199. See failure
+**Removing human escalation costs 38% of the value** — ₹5,37,818 of ₹14,00,484. See failure
 case 1 below.
 
 ---
@@ -384,19 +438,23 @@ case 1 below.
 
 Nine honest failure cases.
 
-### 1. Sixty percent of the value depends on human availability
+### 1. Thirty-eight percent of the value depends on human availability
 
-With `escalation.max_per_day: 0` the lift collapses from +5.48pp to **+1.96pp** — no
-longer statistically significant — costing ₹9.84 lakh of ₹10.83 lakh.
+With `escalation.max_per_day: 0` the lift falls from +5.33pp to **+2.90pp** — still
+significant, but costing ₹5,37,818 of ₹14,00,484 in net incremental value.
 
 Recura is a decision layer that routes work to people, not a system that replaces them.
-A merchant with no collections staff gets very little of this. We would rather state
-that than let the headline imply autonomy the system does not have.
+A merchant with no collections staff gets substantially less of this. We would rather
+state that than let the headline imply autonomy the system does not have.
+
+The related exposure is `ESCALATE_EFFICACY` itself — see section 7, where halving that
+one constant halves the headline. Between them, these two facts say the same thing: the
+biggest single driver of this result is how good the humans on the other end are.
 
 ### 2. Under a pessimistic response model the effect vanishes
 
-The "weak interventions" sweep row posts +0.32pp on an interval of [−1.91, +2.54], and
-₹6,363 of net incremental — indistinguishable from nothing. If dunning genuinely moves the
+The "weak interventions" sweep row posts +0.71pp on an interval of [−1.50, +2.94], and
+₹1,30,770 of net incremental — indistinguishable from nothing. If dunning genuinely moves the
 needle less than our calibrated assumptions suggest, **this system does nothing and the
 money spent running it is wasted**. Nothing in our evidence rules that out.
 
@@ -466,7 +524,7 @@ The cost model prices four channels — email 2 paise, SMS 25, WhatsApp 70, voic
 voice call are equally persuasive to the simulator. The only thing separating them is what
 they cost.
 
-So the agent's observed channel mix (SMS 70.3%, WhatsApp 29.7%, voice never) is a cost
+So the agent's observed channel mix (SMS ~70%, WhatsApp ~30%, voice never) is a cost
 ranking wearing a decision's clothing. **We do not claim channel selection as a result**,
 and the ablation study deliberately does not include a "no channel choice" arm, because
 removing a degenerate decision would prove nothing.
@@ -494,7 +552,7 @@ never been written.
 It is fixed (`BUILD_NOTES` section R): unwritable nudges are now scored as `NO_ACTION`, the
 candidate set is filtered by what a registered template can actually carry, and
 `messages_sent` and `template_failures` both appear in the metrics table so that the next
-occurrence is a number rather than an absence. The run now composes 354 real messages and
+occurrence is a number rather than an absence. The run now composes 419 real messages and
 fails on none.
 
 The reason it belongs in this section rather than only in the changelog: **for several
@@ -521,13 +579,13 @@ enforcement while two clauses were inert.
 
 Both are fixed and — more importantly — both are now *checked*: `make validate` replays the
 batch, reconstructs every customer's contact timeline, and fails if any clause is breached.
-It currently reports 0 breaches with a tightest gap of 24.2h. Details in `BUILD_NOTES`
+It currently reports 0 breaches with a tightest gap of 24.0h. Details in `BUILD_NOTES`
 section T.
 
 **The reason this belongs in a failure section rather than a changelog:** every compliance
 claim this project made before that fix was unverified, and several published numbers were
 quantitatively wrong because of it — including the claim that the policy gate was free
-(it costs 29%) and that the stricter TRAI reading cost us money (it earns ₹1.2 lakh).
+(it costs 51%) and every published figure for what the stricter TRAI reading is worth.
 
 ---
 

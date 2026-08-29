@@ -15,6 +15,7 @@ import os
 import sys
 
 from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.responses import JSONResponse
 
 from src.ingest.signature import verify
 from src.ingest.webhook import IdempotencyStore, Outcome, normalise
@@ -88,4 +89,13 @@ async def razorpay_webhook(
         body["amount_paise"] = result.risk_event.amount_paise
     if result.stop_reason:
         body["stop_reason"] = result.stop_reason
+    if result.note:
+        body["note"] = result.note
+
+    # A payload we could not normalise gets a 4xx, not a 200. Retrying will not change
+    # the outcome - the body is the same body - and a 200 would tell Razorpay the event
+    # was handled when it was not. The id is deliberately NOT in the idempotency store
+    # (see webhook.normalise), so a corrected redelivery is still processed.
+    if result.outcome is Outcome.MALFORMED:
+        return JSONResponse(status_code=422, content=body)
     return body

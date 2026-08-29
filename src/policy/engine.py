@@ -442,6 +442,7 @@ def evaluate(decision: Decision, state: EpisodeState, now: datetime,
     evaluated: list[str] = []
     blocked: list[BlockedRule] = []
     modified: dict[str, Any] = {}
+    modified_by: list[str] = []
     required: ActionType | None = None
 
     for rule_id, fn in _RULES:
@@ -451,6 +452,7 @@ def evaluate(decision: Decision, state: EpisodeState, now: datetime,
             blocked.append(outcome.blocked)
         if outcome.modified:
             modified.update(outcome.modified)
+            modified_by.append(rule_id)
         if outcome.requires is not None:
             required = outcome.requires
 
@@ -459,6 +461,7 @@ def evaluate(decision: Decision, state: EpisodeState, now: datetime,
         rules_evaluated=tuple(evaluated),
         rules_blocked=tuple(blocked),
         modified_params=modified or None,
+        rules_modified=tuple(modified_by),
         required_action=required,
     )
 

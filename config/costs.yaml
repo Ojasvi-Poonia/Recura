@@ -1,6 +1,7 @@
 # Direct cost per action, in integer paise (CLAUDE.md section 5).
 # Indian bulk-messaging list prices, 2026. These are order-of-magnitude figures:
-# the EV ranking is insensitive to +/-30% here, which is asserted in the sweep.
+# the EV ranking is insensitive to +/-30% here. Verified: `make sweep` runs
+# escalate_human at Rs 60 and Rs 240 (half and double) as separate parameterisations.
 
 direct_cost_paise:
   sms: 25            # ~Rs 0.25 per DLT-registered transactional SMS
@@ -21,7 +22,8 @@ direct_cost_paise:
 # Attention cost rises SUPERLINEARLY with recent contact count.
 # This is the term that makes the agent stop on its own (CLAUDE.md section 5).
 # No published source exists for the monetary cost of annoying a customer, so this
-# is a documented modelling choice and is swept in Tier 3. See eval/CALIBRATION.md section 5.
+# is a documented modelling choice. NOT swept: the exponent is held at 2.1
+# in every parameterisation, so the shape of the fatigue curve is an untested assumption. See eval/CALIBRATION.md section 5.
 attention_cost:
   base_paise: 150         # cost of the FIRST contact in a 7-day window
   exponent: 2.1           # cost_n = base * (n+1)^exponent ; n = contacts in last 7d

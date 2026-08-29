@@ -298,3 +298,61 @@ whose parameters exactly match the simulator is a circular experiment:
 
 This changes outcomes, not events, so the frozen cohort and the committed fixture set are
 unaffected.
+
+---
+
+## 8. `ESCALATE_EFFICACY` — the single most load-bearing constant (grade C, now swept alone)
+
+**Added 2026-08-30, after an audit pointed out that this number was uncited and that the
+sweep never moved it independently.**
+
+`eval/latents.py` sets `ESCALATE_EFFICACY = 2.60`: routing a case to a human multiplies its
+recovery propensity by 2.6 relative to the per-class base. It is the largest single
+efficacy constant in the simulator, and the result leans on it harder than on anything
+else — `make replay` with `escalation.max_per_day: 0` costs **₹8.40 lakh of ₹13.89 lakh,
+60% of all net incremental value**.
+
+### Why it had no entry until now
+
+It was a modelling choice, written down as one in a code comment ("a human is effective and
+expensive") and never carried into this file. Worse, `eval/sweep.py` scaled it only as part
+of `_EFFICACY_KEYS`, a group of four constants moved together by a single `efficacy_scale`.
+No parameterisation could answer "how much of this result is that one number?"
+
+That is exactly the shape of assumption section 9 of `CLAUDE.md` exists to catch, and we
+did not catch it ourselves.
+
+### Grounding
+
+| Basis | Figure | Note |
+|---|---|---|
+| Industry collections right-party-contact to cure | ~2–3× versus automated-only dunning | Directional trade figure, not a published statistic we can cite precisely |
+| Our own value | **2.60** | Sits inside that band, chosen before the band was checked |
+
+**Grade C.** We are not claiming this is measured. It is a plausible value inside a range
+practitioners would recognise, and the honest treatment is not a better citation — it is to
+show what happens when it is wrong.
+
+### What happens when it is wrong
+
+`make sweep` now varies `ESCALATE_EFFICACY` **alone**, holding the other three efficacy
+constants fixed:
+
+| Parameterisation | `ESCALATE_EFFICACY` | Lift | 95% CI | Net incremental |
+|---|---:|---:|---|---:|
+| sceptical human escalation | 1.30 | +2.90pp | [+0.75, +5.10] | ₹7,68,991 |
+| baseline | 2.60 | +5.49pp | [+3.31, +7.68] | ₹13,72,386 |
+| optimistic human escalation | 4.00 | +7.79pp | [+5.63, +9.97] | ₹20,22,399 |
+
+**Halving the constant halves the result — and the result stays significant.** At
+`ESCALATE_EFFICACY = 1.30`, where a human agent is no more effective than an automated
+contact, Recura still posts +2.90pp on an interval excluding zero.
+
+That is the useful statement. The magnitude of our headline genuinely depends on this
+number; the *existence* of the effect does not.
+
+### What would settle it
+
+A merchant's own collections data: contact-to-cure rate for human-handled cases against
+automated dunning on comparable balances. This is the first number we would replace with a
+measurement given access to real operations data.

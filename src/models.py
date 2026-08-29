@@ -189,6 +189,11 @@ class PolicyVerdict(_Frozen):
     rules_evaluated: tuple[str, ...]
     rules_blocked: tuple[BlockedRule, ...] = ()
     modified_params: dict[str, Any] | None = None  # e.g. quiet hours shifted scheduled_at
+    # Which rules did the modifying. Without this a rule that only ever SHIFTS an action
+    # (quiet hours moves scheduled_at rather than refusing) is indistinguishable from a
+    # rule that never ran, and an audit of "which clauses actually bind" reports a
+    # working rule as dead.
+    rules_modified: tuple[str, ...] = ()
     # Some rules do not merely forbid - they mandate. Above the automation ceiling the
     # contract REQUIRES human review, and "do nothing" is not a permitted outcome.
     required_action: ActionType | None = None

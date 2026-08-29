@@ -21,6 +21,7 @@ What is deliberately varied (all grade C in CALIBRATION.md):
 from __future__ import annotations
 
 import json
+import copy
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -43,6 +44,18 @@ class Parameterisation:
     failure_mix: dict | None = None
     p_opaque: float | None = None
     p_misleading: float | None = None
+    # Overrides a single latent constant by NAME, leaving the others untouched.
+    # `efficacy_scale` moves all four efficacy constants together, which cannot answer
+    # "how much of the result rests on this one number?" - and for ESCALATE_EFFICACY the
+    # answer matters, because removing escalation costs 60% of net incremental value.
+    latent_overrides: dict | None = None
+    # Overrides entries in config/costs.yaml for the duration of one run. Costs were
+    # documented in that file as "swept in Tier 3" while no harness varied them at all.
+    cost_overrides: dict | None = None
+    # Applied to every event's merchant_context after generation. Margin lives on the
+    # EVENT, not in costs.yaml - putting it in cost_overrides produced a sweep row whose
+    # numbers were byte-identical to baseline, i.e. a parameterisation that swept nothing.
+    margin_bps: int | None = None
 
 
 SWEEP: list[Parameterisation] = [
@@ -69,6 +82,31 @@ SWEEP: list[Parameterisation] = [
                      FC.INSTRUMENT_INVALID: 0.30, FC.LIMIT_EXCEEDED: 0.08,
                      FC.RISK_DECLINE: 0.14, FC.UNKNOWN: 0.06},
         p_opaque=0.20, p_misleading=0.16),
+    Parameterisation(
+        "sceptical human escalation",
+        "ESCALATE_EFFICACY alone drops 2.60 -> 1.30: a human agent is only as effective "
+        "as an automated contact. Isolates the single constant the result leans on most.",
+        latent_overrides={"ESCALATE_EFFICACY": 1.30}),
+    Parameterisation(
+        "optimistic human escalation",
+        "ESCALATE_EFFICACY alone rises 2.60 -> 4.00: a well-run collections desk. The "
+        "upper end of the same one-parameter sensitivity.",
+        latent_overrides={"ESCALATE_EFFICACY": 4.00}),
+    Parameterisation(
+        "cheap human review (Rs 60)",
+        "Halves the cost of escalation. Tests whether the EV ranking is actually "
+        "insensitive to this price, which config/costs.yaml asserted without evidence.",
+        cost_overrides={"direct_cost_paise": {"escalate_human": 6000}}),
+    Parameterisation(
+        "expensive human review (Rs 240)",
+        "Doubles it. Together with the row above this is the cost sensitivity the "
+        "config file claimed existed.",
+        cost_overrides={"direct_cost_paise": {"escalate_human": 24000}}),
+    Parameterisation(
+        "thin margin (10%)",
+        "margin_bps 3000 -> 1000. Every recovery is worth a third as much, so the EV "
+        "of every intervention falls while its cost does not.",
+        margin_bps=1000),
 ]
 
 # Multipliers in eval/latents.py that govern how much an action can help.
@@ -83,11 +121,21 @@ def parameterisation(params: Parameterisation):
     saved_efficacy = {k: getattr(lat, k) for k in _EFFICACY_KEYS}
     saved_mix = dict(gen.FAILURE_MIX)
     saved_noise = (gen.P_OPAQUE, gen.P_MISLEADING)
+
+    # Costs live behind an lru_cache, so a temporary override has to mutate the cached
+    # dict in place and put it back afterwards.
+    from src.act import costs as cost_module
+    live_costs = cost_module.load_costs()
+    saved_costs = copy.deepcopy(live_costs)
     try:
         for cls, value in saved_baseline.items():
             lat.BASELINE_RECOVERY[cls] = min(0.95, value * params.baseline_scale)
         for key in _EFFICACY_KEYS:
             setattr(lat, key, saved_efficacy[key] * params.efficacy_scale)
+        for key, value in (params.latent_overrides or {}).items():
+            if key not in saved_efficacy:      # keep the restore set complete
+                saved_efficacy[key] = getattr(lat, key)
+            setattr(lat, key, value)
         if params.failure_mix:
             gen.FAILURE_MIX.clear()
             gen.FAILURE_MIX.update(params.failure_mix)
@@ -95,6 +143,11 @@ def parameterisation(params: Parameterisation):
             gen.P_OPAQUE = params.p_opaque
         if params.p_misleading is not None:
             gen.P_MISLEADING = params.p_misleading
+        for key, value in (params.cost_overrides or {}).items():
+            if isinstance(value, dict):
+                live_costs[key].update(value)
+            else:
+                live_costs[key] = value
         yield
     finally:
         lat.BASELINE_RECOVERY.clear()
@@ -104,11 +157,20 @@ def parameterisation(params: Parameterisation):
         gen.FAILURE_MIX.clear()
         gen.FAILURE_MIX.update(saved_mix)
         gen.P_OPAQUE, gen.P_MISLEADING = saved_noise
+        live_costs.clear()
+        live_costs.update(saved_costs)
 
 
 def run_one(params: Parameterisation):
     with parameterisation(params):
         events, latents, arms = gen.generate()
+        if params.margin_bps is not None:
+            events = [
+                e.model_copy(update={
+                    "merchant_context": e.merchant_context.model_copy(
+                        update={"margin_bps": params.margin_bps})})
+                for e in events
+            ]
         cohort = list(zip(events, arms, strict=True))
         cohort.sort(key=lambda pair: (pair[0].observed_at, pair[0].event_id))
         return run(RunConfig(label=params.label), quiet=True,

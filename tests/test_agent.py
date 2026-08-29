@@ -439,23 +439,32 @@ def test_the_agent_learns_which_diagnosis_source_to_trust(tmp_path):
     )
 
 
-def test_a_message_that_could_not_be_written_is_not_charged_or_credited(monkeypatch):
+def test_a_message_that_could_not_be_written_is_never_scored_as_sent(monkeypatch):
     """The single worst defect this project shipped, now pinned by a test.
 
-    For several runs the agent selected 607 nudges, composed none of them, and was still
-    charged for all 607, counted all 607 against the customer's contact budget, and asked
-    the simulator to score the effect of messages that had never been written. Crediting
-    an unsent message is how a system reports recovery it did not cause.
+    For several runs the agent selected 607 nudges, composed none of them, and still
+    asked the simulator to score the effect of every one - because `cost`, `contacts`
+    and the `observe()` call all sat outside the `if rendered is not None` guard.
+    Crediting an unsent message is how a system reports recovery it did not cause.
+
+    The invariant is about what reaches the WORLD: if no message was composed, the world
+    must never be asked what a message would have done. Episode totals are not a usable
+    assertion here - when a nudge fails the agent escalates instead, which legitimately
+    costs more and counts its own contact.
     """
-    baseline = mk_agent().run_episode(mk_event(), "treatment", never)
-    assert baseline.messages_sent > 0, "fixture must actually send, or this proves nothing"
+    monkeypatch.setattr(Agent, "_render_message",
+                        lambda self, event, decision, history: None)
 
-    monkeypatch.setattr(Agent, "_render_message", lambda self, event, decision, history: None)
-    silent = mk_agent().run_episode(mk_event(), "treatment", never)
+    scored: list[ActionType] = []
 
-    assert silent.template_failures > 0, "the unwritable branch was never reached"
-    assert silent.messages_sent == 0
-    assert silent.contacts == 0, "an unsent message must not spend the contact budget"
-    assert silent.cost_paise < baseline.cost_paise, (
-        f"charged {silent.cost_paise}p for a message that was never composed "
-        f"(a sending run costs {baseline.cost_paise}p)")
+    def observe(action, at, hours, prior, seq):
+        scored.append(action)
+        return (False, False)
+
+    agent = mk_agent()
+    failures = sum(agent.run_episode(mk_event(event_id=f"e{i}"), "treatment", observe)
+                   .template_failures for i in range(25))
+
+    assert failures > 0, "no episode reached the unwritable branch; test proves nothing"
+    assert ActionType.NUDGE not in scored, (
+        "the world was asked to score a NUDGE that was never composed")

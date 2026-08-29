@@ -26,6 +26,16 @@ POST-FREEZE CHANGE LOG
    the experiment was underpowered by design, which is a design error rather than a
    result we disliked. Nothing about the agent was altered in this commit.
 
+4. 2026-08-30 - Amount ceiling raised from Rs 50,000 to Rs 5,00,000.
+   Reason: REALISM, and a dead governance rule. The cap was exactly 50_000_00 paise,
+   which is precisely `escalation.to_human_above_paise` in policy.yaml, and that rule
+   uses a strict `>`. So the automation ceiling - the clause that forces human review of
+   high-value failures, and one of the first things a reviewer looks for - could not
+   fire on a single event in 10,000. A payments cohort whose largest transaction is
+   exactly the escalation threshold is also not credible on its own terms.
+   The lognormal parameters are UNCHANGED; only the clip ceiling moved, so the bulk of
+   the distribution is identical and only the tail is now allowed to exist.
+
 Design note - why this is not circular (CLAUDE.md section 9):
 
   The Razorpay `reason` is a NOISY EMISSION of the true underlying cause, not a
@@ -192,7 +202,11 @@ def generate() -> tuple[list[RiskEvent], dict[str, LatentState], list[str]]:
 
         # ---- observables -------------------------------------------------
         reason = None if no_gateway_attempt else _emit_reason(rng, true_class)[0]
-        amount_paise = int(np.clip(rng.lognormal(mean=7.4, sigma=1.25) * 100, 1000, 50_000_00))
+        # Ceiling is 10x the escalation threshold, not equal to it - see POST-FREEZE
+        # CHANGE LOG entry 4. Clipping at exactly `to_human_above_paise` made that rule
+        # unreachable, because it tests `amount > threshold`.
+        amount_paise = int(np.clip(rng.lognormal(mean=7.4, sigma=1.25) * 100,
+                                   1000, 5_00_000_00))
         observed_at = EPOCH + timedelta(
             days=float(rng.integers(0, 21)), hours=float(rng.integers(0, 24)),
             minutes=float(rng.integers(0, 60)),

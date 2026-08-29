@@ -136,3 +136,40 @@ def test_unknown_extra_fields_are_tolerated():
     body["some_new_field_2027"] = {"x": 1}
     body["payload"]["payment"]["entity"]["another_new_field"] = "y"
     assert normalise(json.dumps(body).encode(), "evt_New").outcome is Outcome.RISK_EVENT
+
+
+def test_a_payload_we_cannot_normalise_is_not_remembered_as_processed():
+    """An idempotency key must record work COMPLETED, never work merely attempted.
+
+    `store.remember()` used to run straight after the JSON parse, before the RiskEvent
+    was built. Any normalisation failure therefore marked the id as processed on the way
+    out, and Razorpay's redelivery hit the duplicate branch: first delivery 500, every
+    retry 200 "duplicate", risk event swallowed permanently.
+    """
+    body = json.dumps({
+        "event": "payment.failed", "created_at": 1756000000,
+        "payload": {"payment": {"entity": {
+            "id": "pay_2", "amount": "not-a-number", "currency": "INR",
+            "created_at": 1756000000}}}}).encode()
+
+    store = IdempotencyStore()
+    first = normalise(body, razorpay_event_id="evt_bad", store=store)
+    second = normalise(body, razorpay_event_id="evt_bad", store=store)
+
+    assert first.outcome is Outcome.MALFORMED
+    assert second.outcome is Outcome.MALFORMED, (
+        "a failed normalisation was remembered, so the retry was swallowed as duplicate")
+
+
+def test_merchant_notes_cannot_break_ingestion():
+    """`notes` is arbitrary merchant free text and must never raise."""
+    body = json.dumps({
+        "event": "payment.failed", "created_at": 1756000000,
+        "payload": {"payment": {"entity": {
+            "id": "pay_1", "amount": 50000, "currency": "INR",
+            "created_at": 1756000000,
+            "notes": {"attempt_number": "3rd"}}}}}).encode()
+
+    result = normalise(body, razorpay_event_id="evt_notes", store=IdempotencyStore())
+    assert result.outcome is Outcome.RISK_EVENT
+    assert result.risk_event.attempt_number == 1, "non-integer notes must fall back to 1"

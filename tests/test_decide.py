@@ -457,3 +457,35 @@ def test_the_learned_trust_is_auditable():
     model.update_source(DiagnosisSource.MODEL, True)
     snap = model.source_snapshot()
     assert "model" in snap and snap["model"]["n"] == 1
+
+
+def test_thompson_draws_once_per_arm_not_once_per_candidate():
+    """A Thompson sample is per arm. An argmax over k draws is an order statistic.
+
+    The posterior is keyed on (failure_class, action_type), so several candidates share
+    one arm - NUDGE appeared up to 6 times per decision in the batch and RETRY_SCHEDULED
+    3-4, while RETRY_NOW and SWITCH_METHOD appeared once. Drawing independently per
+    candidate let the multi-candidate actions compete on their best-of-k against arms
+    betting their mean. For a Beta(1,1) prior the expected max of three draws is 0.75
+    against a true mean of 0.5.
+    """
+    from src.decide.bandit import PropensityModel
+
+    ctx = mk_ctx(channels=(Channel.SMS, Channel.WHATSAPP))
+    model = PropensityModel()
+    calls: list[ActionType] = []
+    original = model.sample_marginal
+
+    def spy(beliefs, action, rng):
+        calls.append(action)
+        return original(beliefs, action, rng)
+
+    model.sample_marginal = spy
+    score_candidates(ctx, model, np.random.default_rng(7), explore=True)
+
+    candidates = [a for a, _ in candidate_actions(ctx) if a is not ActionType.NO_ACTION]
+    assert len(candidates) > len(set(candidates)), (
+        "fixture has no repeated action type, so this cannot detect the bug")
+    assert len(calls) == len(set(calls)), (
+        f"{len(calls)} draws for {len(set(calls))} arms - the same posterior was "
+        "sampled more than once in a single decision round")

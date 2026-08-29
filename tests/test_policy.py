@@ -249,3 +249,43 @@ def test_the_mandate_cycle_cap_does_not_apply_to_ordinary_payments():
         blocked = {b.rule_id for b in verdict.rules_blocked}
         assert "retry.max_attempts_per_mandate_cycle" not in blocked, (
             f"mandate-cycle cap fired on a {source} event")
+
+
+# Terms that are deliberately documentation rather than executable rules. Each needs a
+# stated reason, so that "not implemented" is a decision on the record and not an
+# oversight that a merchant discovers by being treated in a way the contract forbids.
+INFORMATIONAL_TERMS = {
+    # RBI E-Mandate Framework 2026 requires a post-debit confirmation. We never move real
+    # money, so there is no debit to confirm; recorded here so the obligation is visible.
+    "retry.post_debit_confirmation_required",
+    # AFA exemption ceilings apply to mandate REGISTRATION, which this system never
+    # performs - it only reacts to failures on mandates that already exist.
+    "retry.afa_exempt_below_paise",
+    "retry.afa_exempt_below_paise_special",
+}
+
+
+def test_every_declared_policy_term_has_an_evaluator():
+    """The contract must not declare a term the engine silently ignores.
+
+    The existing coverage test runs one way only - every rule id has a policy.yaml key.
+    The reverse direction was never checked, so `post_debit_confirmation_required`,
+    `afa_exempt_below_paise` and `afa_exempt_below_paise_special` sat in a document
+    presented to merchants as a signable contract with no evaluator and no test.
+    """
+    policy = load_policy()
+
+    def leaves(node, prefix=""):
+        for key, value in node.items():
+            path = f"{prefix}.{key}" if prefix else key
+            if isinstance(value, dict) and not {"start", "end", "tz"} & set(value):
+                yield from leaves(value, path)
+            else:
+                yield path
+
+    declared = set(leaves(policy)) - set(INFORMATIONAL_TERMS)
+    evaluated = set(rule_ids())
+    orphans = {t for t in declared if t not in evaluated}
+    assert not orphans, (
+        f"policy.yaml declares terms with no evaluator: {sorted(orphans)}. "
+        "Implement them, or list them in INFORMATIONAL_TERMS with a reason.")

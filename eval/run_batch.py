@@ -182,7 +182,9 @@ def report(config: RunConfig, c, agent: Agent,
     print(f"{'  significant at 95%':<32}{('YES' if c.significant else 'NO'):>19}")
     print(f"{'INCREMENTAL RECOVERED':<32}{rupees(c.incremental_recovered_paise):>19}")
     print(f"{'NET INCREMENTAL':<32}{rupees(c.net_incremental_paise):>19}")
-    print(f"{'Cost per extra recovery':<32}{rupees(c.cost_per_recovery_paise):>19}")
+    cpr = rupees(c.cost_per_recovery_paise) if c.cost_per_recovery_paise is not None \
+        else 'n/a (no extra recoveries)'
+    print(f"{'Cost per extra recovery':<32}{cpr:>19}")
     print(f"{'RETURN ON SPEND':<32}{f'{c.roi:.1f}x':>19}")
     print("=" * 72)
     print(f"bandit cells learned: {agent.model.cells_learned}")
@@ -201,6 +203,19 @@ def report(config: RunConfig, c, agent: Agent,
                   f"{ci:>17}{rupees(seg.net_incremental_paise):>16}")
         print("  " + "-" * 72)
         print("  * interval includes zero - not significant at 95% on this surface alone")
+
+    from src.policy.engine import rule_ids
+    fired = agent.rule_blocks
+    if fired is not None:
+        print("\n  POLICY RULES - how often each clause bound (blocked or shifted) an action:")
+        for rule_id in sorted(rule_ids(), key=lambda r: (-fired.get(r, 0), r)):
+            n = fired.get(rule_id, 0)
+            mark = "   " if n else "  *"
+            print(f"{mark}{rule_id:<44}{n:>8,}")
+        dead = [r for r in rule_ids() if not fired.get(r)]
+        if dead:
+            print(f"  * {len(dead)} of {len(rule_ids())} rules never fired on this cohort - "
+                  "either untested or unreachable")
 
     if stops:
         total = sum(stops.values())

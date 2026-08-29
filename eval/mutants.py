@@ -73,8 +73,12 @@ MUTANTS: list[Mutant] = [
     Mutant("unsent messages are credited anyway", "src/agent.py",
            "                if rendered is None:",
            "                if False:",
-           "a nudge that could not be written is still charged, counted as a contact "
-           "and scored as though it had been sent"),
+           "a nudge that could not be written is still scored as though it had been sent"),
+    Mutant("Thompson draws per candidate, not per arm", "src/decide/ev.py",
+           "            p = _p_for(ctx, action, params, model, rng, explore, draws)",
+           "            p = _p_for(ctx, action, params, model, rng, explore)",
+           "argmax over k draws from one posterior is an order statistic, so actions "
+           "with more candidates win on best-of-k rather than on evidence"),
     Mutant("the action space stops respecting what we can write", "src/decide/ev.py",
            "        if not can_render(ctx.failure_class, channel, ev.source_type):\n"
            "            continue\n"
@@ -87,12 +91,13 @@ MUTANTS: list[Mutant] = [
            "                 else self.model.expected_source())",
            "        trust = DiagnosisSource.BLENDED",
            "the trust weight reverts to a constant an author picked - the worst of three"),
-    Mutant("diagnosis source never gets credited", "src/agent.py",
-           "            if dx.trust is not None:\n"
-           "                # Credit or blame the diagnosis source we chose to act on.\n"
-           "                self.model.update_source(dx.trust, got_it)",
-           "            if False:\n"
-           "                self.model.update_source(dx.trust, got_it)",
+    # Targets the method itself, not one call site. The agent credits the diagnosis
+    # source from two different outcome paths, so disabling either one alone leaves the
+    # other still learning and the mutant survives for the wrong reason.
+    Mutant("diagnosis source never gets credited", "src/decide/bandit.py",
+           "        self._sources[source] = self._sources.get(source, self._prior)"
+           ".updated(success)",
+           "        return",
            "the meta-bandit never learns; trust stays at the uninformative prior"),
     Mutant("attention cost ignores opt-out risk", "src/act/costs.py",
            "    expected_loss = opt_out_probability(contacts_last_7d) * opt_out_risk_paise()",

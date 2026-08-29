@@ -51,7 +51,7 @@ class Comparison:
     lift_ci_high_pp: float
     incremental_recovered_paise: int
     net_incremental_paise: int
-    cost_per_recovery_paise: int
+    cost_per_recovery_paise: int | None
     roi: float                      # rupees recovered per rupee spent
     significant: bool               # does the 95% interval exclude zero?
 
@@ -104,14 +104,20 @@ def compare(treatment: list, holdout: list) -> Comparison:
     counterfactual = int(round(h.recovery_rate * t.events
                                * (t.recovered_paise / max(1, t.recovered_events))))
     incremental = t.recovered_paise - counterfactual
-    extra_recoveries = max(1, t.recovered_events - int(round(h.recovery_rate * t.events)))
+    # NOT max(1, ...). Clamping a zero-or-negative denominator to 1 reports the entire
+    # intervention spend as the cost of one recovery: the "weak interventions" sweep row
+    # produced 159 FEWER recoveries than its control and was still quoted at a tidy
+    # "Rs 1,06,442 per extra recovery". A cost per recovery is undefined when there are
+    # no extra recoveries, and undefined is what we now report.
+    extra_recoveries = t.recovered_events - int(round(h.recovery_rate * t.events))
 
     return Comparison(
         treatment=t, holdout=h,
         lift_pp=lift, lift_ci_low_pp=low, lift_ci_high_pp=high,
         incremental_recovered_paise=incremental,
         net_incremental_paise=incremental - t.cost_paise,
-        cost_per_recovery_paise=int(t.cost_paise / extra_recoveries),
+        cost_per_recovery_paise=(int(t.cost_paise / extra_recoveries)
+                                 if extra_recoveries > 0 else None),
         # The number a merchant actually asks for: what does a rupee of spend return?
         roi=(incremental / t.cost_paise) if t.cost_paise else float("inf"),
         significant=(low > 0.0),

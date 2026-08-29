@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 import json
 import sys
 from collections import Counter
@@ -59,7 +60,15 @@ class ImportError_(Exception):
 
 def _parse_time(value: str) -> datetime:
     text = str(value).strip()
-    if text.isdigit():                      # epoch seconds, as Razorpay exports them
+    if text.isdigit():
+        # An 8-digit run is a date, not an epoch. "20260830" read as epoch seconds is
+        # 24 August 1970, which silently places the whole file half a century in the past
+        # and makes every ageing calculation nonsense. Epoch seconds for any plausible
+        # date are 10 digits; milliseconds are 13.
+        if len(text) == 8:
+            return datetime.strptime(text, "%Y%m%d").replace(tzinfo=IST)
+        if len(text) == 13:
+            return datetime.fromtimestamp(int(text) / 1000, tz=IST)
         return datetime.fromtimestamp(int(text), tz=IST)
     parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=IST)
@@ -75,8 +84,14 @@ def _channels(value: str) -> tuple[Channel, ...]:
 
 
 def _int(row: dict, key: str, default: int = 0) -> int:
+    # `or default` would be wrong here: a legitimate 0 is falsy, so `margin_bps: 0`
+    # silently became the 3000 default - a merchant declaring zero margin got charged
+    # for interventions the arithmetic should have refused outright.
+    raw = row.get(key)
+    if raw is None or (isinstance(raw, str) and not raw.strip()):
+        return default
     try:
-        return int(float(row.get(key) or default))
+        return int(float(raw))
     except (TypeError, ValueError):
         return default
 
@@ -84,7 +99,10 @@ def _int(row: dict, key: str, default: int = 0) -> int:
 def read_rows(path: Path) -> list[dict]:
     if not path.exists():
         raise ImportError_(f"no such file: {path}")
-    text = path.read_text(encoding="utf-8")
+    # utf-8-sig, not utf-8. Excel writes a BOM on "CSV UTF-8" export, which leaves
+    # \ufeff glued to the first header - so `event_id` parses as `\ufeffevent_id` and
+    # EVERY row fails with the actively misleading "missing: ['event_id']".
+    text = path.read_text(encoding="utf-8-sig")
     if path.suffix.lower() == ".json":
         data = json.loads(text)
         rows = data if isinstance(data, list) else data.get("items") or data.get("rows")
@@ -100,9 +118,25 @@ def to_risk_event(row: dict, merchant_id: str, amounts_are_major: bool) -> RiskE
         raise ImportError_(f"row {row.get('event_id', '?')} is missing: {missing}")
 
     market = get_market()
-    amount = float(row["amount"])
-    minor = int(round(amount * market.currency.minor_per_major)) if amounts_are_major \
-        else int(amount)
+
+    declared = (row.get("currency") or market.currency.code).strip().upper()
+    if declared != market.currency.code:
+        raise ImportError_(
+            f"row {row.get('event_id', '?')} is in {declared}, but this deployment is "
+            f"configured for {market.currency.code}. Amounts would be treated as "
+            f"{market.currency.code} minor units and displayed with the wrong symbol. "
+            f"Convert the column, or configure the market for {declared}.")
+
+    # Decimal, not float: 0.1 + 0.2 money is how rounding errors get into a ledger.
+    # CLAUDE.md section 12 forbids floats for money and this path was violating it.
+    try:
+        amount = Decimal(str(row["amount"]).strip().replace(",", ""))
+    except (InvalidOperation, AttributeError) as exc:
+        raise ImportError_(
+            f"row {row.get('event_id', '?')} has an unreadable amount "
+            f"{row['amount']!r}") from exc
+    minor = int((amount * market.currency.minor_per_major).to_integral_value(ROUND_HALF_UP)) \
+        if amounts_are_major else int(amount.to_integral_value(ROUND_HALF_UP))
 
     reason = (row.get("error_reason") or row.get("error_code") or "").strip() or None
     source = (row.get("source_type") or "payment").strip().lower()
@@ -115,7 +149,7 @@ def to_risk_event(row: dict, merchant_id: str, amounts_are_major: bool) -> RiskE
         customer_id=str(row.get("customer_id") or f"anon_{row['event_id']}").strip(),
         source_type=source,
         amount_paise=minor,
-        currency=(row.get("currency") or market.currency.code).strip().upper(),
+        currency=declared,
         observed_at=_parse_time(row["failed_at"]),
         due_at=_parse_time(row["due_at"]) if str(row.get("due_at") or "").strip() else None,
         razorpay_error=ErrorObject(
@@ -235,18 +269,45 @@ def main() -> None:
         from src.agent import Agent
         from src.decide.bandit import PropensityModel
         from src.decide.providers import resolve_provider
+        from src.policy.engine import EpisodeState, evaluate
 
         agent = Agent(model=PropensityModel(), llm_provider=resolve_provider(),
                       executor=SimulatedProvider(), rng=np.random.default_rng(0),
                       allow_network=False)
         print(f"\n{rule}\n  WHAT THE AGENT WOULD DO  (first {args.limit}; nothing is sent)\n{rule}")
-        print(f"  {'event':<16}{'amount':>12}  {'diagnosis':<20}{'action':<17}{'EV':>11}")
+        print(f"  {'event':<16}{'amount':>12}  {'diagnosis':<20}{'action':<17}{'EV':>11}  verdict")
+        blocked_count = 0
         for event in events[: args.limit]:
             decision, _ = agent._decide(event, event.observed_at, 0)
+
+            # Run the POLICY GATE too. Printing the raw decision was misleading: it
+            # advertised actions the contract would refuse, on the judge's own data,
+            # under a heading that says what the agent WOULD do. What it would do is
+            # whatever survives the gate.
+            verdict = evaluate(decision, EpisodeState(
+                event_id=event.event_id,
+                episode_started_at=event.observed_at,
+                consented_channels=event.customer_history.consented_channels,
+                opted_out=event.customer_history.opted_out,
+                contacts_last_7d=event.customer_history.contacts_last_7d,
+            ), event.observed_at)
+
             ev = decision.expected_value_paise
+            if verdict.allowed:
+                note = "allowed"
+            else:
+                blocked_count += 1
+                note = "BLOCKED: " + verdict.rules_blocked[0].rule_id
             print(f"  {event.event_id[:15]:<16}{market.money(event.amount_paise):>12}  "
                   f"{decision.failure_class.value:<20}{decision.action.value:<17}"
-                  f"{('+' if ev > 0 else '') + market.money(ev):>11}")
+                  f"{('+' if ev > 0 else '') + market.money(ev):>11}  {note}")
+        if blocked_count:
+            print(f"\n  {blocked_count} of {min(args.limit, len(events))} proposed actions "
+                  "were refused by policy.yaml before anything could be sent.")
+
+        print("\n  NOTE: propensities here come from an untrained Beta(1,1) prior - this "
+              "run has\n  no outcomes to learn from, so treat the ACTION as a "
+              "demonstration of the\n  decision path, not as a tuned recommendation.")
 
     print(f"\n{rule}")
     print("  Nothing was sent and no payment was moved. To evaluate lift on your own")
