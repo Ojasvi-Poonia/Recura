@@ -15,23 +15,23 @@ Parameter provenance: [`eval/CALIBRATION.md`](eval/CALIBRATION.md).
 | Metric | Treatment | Holdout |
 |---|---:|---:|
 | Events | 8,053 | 1,947 |
-| Recovery rate | 76.9% | 73.0% |
-| Recovered | ₹2,34,97,159 | ₹50,28,349 |
-| Intervention cost | ₹2,35,854 | ₹0 |
-| Contacts per customer | 0.27 | 0.00 |
-| Actions blocked by policy | 8,422 | — |
-| Refused (EV < 0) | 2,771 | — |
-| Escalated to human | 1,303 | — |
-| Opted out | 54 | 0 |
+| Recovery rate | 77.5% | 73.0% |
+| Recovered | ₹2,36,93,099 | ₹50,28,349 |
+| Intervention cost | ₹2,57,021 | ₹0 |
+| Contacts per customer | 0.28 | 0.00 |
+| Actions blocked by policy | 8,397 | — |
+| Refused (EV < 0) | 2,676 | — |
+| Escalated to human | 1,439 | — |
+| Opted out | 50 | 0 |
 
-**Incremental lift: +3.86 percentage points, 95% bootstrap CI [+1.68, +6.04].**
+**Incremental lift: +4.43 percentage points, 95% bootstrap CI [+2.25, +6.61].**
 
 | | |
 |---|---:|
-| Incremental recovered | **₹11,78,107** |
-| Net incremental (after cost) | **₹9,42,253** |
-| Cost per extra recovery | ₹761 |
-| Return on spend | **5.0×** |
+| Incremental recovered | **₹13,53,887** |
+| Net incremental (after cost) | **₹10,96,866** |
+| Cost per extra recovery | ₹722 |
+| Return on spend | **5.3×** |
 
 The interval excludes zero, so the effect is significant at 95%. It is a **bootstrap
 percentile interval** over 10,000 resamples with a fixed seed, not a normal
@@ -58,8 +58,8 @@ page should not be read as forecasts of production performance.
 
 | Check | Result | What it rules out |
 |---|---|---|
-| **A/A test** | +0.35pp, CI [−1.53, +2.15] | The harness inventing a difference where none exists |
-| **Placebo (inert actions)** | −2.22pp, CI [−4.43, −0.00] | Lift that is an artefact of the pipeline rather than the agent |
+| **A/A test** | −1.47pp, CI [−3.33, +0.35] | The harness inventing a difference where none exists |
+| **Placebo (inert actions)** | −1.94pp, CI [−4.17, +0.29] | Lift that is an artefact of the pipeline rather than the agent |
 | Arm balance | worst standardised difference 0.054 (threshold 0.10) | Confounding from an unbalanced randomisation |
 | Holdout purity | cost 0, contacts 0, opt-outs 0 | Contamination of the control arm |
 | Latent isolation | no hidden field present in the observable cohort | The agent reading the answer |
@@ -79,7 +79,7 @@ actions scheduled beyond the episode horizon, which was silently expiring episod
 **The headline fell from +33.84pp to under +5pp.** Roughly 29 points of what we had been
 about to report was measurement artefact.
 
-The residual placebo reading is **−2.22pp** — negative. Direction matters more than
+The residual placebo reading is **−1.94pp** — negative. Direction matters more than
 magnitude here: under a placebo the harness scores treatment *below* control, so every
 number in this document is conservative. A positive residual would have invalidated the
 headline.
@@ -92,11 +92,11 @@ headline.
 
 | Configuration | Lift | 95% CI | vs full | Net incremental | Cost/recovery |
 |---|---:|---|---:|---:|---:|
-| **Full agent** | **+3.86pp** | [+1.68, +6.04] | — | ₹9,42,253 | ₹761 |
-| 1 · Random action chooser | +0.33pp | [−1.89, +2.57] | −91% | −₹4,70,368 | **₹21,722** |
-| 2 · No taxonomy | +3.07pp | [+0.89, +5.26] | −20% | ₹6,99,080 | ₹1,012 |
-| 3 · No policy gate | +4.31pp | [+2.14, +6.50] | **+12%** | ₹11,16,220 | ₹560 |
-| 4 · No LLM (rules only) | +4.22pp | [+2.03, +6.40] | **+9%** | ₹10,27,509 | ₹722 |
+| **Full agent** | **+4.43pp** | [+2.25, +6.61] | — | ₹10,96,866 | ₹722 |
+| 1 · Random action chooser | +0.14pp | [−2.06, +2.39] | −97% | −₹5,28,595 | **₹51,756** |
+| 2 · No taxonomy | +3.07pp | [+0.89, +5.26] | **−31%** | ₹6,99,080 | ₹1,012 |
+| 3 · No policy gate | +3.66pp | [+1.46, +5.87] | **−17%** | ₹9,22,304 | ₹621 |
+| 4 · No LLM (rules only) | +4.22pp | [+2.03, +6.40] | **−5%** | ₹10,27,509 | ₹722 |
 
 Supporting counts:
 
@@ -116,13 +116,16 @@ Being precise about what that does and does not establish: the lift interval
 overclaiming. What is not close is the cost of getting there. Anyone reporting only a
 lift column would badly understate what a decision layer contributes.
 
-**The policy gate costs 12% of achievable lift, and the LLM costs 9%.** Both are reported
-as measured. See section 4 for what we did about the second one, and section 7 failure
-case 4 for why we still ship it.
+**The policy gate is not a tax.** Removing it makes results *worse* — +3.66pp against
++4.43pp, at ₹621 per marginal recovery against ₹722. An ungoverned agent spends more to
+recover slightly more, and spends customer patience it cannot get back. Compliance and
+performance point the same way here.
 
-**The policy gate is not a tax.** Removing it makes results *worse* (−14%). It stops the
-agent from doing counterproductive things, so compliance and performance point the same
-way here. We expected this to cost money and it did not.
+We were prepared to report the opposite, and did for several runs: earlier revisions of
+this document said the gate cost 12% of achievable lift. That number came from a
+configuration where blocked actions taught the agent nothing, so it kept proposing them.
+Once refusals became a learning signal, the gate stopped looking expensive. **The cost of
+governance was our bug, not governance.**
 
 ### The ablation found three bugs in our own code
 
@@ -179,17 +182,33 @@ So we shrink the model's distribution toward the deterministic taxonomy prior:
 p_used = w · p_model + (1 − w) · p_taxonomy
 ```
 
-`w` is set **from the calibration measurement**, not by taste. With shrinkage the LLM
-contributes **+8%** rather than −16%.
+`w` was originally a constant we set from the calibration measurement. **It is now
+learned.** Three sources — `w = 0` (ignore the model), `w = 0.5` (blend), `w = 1` (believe
+it) — are arms of a second Thompson-sampled bandit, each with a Beta posterior updated
+from whether acting on that diagnosis recovered the money.
 
-We swept `w` across 0.0, 0.2, 0.35, 0.6 and 1.0. Every value lands inside every other
-value's confidence interval, so the variation is noise. We kept the measurement-derived
-weight rather than the highest-scoring one — picking the best-scoring `w` would be
-tuning on the test set, which our own credibility rules forbid.
+The reason we stopped hand-picking it is that the hand-picked value was wrong:
 
-**Honest summary: on opaque payment declines, a small language model adds little. The
-signals available do not support confident diagnosis, and the defensible architecture is
-rules-first with the model as a shrunk, measured assist.**
+```
+model      w = 1.0    recovery 28.9%   n=834
+taxonomy   w = 0.0    recovery 28.5%   n=967
+blended    w = 0.5    recovery 20.2%   n=117
+```
+
+Our chosen constant sat between two better options and underperformed both. We had
+split a difference that should not have been split, and no amount of care in *choosing*
+the constant would have found that — only measuring it did.
+
+This also removes a tuning hazard we had been managing by hand. Previously we swept `w`
+and deliberately kept the measurement-derived value rather than the best-scoring one,
+because picking the winner would have been tuning on the test set. A learned weight is
+not subject to that objection: it is updated from outcomes during the run, not selected
+by us afterwards against the headline metric.
+
+**Honest summary: on opaque payment declines a small language model adds a little, the
+deterministic taxonomy adds about as much, and the system is better off choosing between
+them per-case than committing to either. The defensible architecture is rules-first with
+the model as a measured, learned assist — not a shrunk one at a weight we picked.**
 
 ---
 
@@ -200,17 +219,29 @@ evaluation is re-run across five parameterisations.
 
 | Parameterisation | Holdout | Lift | 95% CI | Net incremental |
 |---|---:|---:|---|---:|
-| baseline (calibrated) | 73.0% | +3.86pp | [+1.7, +6.0] | ₹9,42,253 |
-| pessimistic: high self-recovery | 82.7% | +3.51pp | [+1.6, +5.4] | ₹9,08,824 |
-| optimistic: low self-recovery | 53.9% | +6.04pp | [+3.6, +8.5] | ₹16,01,502 |
-| **weak interventions** | 73.0% | **−1.73pp** | [−3.9, +0.5] | **−₹5,90,091** |
-| hard failure mix + noisier labels | 58.3% | +7.41pp | [+5.0, +9.7] | ₹19,69,953 |
+| baseline (calibrated) | 73.0% | +4.54pp | [+2.35, +6.71] | ₹11,23,251 |
+| pessimistic: high self-recovery | 82.7% | +3.14pp | [+1.27, +4.98] | ₹8,01,971 |
+| optimistic: low self-recovery | 53.9% | +5.84pp | [+3.41, +8.29] | ₹15,41,573 |
+| **weak interventions** | 73.0% | **−1.58pp** | [−3.79, +0.64] | **−₹5,74,615** |
+| hard failure mix + noisier labels | 58.3% | +6.93pp | [+4.54, +9.26] | ₹18,22,684 |
 
-**Envelope: −2.07 to +6.23pp.**
+**Envelope: −1.58 to +6.93pp. Worst-case 95% lower bound: −3.79pp.**
 
-Under a pessimistic view of what dunning can achieve *at all*, Recura loses money. We do
-not know which parameterisation reality resembles, and that row is in this table because
-it is true.
+Under a pessimistic view of what dunning can achieve *at all*, Recura loses money — and
+it is the only parameterisation whose interval fails to exclude zero. We do not know which
+parameterisation reality resembles, and that row is in this table because it is true.
+
+The row worth arguing with is the *last* one. "Hard failure mix + noisier labels" was
+built to be the worst realistic world — mostly dead instruments and risk declines, with an
+unreliable reason code — and Recura scores its **highest** lift there, +6.93pp. That is
+not the agent doing better; it is the holdout doing worse. Self-recovery falls to 58.3%,
+so there is simply more left on the table to recover. Lift is a difference, and
+differences grow when the baseline drops. Read the net-incremental column alongside it.
+
+Note also that the baseline row here (+4.54pp) differs slightly from the headline
+(+4.43pp): the sweep runs the deterministic rules path, since a re-parameterised cohort
+cannot hit the committed fixture cache. The gap is the meta-bandit's LLM arm, and it is
+within noise.
 
 ---
 
@@ -268,7 +299,7 @@ that than let the headline imply autonomy the system does not have.
 
 ### 2. Under a pessimistic response model the agent loses money
 
-The "weak interventions" sweep row posts −2.07pp and −₹6.7 lakh. If dunning genuinely
+The "weak interventions" sweep row posts −1.58pp and −₹5.7 lakh. If dunning genuinely
 moves the needle less than our calibrated assumptions suggest, this system is
 value-destroying. Nothing in our evidence rules that out.
 
@@ -279,21 +310,24 @@ customers self-select — someone who did not pay on attempt one is less likely 
 unprompted on attempt four. The error is conservative in direction but the absolute
 rates are not forecasts.
 
-### 4. The language model currently costs 9%, not contributes
+### 4. The language model contributes 5%, and only because trust is learned
 
-Removing it improves the result. We have measured this twice: with our original invented
-contact-fatigue curve it contributed +8%; once that curve was fitted to 86,399 real
-records it contributes **−9%**. An effect that flips sign when an unrelated parameter is
-corrected was never real.
+Removing it costs 5%. That figure has moved three times: +8% with our original invented
+fatigue curve, −9% once that curve was fitted to 86,399 real records, and +5% once the
+agent stopped using a hand-picked trust weight and learned one.
 
-The calibration study says why — Brier 0.9838 against a 0.8196 base rate, and
-61%-confident predictions landing 20% of the time. On opaque payment declines the
-observable signals do not support confident diagnosis.
+The middle reading matters most. Correcting an unrelated parameter flipped the model's
+apparent contribution from helpful to harmful — an effect that fragile was never an
+effect, and we would not have known without the calibration work.
 
-We ship it anyway, at a shrinkage weight derived from that measurement, because the
-measurement is itself the deliverable and a better-calibrated model would earn a higher
-weight with no architecture change. But nobody should read this project as evidence that
-an LLM improves payment recovery. It is evidence that we checked.
+The learned trust posterior explains the third: `blended` — the hand-picked setting —
+recovers 20.2% against 28.5% for taxonomy-only and 28.9% for the model. **We had chosen
+the worst of three options** by splitting the difference between two better ones.
+
+The model remains poorly calibrated (Brier 0.9838 against a 0.8196 base rate). Nothing
+here should be read as evidence that a language model improves payment recovery. What it
+shows is that a system which *measures* its model's contribution, and adapts how far it
+trusts it, extracts value from a weak model without pretending the model is strong.
 
 ### 5. Per-merchant margin is implemented but untested
 

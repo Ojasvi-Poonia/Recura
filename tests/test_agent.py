@@ -390,3 +390,39 @@ def test_no_message_is_invented_when_no_template_applies():
                                            "params": {"channel": "sms"}}),
         event.customer_history)
     assert rendered is None
+
+
+class _StubModel:
+    """A diagnosis model that always answers, so the meta-bandit path is exercised."""
+
+    name, model = "stub", "stub-1"
+
+    def diagnose(self, system_prompt, user_content, schema):
+        return schema(root_cause="stub",
+                      beliefs=[{"failure_class": FailureClass.FUNDS, "probability": 1.0}],
+                      confidence=0.6, reasoning="stub")
+
+
+def test_no_diagnosis_source_is_credited_when_there_is_no_model():
+    """The meta-bandit only engages where a model was actually consulted."""
+    agent = mk_agent()
+    agent.run_episode(mk_event(), "treatment", never)
+    assert agent.model.source_snapshot() == {}
+
+
+def test_the_agent_learns_which_diagnosis_source_to_trust(tmp_path):
+    """The trust weight must be learned from outcomes, not read from a constant."""
+    agent = mk_agent(llm_provider=_StubModel(), use_llm=True, allow_network=True)
+    for i in range(30):
+        agent.run_episode(mk_event(event_id=f"t{i}", reason="payment_failed"),
+                          "treatment", always if i % 2 else never)
+    snapshot = agent.model.source_snapshot()
+    assert snapshot, "no diagnosis source was ever credited"
+    assert sum(v["n"] for v in snapshot.values()) > 0
+    assert all(0.0 <= v["mean"] <= 1.0 for v in snapshot.values())
+
+    # The weight must be DRAWN, not fixed. A constant would credit exactly one
+    # source forever - which is precisely the hand-picked setting we removed.
+    assert len(snapshot) > 1, (
+        f"only {list(snapshot)} was ever chosen - trust is not being sampled"
+    )

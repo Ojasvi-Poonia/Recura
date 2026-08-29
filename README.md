@@ -17,18 +17,18 @@ exactly, offline, with no API key.
 | Metric | Treatment | Holdout |
 |---|---:|---:|
 | Events | 8,053 | 1,947 |
-| Recovery rate | **76.9%** | 73.0% |
-| Recovered | ₹2,34,97,159 | ₹50,28,349 |
-| Intervention cost | ₹2,35,854 | ₹0 |
-| Contacts per customer | 0.27 | 0 |
-| Actions blocked by policy | 8,422 | — |
-| Refused, EV < 0 | 2,771 | — |
-| Escalated to human | 1,303 | — |
-| Opted out | 54 | 0 |
+| Recovery rate | **77.5%** | 73.0% |
+| Recovered | ₹2,36,93,099 | ₹50,28,349 |
+| Intervention cost | ₹2,57,021 | ₹0 |
+| Contacts per customer | 0.28 | 0 |
+| Actions blocked by policy | 8,397 | — |
+| Refused, EV < 0 | 2,676 | — |
+| Escalated to human | 1,439 | — |
+| Opted out | 50 | 0 |
 
-> ### +3.86 percentage points — 95% CI [+1.68, +6.04]
-> **₹11,78,107 incremental recovered · ₹9,42,253 net · 5.0× return on spend**
-> Cost per extra recovery: ₹761. Runs in 4 seconds. Byte-identical across runs.
+> ### +4.43 percentage points — 95% CI [+2.25, +6.61]
+> **₹13,53,887 incremental recovered · ₹10,96,866 net · 5.3× return on spend**
+> Cost per extra recovery: ₹722. Runs in 4 seconds. Byte-identical across runs.
 
 ---
 
@@ -39,8 +39,8 @@ Any synthetic benchmark can be made to say anything. These are the checks that w
 
 | Check | Result |
 |---|---|
-| **A/A test** — split treatment in half, both halves treated identically | **+0.35pp**, CI [−1.53, +2.15] — no phantom lift |
-| **Placebo** — every action made completely inert | **−2.22pp** — *negative*, so the harness understates us |
+| **A/A test** — split treatment in half, both halves treated identically | **−1.47pp**, CI [−3.33, +0.35] — interval spans zero, no phantom lift |
+| **Placebo** — every action made completely inert | **−1.94pp**, CI [−4.17, +0.29] — *negative*, so the harness understates us |
 | Arm balance | worst standardised difference **0.054** (RCT threshold 0.10) |
 | Holdout purity | zero cost, zero contacts, zero opt-outs |
 | Latent isolation | no hidden variable reachable from `src/` |
@@ -125,54 +125,69 @@ to *"why?"* is a number in the ledger, not a policy line.
 
 | Configuration | Lift | 95% CI | vs full | Cost/recovery |
 |---|---:|---|---:|---:|
-| **Full agent** | **+3.86pp** | [+1.68, +6.04] | — | ₹761 |
-| Random action chooser | +0.33pp | [−1.89, +2.57] | −91% | **₹21,722** |
-| No taxonomy | +3.07pp | [+0.89, +5.26] | −20% | ₹1,012 |
-| No policy gate | +4.31pp | [+2.14, +6.50] | **+12%** | ₹560 |
-| No LLM, rules only | +4.22pp | [+2.03, +6.40] | **+9%** | ₹722 |
+| **Full agent** | **+4.43pp** | [+2.25, +6.61] | — | ₹722 |
+| Random action chooser | +0.14pp | [−2.06, +2.39] | −97% | **₹51,756** |
+| No taxonomy | +3.07pp | [+0.89, +5.26] | **−31%** | ₹1,012 |
+| No policy gate | +3.66pp | [+1.46, +5.87] | **−17%** | ₹621 |
+| No LLM, rules only | +4.22pp | [+2.03, +6.40] | **−5%** | ₹722 |
 
 **Random action selection is 28× less efficient**, at ₹21,722 per marginal recovery
 against our ₹761. Its *lift* interval contains zero, so "random is worse at recovering"
 would be overclaiming — what is not close is the cost of getting there.
 
-**The taxonomy contributes 20%**, and without it the result is barely significant.
+**The taxonomy contributes 31%**, and without it the result is barely significant. Mapping
+Razorpay's own `reason` field to a recovery strategy is the single largest source of lift
+in the system — more than the model, more than the bandit.
 
-**The policy gate costs 12% of achievable lift.** Compliance is not free. We would rather
-report that than pretend governance is costless.
+**The policy gate pays for itself.** We expected compliance to cost money. Removing it
+makes the result *worse* — +3.66pp against +4.43pp, at ₹621 per recovery against ₹722 —
+because an ungoverned agent spends more to recover slightly more, and burns customer
+patience doing it. Governance and performance point the same way here. We were prepared
+to report the opposite.
 
-### The LLM does not currently earn its place, and we say so
+### How much to trust the model is learned, not configured
 
-Ablation 4 is the one §8 says to publish honestly even when it is unflattering. Removing
-the language model **improves** the result by 9%.
+Ablation 4 says removing the language model costs **5%**. That number has moved three
+times, and how it moved is the interesting part.
 
-We have now measured this twice, under two different contact-fatigue assumptions. With
-our original invented fatigue curve the model contributed +8%; once that curve was fitted
-to 86,399 real records, it contributes **−9%**. A result that flips sign when an unrelated
-parameter is corrected was never a real effect.
+| | LLM contribution |
+|---|---:|
+| invented fatigue curve, hand-picked trust weight | +8% |
+| **fatigue curve fitted to real data**, same hand-picked weight | **−9%** |
+| fitted curve, **trust weight learned** | **+5%** |
 
-`make calibration` explains why:
+The middle row is the honest one to dwell on: correcting an *unrelated* parameter flipped
+the model's apparent contribution from helpful to harmful. An effect that fragile was
+never an effect.
 
-| | Model | Base rate |
-|---|---:|---:|
-| Brier score | 0.9838 | **0.8196** |
-| Top-1 accuracy | 18.2% | **22.5%** |
-| Expected calibration error | **0.2742** | — |
+So we stopped picking the weight. `make calibration` had already shown the model is badly
+calibrated — Brier 0.9838 against a 0.8196 base rate, 61%-confident predictions landing
+20% of the time — and our response had been to shrink its output toward the taxonomy
+prior by a constant we chose. **Choosing that constant was the same mistake we refuse
+everywhere else: a parameter set by an author and tuned on the metric it moves.**
 
-**When it said 61% confident, it was right 20% of the time.** Feeding probabilities like
-that into an expected-value calculation degrades the decision, and shrinking them toward
-the taxonomy prior — with a weight set from that measurement rather than by taste — does
-not fully rescue it.
+The agent now treats it as another arm and learns it, by the same Thompson sampling it
+uses for actions. Three sources — ignore the model, blend it, believe it — each with a
+posterior updated from whether acting on that diagnosis actually recovered the money:
 
-**The honest conclusion: on opaque payment declines, a small language model adds nothing
-here.** The observable signals do not support confident diagnosis, and what the evidence
-supports is a rules-first architecture with the model as a measured, shrunk assist that
-currently costs more than it returns.
+```
+model      recovery rate  28.9%   n=834
+taxonomy   recovery rate  28.5%   n=967
+blended    recovery rate  20.2%   n=117
+```
 
-We keep it in, and report that, because the measurement is the deliverable. A better-
-calibrated model would earn a higher shrinkage weight without an architecture change —
-and `make calibration` is the instrument that would tell you.
+**Our hand-picked weight was the worst of the three.** We had split the difference
+between two better options and landed below both. The agent found that in one run.
 
----
+Three properties follow. It **adapts** — a better-calibrated model earns more trust with
+no code change, which is the honest answer to "your model is weak". It is **auditable** —
+"how much does this agent trust its model" now has a number in the ledger instead of an
+opinion in a config file. And it is **not tuning** — the weight is learned from outcomes,
+not chosen against the headline.
+
+Read plainly: on opaque payment declines a small model contributes a little, the
+deterministic taxonomy contributes about as much, and the system is better off deciding
+between them per-case than committing to either.
 
 ## How sensitive is this to our assumptions?
 
@@ -181,14 +196,17 @@ Every grade-C parameter in [`eval/CALIBRATION.md`](eval/CALIBRATION.md) is an as
 
 | Parameterisation | Holdout | Lift |
 |---|---:|---:|
-| baseline (calibrated) | 73.0% | +3.86pp |
-| pessimistic: high self-recovery | 82.7% | +3.51pp |
-| optimistic: low self-recovery | 53.9% | +6.04pp |
-| **weak interventions** | 73.0% | **−1.73pp** |
-| hard failure mix + noisier labels | 58.3% | +7.41pp |
+| baseline (calibrated) | 73.0% | +4.54pp |
+| pessimistic: high self-recovery | 82.7% | +3.14pp |
+| optimistic: low self-recovery | 53.9% | +5.84pp |
+| **weak interventions** | 73.0% | **−1.58pp** |
+| hard failure mix + noisier labels | 58.3% | +6.93pp |
 
-**Envelope: −1.73 to +7.41pp.** Under a pessimistic view of what dunning can achieve at
-all, Recura **loses money**. That is in the table because it is true.
+**Envelope: −1.58 to +6.93pp.** Under a pessimistic view of what dunning can achieve at
+all, Recura **loses money** — −1.58pp, CI [−3.79, +0.64], a net loss of ₹5,74,615. That
+is in the table because it is true. Four of five worlds are positive; the fifth is the one
+where messages and retries barely move anyone, and in that world no dunning agent is worth
+running, ours included.
 
 `make replay` answers the adjacent question — what a different *contract* would cost:
 
@@ -214,7 +232,7 @@ becomes value-destroying: at a 25× tighter cap it posts −0.44pp.
    independent, which almost certainly overstates spontaneous recovery over 21 days.
    The error runs *against* us — a lower real baseline would mean more headroom — but
    the absolute recovery rates should not be read as forecasts.
-2. **Under weak interventions the agent is value-destroying** (−2.07pp). We do not know
+2. **Under weak interventions the agent is value-destroying** (−1.58pp). We do not know
    which parameterisation reality resembles.
 3. **The diagnosis model is poorly calibrated** and worse than base rate on raw scores.
    It is usable only because we measured that and shrank it.
@@ -265,7 +283,7 @@ cannot reach the simulator's hidden state.
 **The tests are themselves tested.** `make mutants` plants eight bugs this project has
 actually shipped — the policy gate silently disabled, template slot validation removed,
 the horizon discount deleted — and checks the suite notices. A green suite proves the
-tests pass; mutation testing proves they would object. 8/8 caught.
+tests pass; mutation testing proves they would object. 10/10 caught.
 
 **The claims are red-teamed.** 71 adversarial tests attempt prompt injection through
 every attacker-influenceable field, feed the agent a deliberately hostile model, and try
@@ -301,7 +319,7 @@ config/               costs, markets, DLT templates
 fixtures/             870 cached LLM responses - why eval needs no API key
 ```
 
-**480 tests.** Run `make test`.
+**488 tests.** Run `make test`.
 
 ---
 

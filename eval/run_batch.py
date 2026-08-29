@@ -159,6 +159,12 @@ def report(config: RunConfig, c, agent: Agent) -> None:
     print(f"{'RETURN ON SPEND':<32}{f'{c.roi:.1f}x':>19}")
     print("=" * 72)
     print(f"bandit cells learned: {agent.model.cells_learned}")
+    trust = agent.model.source_snapshot()
+    if trust:
+        print("\nhow much the agent LEARNED to trust its diagnosis model:")
+        for name, p in sorted(trust.items(), key=lambda kv: -kv[1]["mean"]):
+            bar = "#" * int(p["mean"] * 40)
+            print(f"  {name:<10} recovery rate {p['mean']:>6.1%}  n={p['n']:>6,}  {bar}")
 
 
 def main() -> None:

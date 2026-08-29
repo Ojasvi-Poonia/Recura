@@ -356,3 +356,61 @@ def test_missing_merchant_context_falls_back_to_the_configured_default():
     ctx = DecisionContext(**{**mk_ctx().__dict__, "event": event})
     scored = score_candidates(ctx, PropensityModel(), np.random.default_rng(5))
     assert scored  # does not raise
+
+
+# --- meta-bandit: the agent learns how far to trust its own model -------------
+
+def test_trust_in_the_model_is_learned_not_configured():
+    """The weight was a constant an author picked. Picking it is the thing we refuse
+    to do elsewhere: a parameter tuned on the metric it moves."""
+    from src.decide.bandit import SOURCE_WEIGHT, DiagnosisSource
+    model = PropensityModel()
+    rng = np.random.default_rng(3)
+    for i in range(200):
+        model.update_source(DiagnosisSource.TAXONOMY, i % 10 < 7)   # works 70%
+        model.update_source(DiagnosisSource.MODEL, i % 10 < 2)      # works 20%
+    picks = [model.sample_source(rng) for _ in range(40)]
+    assert picks.count(DiagnosisSource.TAXONOMY) > picks.count(DiagnosisSource.MODEL)
+    assert SOURCE_WEIGHT[DiagnosisSource.TAXONOMY] == 0.0
+    assert SOURCE_WEIGHT[DiagnosisSource.MODEL] == 1.0
+
+
+def test_a_better_model_would_earn_more_trust_with_no_code_change():
+    """The adaptive property: swap in a calibrated model and the weight follows."""
+    from src.decide.bandit import DiagnosisSource
+    model = PropensityModel()
+    rng = np.random.default_rng(5)
+    for i in range(200):
+        model.update_source(DiagnosisSource.MODEL, i % 10 < 8)      # a good model
+        model.update_source(DiagnosisSource.TAXONOMY, i % 10 < 3)
+    picks = [model.sample_source(rng) for _ in range(40)]
+    assert picks.count(DiagnosisSource.MODEL) > picks.count(DiagnosisSource.TAXONOMY)
+
+
+def test_source_choice_explores_before_it_has_evidence():
+    from src.decide.bandit import DiagnosisSource
+    model = PropensityModel()
+    rng = np.random.default_rng(1)
+    assert len({model.sample_source(rng) for _ in range(40)}) > 1
+
+
+def test_zero_trust_collapses_to_the_taxonomy_prior():
+    from src.agent import Agent
+    beliefs = ((FailureClass.RISK_DECLINE, 0.9), (FailureClass.FUNDS, 0.1))
+    assert Agent._shrink(beliefs, FailureClass.AUTH_ABANDON, 0.0) == \
+        ((FailureClass.AUTH_ABANDON, 1.0),)
+
+
+def test_full_trust_passes_the_model_through_untouched():
+    from src.agent import Agent
+    beliefs = ((FailureClass.RISK_DECLINE, 0.9), (FailureClass.FUNDS, 0.1))
+    assert Agent._shrink(beliefs, FailureClass.AUTH_ABANDON, 1.0) == beliefs
+
+
+def test_the_learned_trust_is_auditable():
+    """"How much does this agent trust its model" must have a number, not an opinion."""
+    from src.decide.bandit import DiagnosisSource
+    model = PropensityModel()
+    model.update_source(DiagnosisSource.MODEL, True)
+    snap = model.source_snapshot()
+    assert "model" in snap and snap["model"]["n"] == 1

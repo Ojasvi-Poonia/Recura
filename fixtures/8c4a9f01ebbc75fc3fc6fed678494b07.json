@@ -1,0 +1,11 @@
+{
+  "beliefs": [
+    {
+      "failure_class": "FUNDS",
+      "probability": 1.0
+    }
+  ],
+  "confidence": 0.6,
+  "reasoning": "stub",
+  "root_cause": "stub"
+}

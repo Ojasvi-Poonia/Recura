@@ -35,7 +35,7 @@ import numpy as np
 from src.act.costs import attention_cost_paise, direct_cost_paise
 from src.act.provider import Downtime, SimulatedProvider, idempotency_key
 from src.clock import IST
-from src.decide.bandit import PropensityModel
+from src.decide.bandit import SOURCE_WEIGHT, DiagnosisSource, PropensityModel
 from src.decide.ev import DecisionContext, choose, score_candidates
 from src.decide.llm import ProposalSource, propose_root_cause
 from src.decide.providers import LLMProvider, NullProvider
@@ -109,6 +109,7 @@ class Diagnosis:
     confidence: float
     mapping: object
     source: ProposalSource
+    trust: DiagnosisSource | None = None   # how far we trusted the model this time
 
     @property
     def top_class(self) -> FailureClass:
@@ -196,19 +197,30 @@ class Agent:
         result = propose_root_cause(event, mapping, provider=self.llm_provider,
                                     allow_network=self.allow_network)
         consulted = result.source in (ProposalSource.FIXTURE, ProposalSource.API)
-        beliefs = (self._shrink(result.proposal.distribution(), mapping.failure_class)
-                   if consulted else certain)
+        if not consulted:
+            return Diagnosis(certain, mapping.recoverability,
+                             result.proposal.root_cause, result.proposal.confidence,
+                             mapping, result.source)
+
+        # How far to trust the model is LEARNED, not configured. The meta-bandit has
+        # its own posterior per source, updated from whether acting on that source's
+        # diagnosis actually recovered the money.
+        trust = (self.model.sample_source(self.rng) if self.explore
+                 else self.model.expected_source())
+        beliefs = self._shrink(result.proposal.distribution(), mapping.failure_class,
+                               SOURCE_WEIGHT[trust])
         return Diagnosis(beliefs, mapping.recoverability, result.proposal.root_cause,
-                         result.proposal.confidence, mapping, result.source)
+                         result.proposal.confidence, mapping, result.source, trust)
 
     # ---- step 3: DECIDE ---------------------------------------------------
 
     @staticmethod
-    def _shrink(beliefs, prior_class: FailureClass):
-        """Blend the model's distribution with the taxonomy prior (see DIAGNOSIS_SHRINKAGE)."""
-        w = DIAGNOSIS_SHRINKAGE
+    def _shrink(beliefs, prior_class: FailureClass, w: float = DIAGNOSIS_SHRINKAGE):
+        """Blend the model's distribution with the deterministic taxonomy prior."""
         if w >= 1.0:
             return beliefs
+        if w <= 0.0:
+            return ((prior_class, 1.0),)
         merged: dict[FailureClass, float] = {prior_class: (1.0 - w)}
         for cls, p in beliefs:
             merged[cls] = merged.get(cls, 0.0) + w * p
@@ -387,6 +399,8 @@ class Agent:
                                     (now - started).total_seconds() / 3600.0,
                                     contacts, seq)
                 self.model.update_distribution(dx.beliefs, ActionType.NO_ACTION, got_it)
+                if dx.trust is not None:
+                    self.model.update_source(dx.trust, got_it)
                 recovered_now = margin_amount if got_it else 0
                 recovered += recovered_now
                 self._log(event, arm, seq, decision, verdict, 0, recovered_now, now)
@@ -466,6 +480,9 @@ class Agent:
 
             # ---- step 5: LEARN ---------------------------------------------
             self.model.update_distribution(dx.beliefs, decision.action, got_it)
+            if dx.trust is not None:
+                # Credit or blame the diagnosis source we chose to act on.
+                self.model.update_source(dx.trust, got_it)
 
             recovered_now = margin_amount if got_it else 0
             recovered += recovered_now
