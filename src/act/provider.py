@@ -1,4 +1,4 @@
-"""Provider boundary (CLAUDE.md section 7).
+"""Provider boundary (spec §7).
 
 One protocol, two implementations:
   - `SimulatedProvider` - zero network. The decision core is fully testable without
@@ -153,7 +153,7 @@ class RazorpayProvider:
     def __post_init__(self) -> None:
         if not self.key_id.startswith("rzp_test_"):
             raise LiveKeyRefused(
-                f"refusing non-test key {self.key_id[:12]}... - CLAUDE.md section 2 "
+                f"refusing non-test key {self.key_id[:12]}... - spec §2 "
                 "permits test mode only. Real money is never touched."
             )
 
@@ -180,7 +180,7 @@ class RazorpayProvider:
         raise NotImplementedError("Tier 1 exercises order creation; see eval/ for cohort runs")
 
     def send_nudge(self, event_id, channel, template_id, language, idempotency_key):
-        """NEVER sends. CLAUDE.md section 2: all customer contact is simulated."""
+        """NEVER sends. spec §2: all customer contact is simulated."""
         return ActionResult(executed=True, action=ActionType.NUDGE,
                             provider_ref=f"simulated_{idempotency_key}",
                             cost_paise=0, simulated=True,

@@ -1,4 +1,4 @@
-"""Injected clock (CLAUDE.md section 2 + section 12).
+"""Injected clock (spec §2 + section 12).
 
 `datetime.now()` must not appear anywhere else in this repo. Every time-dependent
 decision reads an injected Clock so that eval runs are deterministic and replayable.

@@ -1,4 +1,4 @@
-"""Webhook ingest tests (CLAUDE.md sections 7 and 13)."""
+"""Webhook ingest tests (the design spec sections 7 and 13)."""
 
 import json
 

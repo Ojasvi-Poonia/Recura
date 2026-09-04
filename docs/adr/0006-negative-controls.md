@@ -42,10 +42,15 @@ beyond the episode horizon.
 **Our headline fell from +33.84pp to under +5pp.** Roughly 29 points of what we were about
 to report was measurement artefact.
 
-**The residual is negative, and that direction matters.** The placebo now reads −2.22pp:
-under inert actions the harness scores treatment *below* control, so every lift we report
-is conservative. A positive residual would invalidate the headline; a negative one only
-understates it.
+**The residual contains zero, and that is the whole test.** The placebo currently reads
++0.21pp on an interval of [−2.01, +2.49]. A placebo whose interval *excluded* zero would
+mean the pipeline manufactures lift and would invalidate the headline.
+
+An earlier revision of this record read −2.22pp and argued that a negative residual made
+every reported lift conservative. **That argument is withdrawn.** The residual has since
+moved to positive, and treating the sign of a point estimate inside a four-point interval
+as a finding is precisely the error a negative control exists to prevent. We were doing it
+in the same paragraph where we claimed rigour.
 
 **The suite gates the result.** It exits non-zero on failure, so a broken measurement
 cannot quietly ship.

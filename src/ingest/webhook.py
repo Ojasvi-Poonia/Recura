@@ -1,4 +1,4 @@
-"""Razorpay webhook normalisation -> RiskEvent (CLAUDE.md section 7).
+"""Razorpay webhook normalisation -> RiskEvent (spec §7).
 
 Three behaviours here are directly driven by Razorpay's published webhook semantics
 (checked 2026-08-26):
@@ -9,7 +9,7 @@ Three behaviours here are directly driven by Razorpay's published webhook semant
 
 2. **Late authorisation is a STOP condition.** A success signal arriving after an
    apparent failure means the money already came in. Continuing to act would contact
-   a customer who has already paid. CLAUDE.md section 7 calls this a differentiator.
+   a customer who has already paid. spec §7 calls this a differentiator.
 
 3. **Idempotency uses `x-razorpay-event-id`.** Razorpay documents this header as
    unique per event and as the intended dedupe key. We do not invent our own.

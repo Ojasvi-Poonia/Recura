@@ -1,4 +1,4 @@
-"""Propensity estimation via Beta posteriors + Thompson sampling (CLAUDE.md section 5).
+"""Propensity estimation via Beta posteriors + Thompson sampling (spec §5).
 
 One posterior per (failure_class x action_type) cell. Thompson sampling balances
 exploration against exploitation: early on the posteriors are wide, so the agent tries

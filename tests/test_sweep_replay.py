@@ -1,4 +1,4 @@
-"""Tier 3 sweep and policy-replay tests (CLAUDE.md sections 8, 10)."""
+"""Tier 3 sweep and policy-replay tests (the design spec sections 8, 10)."""
 
 import copy
 

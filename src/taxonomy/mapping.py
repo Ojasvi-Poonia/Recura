@@ -1,4 +1,4 @@
-"""Razorpay `reason` -> FailureClass mapping (CLAUDE.md section 7).
+"""Razorpay `reason` -> FailureClass mapping (spec §7).
 
 Ground truth is `data/razorpay_error_reasons.csv`, transcribed from Razorpay's
 published error documentation (checked 2026-08-26):
@@ -209,7 +209,7 @@ _TABLE: tuple[tuple, ...] = (
     # -- TERMINAL: the episode is over. -------------------------------------
     ("order_already_paid", FC.UNKNOWN, RC.TERMINAL, None,
      "STOP CONDITION. This is how late authorisation surfaces on a retry "
-     "(CLAUDE.md section 7). Acting here would contact an already-paying customer."),
+     "(spec §7). Acting here would contact an already-paying customer."),
 )
 
 MAPPING: dict[str, ReasonMapping] = {
@@ -223,7 +223,7 @@ UNMAPPED_FALLBACK = ReasonMapping(
     note="Reason absent from the mapping table; handled conservatively and counted.",
 )
 
-# CLAUDE.md section 13: unmapped reasons fall to UNKNOWN and are COUNTED.
+# spec §13: unmapped reasons fall to UNKNOWN and are COUNTED.
 _unmapped_seen: dict[str, int] = {}
 
 

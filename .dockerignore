@@ -18,5 +18,5 @@ data/replay.json
 data/validity.json
 data/calibration.json
 demo/audio/
-CLAUDE.md
+the design spec
 BUILD_NOTES.md

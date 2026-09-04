@@ -1,4 +1,4 @@
-"""Decide-layer tests: bandit, multipliers, EV (CLAUDE.md section 5)."""
+"""Decide-layer tests: bandit, multipliers, EV (spec §5)."""
 
 from datetime import datetime, timedelta
 

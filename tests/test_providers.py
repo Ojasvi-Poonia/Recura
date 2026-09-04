@@ -1,4 +1,4 @@
-"""Provider boundary tests (CLAUDE.md sections 2 and 7)."""
+"""Provider boundary tests (the design spec sections 2 and 7)."""
 
 import pytest
 

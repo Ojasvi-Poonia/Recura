@@ -12,7 +12,7 @@ data/cohort.json
 data/latents.json
 
 # Internal spec / strategy doc - not part of the public submission
-CLAUDE.md
+the design spec
 data/results.json
 recura.db
 data/ablations.json
@@ -20,9 +20,13 @@ data/ablations.json
 # Private submission notes - not part of the public repo
 BUILD_NOTES.md
 VIDEO.md
+VIDEO_SCRIPT.md
 data/sweep.json
 data/replay.json
 data/validity.json
 data/calibration.json
 data/tier1.json
 demo/checkout/order.json
+
+# Build artifacts
+*.egg-info/

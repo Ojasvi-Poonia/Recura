@@ -1,6 +1,6 @@
 """Synthetic cohort generator.
 
-*** FROZEN after 2026-08-27 (CLAUDE.md section 9.3). ***
+*** FROZEN after 2026-08-27 (spec §9.3). ***
 Do not modify this file while tuning the agent. Any post-freeze change must be a
 separate commit with a stated reason in the message.
 
@@ -43,7 +43,7 @@ POST-FREEZE CHANGE LOG
    cohort" - but a merchant's real `payment.failed` stream is not pre-filtered, and
    Tier 1 against the live test API returned `international_transaction_not_allowed`
    with `source=business` as its very FIRST real failed payment. Excluding them meant
-   the entire Recoverability triage dimension (CLAUDE.md section 4, built specifically
+   the entire Recoverability triage dimension (spec §4, built specifically
    for these) was exercised by 0 of 10,000 events, and
    `retry.forbidden_for_recoverability` could never fire.
    These events are unrecoverable by any customer-facing action in the response model;
@@ -51,7 +51,7 @@ POST-FREEZE CHANGE LOG
    test - nudging a customer about the merchant's malformed request would be
    indefensible, and now there is a cohort that can catch us doing it.
 
-Design note - why this is not circular (CLAUDE.md section 9):
+Design note - why this is not circular (spec §9):
 
   The Razorpay `reason` is a NOISY EMISSION of the true underlying cause, not a
   perfect observation of it. ~78% of events emit a reason that genuinely indicates
@@ -116,7 +116,7 @@ FAILURE_MIX: dict[FailureClass, float] = {
     FC.UNKNOWN: 0.04,
 }
 
-# Emission noise (chosen 2026-08-26, see CLAUDE.md decision log).
+# Emission noise (chosen 2026-08-26, see the design spec decision log).
 P_OPAQUE = 0.12      # emits a reason carrying no diagnostic information
 P_MISLEADING = 0.10  # emits a reason that points at the WRONG class
 # remaining 0.78 emits a truthful reason for the true class

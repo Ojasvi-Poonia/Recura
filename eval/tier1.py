@@ -1,6 +1,6 @@
 """Tier 1 — prove the plumbing is authentic against the live Razorpay API.
 
-CLAUDE.md section 8 defines a three-tier validation ladder. Tiers 2 and 3 produce the
+spec §8 defines a three-tier validation ladder. Tiers 2 and 3 produce the
 statistics from a simulator. This tier produces no statistics at all: fifty test-mode
 calls cannot measure a lift. What it proves is that the parts which touch Razorpay are
 real — that our error taxonomy maps their actual codes, that our downtime model parses
@@ -12,7 +12,7 @@ That split is the honest claim:
     Tier 2  the statistics
     Tier 3  how sensitive those statistics are to our assumptions
 
-TEST MODE ONLY. A live key is refused at construction (CLAUDE.md section 2). Nothing
+TEST MODE ONLY. A live key is refused at construction (spec §2). Nothing
 here moves real money, and no customer is contacted.
 
     make tier1

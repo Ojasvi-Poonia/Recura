@@ -1,4 +1,4 @@
-"""Generate the committed LLM fixture set (CLAUDE.md section 8).
+"""Generate the committed LLM fixture set (spec §8).
 
 Run this ONCE with a provider key. After that the fixtures are committed and
 `make eval` reproduces the headline number offline, with no key of any kind.

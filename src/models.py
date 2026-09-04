@@ -1,4 +1,4 @@
-"""Recura domain model (CLAUDE.md section 4).
+"""Recura domain model (spec §4).
 
 Money is ALWAYS integer paise. Never float. Rupees appear only at display time.
 All models are frozen: a Decision or LedgerEntry is a value, never mutated.
@@ -39,7 +39,7 @@ class FailureClass(StrEnum):
 
 
 class Recoverability(StrEnum):
-    """Triage dimension (CLAUDE.md section 1, step 1). Orthogonal to FailureClass.
+    """Triage dimension (spec §1, step 1). Orthogonal to FailureClass.
 
     Razorpay's published reason list mixes genuine customer-side payment failures
     with merchant integration bugs (`invalid_order_id`, `live_mode_not_enabled`).
@@ -78,7 +78,7 @@ SourceType = Literal["payment", "checkout", "mandate", "invoice"]
 
 
 class ErrorObject(_Frozen):
-    """Razorpay's error object, verbatim shape (CLAUDE.md section 7)."""
+    """Razorpay's error object, verbatim shape (spec §7)."""
 
     code: str | None = None
     description: str | None = None
@@ -91,7 +91,7 @@ class ErrorObject(_Frozen):
 class CustomerHistory(_Frozen):
     """OBSERVABLE fields only.
 
-    CLAUDE.md section 9.1: the agent may never read a latent field. Everything here
+    spec §9.1: the agent may never read a latent field. Everything here
     is something a real merchant would already have in their own database.
     """
 
@@ -169,7 +169,7 @@ class Decision(_Frozen):
     p_recover: float = Field(ge=0.0, le=1.0)
     confidence: float = Field(ge=0.0, le=1.0)
     rationale: str
-    considered: tuple[CandidateEV, ...]  # CLAUDE.md section 4: never optional
+    considered: tuple[CandidateEV, ...]  # spec §4: never optional
     decided_at: datetime
     llm_fallback_used: bool = False
 
@@ -210,7 +210,7 @@ class ActionResult(_Frozen):
     provider_ref: str | None = None
     cost_paise: int = 0
     error: str | None = None
-    simulated: bool = True  # CLAUDE.md section 2: nothing real is ever sent
+    simulated: bool = True  # spec §2: nothing real is ever sent
 
 
 class LedgerEntry(_Frozen):

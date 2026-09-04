@@ -1,4 +1,4 @@
-"""Append-only ledger (CLAUDE.md sections 4, 10, 13).
+"""Append-only ledger (the design spec sections 4, 10, 13).
 
 Section 13's bar: "append-only enforced at the DB layer". Application-level discipline
 is not enough - a bug or a careless migration could rewrite history and the whole audit

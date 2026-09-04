@@ -1,7 +1,7 @@
 """Message rendering under DLT template constraints (Track 03: Hinglish recovery).
 
 THE POINT OF THIS MODULE
-CLAUDE.md section 1 gives the LLM two jobs: root-cause synthesis, and drafting
+spec §1 gives the LLM two jobs: root-cause synthesis, and drafting
 customer-facing copy. Only the first was built - and we measured it (eval/calibration.py)
 and found it wanting. This is the second, and it is the job a language model is actually
 good at: producing natural copy in a register a person will read.
@@ -19,7 +19,7 @@ consumers actually read in payment messages, and Latin script renders consistent
 across handsets where Devanagari does not. A `deva` variant exists for voice, where
 script is irrelevant and pronunciation is not.
 
-Nothing here is ever sent (CLAUDE.md section 2). Rendered text is logged.
+Nothing here is ever sent (spec §2). Rendered text is logged.
 """
 
 from __future__ import annotations

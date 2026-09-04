@@ -16,7 +16,7 @@ wanted. Devanagari text gets the Hindi voice.
     deva  -> Hindi voice            (Devanagari)
 
 Synthesis is a DEMO-ONLY step and an optional dependency. Nothing is ever dialled
-(CLAUDE.md section 2): the agent logs the script, and this renders a handful of samples
+(spec §2): the agent logs the script, and this renders a handful of samples
 so the recovery call can be heard rather than described.
 
     make voice

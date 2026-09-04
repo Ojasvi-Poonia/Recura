@@ -1,4 +1,4 @@
-"""Domain-model and clock invariants (CLAUDE.md sections 2, 4, 12)."""
+"""Domain-model and clock invariants (the design spec sections 2, 4, 12)."""
 
 from datetime import datetime
 

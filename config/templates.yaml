@@ -18,7 +18,7 @@
 # for voice, where script does not matter and pronunciation does.
 #
 # dlt_id values are SIMULATED. Real registration is a merchant onboarding step; nothing
-# here is ever sent (CLAUDE.md section 2).
+# here is ever sent (spec §2).
 
 FUNDS:
   dlt_id: "1107160000000000101"

@@ -1,4 +1,4 @@
-"""Deterministic policy engine (CLAUDE.md section 6).
+"""Deterministic policy engine (spec §6).
 
 No LLM involvement anywhere in this module. It evaluates `policy.yaml` - a contract a
 merchant could read and sign - and returns pass/block with a human-readable reason for
@@ -297,6 +297,17 @@ def _min_gap(ctx: Ctx) -> RuleOutcome:
     if ctx.decision.action not in CONTACT_ACTIONS or ctx.state.last_contact_at is None:
         return RuleOutcome()
     elapsed = (ctx.now - ctx.state.last_contact_at).total_seconds() / 3600.0
+
+    # A contact is recorded at the time it is SCHEDULED to reach the customer, which can
+    # be later than the clock of a subsequent decision. That makes `elapsed` negative, and
+    # the audit trail used to say things like "Last contact was -28.7h ago" in 155 entries.
+    # The block is still correct - a contact that has not landed yet is certainly inside
+    # the minimum gap - but the reason a merchant reads has to make sense.
+    if elapsed < 0:
+        return RuleOutcome(_block(
+            "contact.min_hours_between",
+            f"A contact is already scheduled {abs(elapsed):.1f}h from now; "
+            f"{hours}h minimum between contacts."))
     if elapsed < hours:
         return RuleOutcome(_block(
             "contact.min_hours_between",

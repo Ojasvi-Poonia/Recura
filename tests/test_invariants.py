@@ -1,4 +1,4 @@
-"""Repo-level invariants from CLAUDE.md section 12 (anti-goals), enforced by CI.
+"""Repo-level invariants from spec §12 (anti-goals), enforced by CI.
 
 These are the rules that are easy to state and easy to violate six files later.
 """
@@ -16,7 +16,7 @@ def _python_files(*roots: Path) -> list[Path]:
 
 
 def test_no_wall_clock_outside_clock_module():
-    """CLAUDE.md section 12: `datetime.now()` anywhere outside clock.py.
+    """spec §12: `datetime.now()` anywhere outside clock.py.
 
     Checked against the parsed AST, not against raw lines: a comment or docstring
     that merely *mentions* the rule is prose, not a violation. Only real call
@@ -40,7 +40,7 @@ def test_no_wall_clock_outside_clock_module():
 
 
 def test_no_agent_framework_imports():
-    """CLAUDE.md section 12: no LangChain / CrewAI / LangGraph. Hand-rolled loop."""
+    """spec §12: no LangChain / CrewAI / LangGraph. Hand-rolled loop."""
     banned = re.compile(r"^\s*(?:from|import)\s+(langchain|langgraph|crewai|autogen|llama_index)")
     offenders = [
         f"{p}:{i}"
@@ -52,7 +52,7 @@ def test_no_agent_framework_imports():
 
 
 def test_money_fields_are_integers():
-    """CLAUDE.md section 12: no floats for money. Every *_paise field is an int."""
+    """spec §12: no floats for money. Every *_paise field is an int."""
     offenders = []
     for path in _python_files(SRC, EVAL):
         for i, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
@@ -62,7 +62,7 @@ def test_money_fields_are_integers():
 
 
 def test_policy_is_never_shown_to_the_llm():
-    """CLAUDE.md section 1: the LLM never sees policy.yaml and cannot modify it.
+    """spec §1: the LLM never sees policy.yaml and cannot modify it.
 
     Checked as real imports and real string constants in the AST. A docstring that
     states the rule is prose, not a breach of it.
@@ -95,7 +95,7 @@ def test_policy_is_never_shown_to_the_llm():
 
 
 def test_agent_cannot_reach_latents():
-    """CLAUDE.md section 9.1/9.5: src/ must never import the simulator's hidden state."""
+    """spec §9.1/9.5: src/ must never import the simulator's hidden state."""
     offenders = [
         f"{p}:{i}"
         for p in _python_files(SRC)
@@ -106,7 +106,7 @@ def test_agent_cannot_reach_latents():
 
 
 def test_no_dialect_specific_sql_outside_trigger_definitions():
-    """CLAUDE.md section 10: no Postgres-specific SQL - Razorpay runs MySQL.
+    """spec §10: no Postgres-specific SQL - Razorpay runs MySQL.
 
     The schema must port. Checked against real string constants in the AST, skipping
     docstrings, so prose describing the rule is not mistaken for a breach of it.

@@ -32,6 +32,7 @@ COPY pyproject.toml README.md ./
 # fastapi + httpx are here only so the build-time test run covers the webhook surface;
 # `make eval` itself never imports them.
 RUN pip install "pydantic>=2.9" "pyyaml>=6.0" "sqlalchemy>=2.0" "numpy>=1.26" \
+    "hypothesis>=6.100" \
                 "fastapi>=0.115" "httpx>=0.27" "pytest>=8.0"
 
 COPY . .

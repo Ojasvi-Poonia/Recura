@@ -1,4 +1,4 @@
-"""API surface tests (CLAUDE.md sections 7, 10, 13)."""
+"""API surface tests (the design spec sections 7, 10, 13)."""
 
 import json
 

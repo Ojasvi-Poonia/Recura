@@ -1,4 +1,4 @@
-"""Cohort generator credibility invariants (CLAUDE.md section 9).
+"""Cohort generator credibility invariants (spec §9).
 
 These tests exist because the biggest risk to this project is fooling ourselves
 with our own synthetic data. Each one maps to a numbered invariant in section 9.
@@ -120,7 +120,7 @@ def test_amounts_are_positive_integers(cohort):
 def test_generator_is_frozen():
     """section 9.3: the freeze is declared in the file itself, not just in a doc."""
     src = Path(g.__file__).read_text(encoding="utf-8")
-    assert "FROZEN" in src and "section 9.3" in src
+    assert "FROZEN" in src and "§9.3" in src
 
 
 def test_batch_walks_the_cohort_chronologically():

@@ -1,4 +1,4 @@
-"""Taxonomy tests (CLAUDE.md section 13: definition of done for `taxonomy/`)."""
+"""Taxonomy tests (spec §13: definition of done for `taxonomy/`)."""
 
 import pytest
 
@@ -7,13 +7,13 @@ from src.taxonomy import mapping as m
 
 
 def test_every_published_reason_is_mapped():
-    """CLAUDE.md section 13: every reason in the CSV maps to a FailureClass."""
+    """spec §13: every reason in the CSV maps to a FailureClass."""
     missing = m.published_reasons() - set(m.MAPPING)
     assert not missing, f"unmapped published reasons: {sorted(missing)}"
 
 
 def test_no_invented_reasons():
-    """CLAUDE.md section 7: do not invent categories. Every key must be Razorpay's."""
+    """spec §7: do not invent categories. Every key must be Razorpay's."""
     invented = set(m.MAPPING) - m.published_reasons()
     assert not invented, f"reasons not in Razorpay's published list: {sorted(invented)}"
 
@@ -43,7 +43,7 @@ def test_missing_error_object_is_handled():
     ],
 )
 def test_anchor_reasons(reason, expected):
-    """Anchors from CLAUDE.md section 4's own class descriptions."""
+    """Anchors from spec §4's own class descriptions."""
     assert m.classify(ErrorObject(reason=reason)).failure_class is expected
 
 
@@ -54,7 +54,7 @@ def test_merchant_config_reasons_never_look_customer_recoverable():
 
 
 def test_order_already_paid_is_terminal():
-    """Late authorisation stop condition (CLAUDE.md section 7)."""
+    """Late authorisation stop condition (spec §7)."""
     assert m.MAPPING["order_already_paid"].recoverability is Recoverability.TERMINAL
 
 

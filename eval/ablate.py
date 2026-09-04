@@ -1,4 +1,4 @@
-"""Ablation study (CLAUDE.md section 8) - the highest-value single item in the repo.
+"""Ablation study (spec §8) - the highest-value single item in the repo.
 
 Deliberately cripple the agent four ways and show the metrics degrade. If a component
 is load-bearing, removing it must cost measured money. If it is not, the honest thing
@@ -61,11 +61,11 @@ def main() -> None:
 
     print("\nsupporting counts:")
     print(f"{'configuration':<26}{'actions':>10}{'blocked':>10}{'refused':>10}"
-          f"{'contacts/cust':>15}{'escalated':>11}")
+          f"{'contacts/event':>15}{'escalated':>11}")
     for label, c in rows:
         t = c.treatment
         print(f"{label:<26}{t.events:>10}{t.actions_blocked:>10}"
-              f"{t.refused_negative_ev:>10}{t.contacts_per_customer:>15.3f}"
+              f"{t.refused_negative_ev:>10}{t.contacts_per_event:>15.3f}"
               f"{t.escalated:>11}")
 
     OUT_PATH.write_text(

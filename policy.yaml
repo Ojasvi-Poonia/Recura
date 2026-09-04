@@ -1,4 +1,4 @@
-# Recura policy contract (CLAUDE.md section 6).
+# Recura policy contract (spec §6).
 #
 # This file is a contract a merchant could read and sign. It is evaluated by a
 # deterministic engine. The LLM NEVER sees this file and cannot modify it
@@ -17,7 +17,7 @@ contact:
   #     borrowers only between 08:00-19:00, across ALL channels (call/SMS/WhatsApp/email);
   #     ultimate responsibility for outsourced agents rests with the regulated entity.
   # A payment-recovery nudge is causally a collections contact, so the stricter evening
-  # bound governs. NOTE: this is deliberately STRICTER than CLAUDE.md section 6's draft
+  # bound governs. NOTE: this is deliberately STRICTER than spec §6's draft
   # value of 21:00 - see eval/CALIBRATION.md section 1.1. Checked 2026-08-26.
   quiet_hours:
     start: "19:00"
@@ -57,7 +57,7 @@ episode:
   stop_on_payment: true
   stop_on_opt_out: true
   stop_on_dispute: true
-  # payment.authorized can arrive AFTER an apparent failure (CLAUDE.md section 7).
+  # payment.authorized can arrive AFTER an apparent failure (spec §7).
   # Treated as a hard stop: acting here would contact an already-paying customer.
   stop_on_late_authorisation: true
 

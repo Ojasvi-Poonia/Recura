@@ -1,4 +1,4 @@
-"""Metrics tests (CLAUDE.md section 8)."""
+"""Metrics tests (spec §8)."""
 
 from dataclasses import dataclass
 
@@ -31,7 +31,7 @@ def test_recovery_rate():
 
 def test_holdout_has_zero_cost_and_zero_contacts():
     m = summarise("holdout", arm(50, 10))
-    assert m.cost_paise == 0 and m.contacts_per_customer == 0.0
+    assert m.cost_paise == 0 and m.contacts_per_event == 0.0
 
 
 def test_lift_is_the_difference_in_recovery_rate():

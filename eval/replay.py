@@ -1,4 +1,4 @@
-"""Policy-diff harness (CLAUDE.md section 10).
+"""Policy-diff harness (spec §10).
 
 "What would this contract have cost us?"
 
@@ -107,7 +107,7 @@ def main() -> None:
         print(f"{variant.label:<30}{c.lift_pp:>+9.2f}"
               f"{rupees(c.net_incremental_paise):>19}{delta:>18}"
               f"{(rupees(c.cost_per_recovery_paise) if c.cost_per_recovery_paise is not None else 'n/a'):>12}"
-              f"{c.treatment.actions_blocked:>10,}{c.treatment.contacts_per_customer:>10.3f}")
+              f"{c.treatment.actions_blocked:>10,}{c.treatment.contacts_per_event:>10.3f}")
     print("-" * 108)
     print("\nwhat each variant answers:")
     for variant, _ in rows:

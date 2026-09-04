@@ -1,4 +1,4 @@
-"""Cost model (CLAUDE.md section 5). Loads config/costs.yaml.
+"""Cost model (spec §5). Loads config/costs.yaml.
 
 `attention_cost` rising superlinearly with recent contact count is what makes the
 agent stop on its own. Without it, NUDGE would always look cheap and the agent would

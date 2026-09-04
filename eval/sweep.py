@@ -1,4 +1,4 @@
-"""Tier 3: sensitivity sweep (CLAUDE.md section 8).
+"""Tier 3: sensitivity sweep (spec §8).
 
 Every grade-C parameter in eval/CALIBRATION.md is an assumption, not a measurement.
 Reporting a headline that rests on a point estimate of an assumption is exactly the kind

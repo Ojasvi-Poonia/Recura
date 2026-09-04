@@ -2,10 +2,10 @@
 
 SIMULATOR ONLY. Nothing under `src/` may import this module - that is asserted by
 tests/test_invariants.py::test_agent_cannot_reach_latents. This is the mechanical
-guarantee behind CLAUDE.md section 9.1 ("the agent must never read a latent field")
+guarantee behind spec §9.1 ("the agent must never read a latent field")
 and section 9.5 ("no peeking").
 
-Determinism (CLAUDE.md section 8): every random draw an outcome will ever need is
+Determinism (spec §8): every random draw an outcome will ever need is
 drawn ONCE at generation time and stored in `LatentState.draws`. Resolution is then a
 pure function of (latent, action, time) with no RNG at all, so outcomes are identical
 regardless of processing order, parallelism, or how many decisions an episode takes.
@@ -24,7 +24,7 @@ FC = FailureClass
 
 # Baseline recovery with NO intervention, per true failure class.
 # Source: eval/CALIBRATION.md section 3 (grade C - assumption, swept in Tier 3).
-# CLAUDE.md section 9.2 requires this to be non-zero or the holdout is meaningless.
+# spec §9.2 requires this to be non-zero or the holdout is meaningless.
 BASELINE_RECOVERY: dict[FailureClass, float] = {
     FC.TRANSIENT_INFRA: 0.45,     # rail self-heals; many customers simply retry
     FC.FUNDS: 0.30,               # salary lands; some pay unprompted
@@ -179,7 +179,7 @@ def resolve(
     prior_contacts: int,
     sequence_number: int,
 ) -> Outcome:
-    """Pure function. Same inputs -> same outcome, always (CLAUDE.md section 8)."""
+    """Pure function. Same inputs -> same outcome, always (spec §8)."""
     p = success_probability(latent, action, at, hours_since_event, prior_contacts)
     draw = latent.draws[sequence_number % len(latent.draws)]
     recovered = draw < p

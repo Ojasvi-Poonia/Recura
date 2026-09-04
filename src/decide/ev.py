@@ -1,4 +1,4 @@
-"""Expected-value computation and candidate generation (CLAUDE.md section 5).
+"""Expected-value computation and candidate generation (spec §5).
 
 The intellectual spine. For every rupee at risk the agent enumerates its options,
 prices each one, and takes the argmax.

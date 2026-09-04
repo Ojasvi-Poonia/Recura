@@ -1,4 +1,4 @@
-"""Metrics for the holdout comparison (CLAUDE.md section 8).
+"""Metrics for the holdout comparison (spec §8).
 
 Adds one thing section 8's table does not ask for: **bootstrap confidence intervals**.
 With 400 holdout events, a 7-point lift carries roughly a +/-4 point 95% interval. A
@@ -29,7 +29,11 @@ class ArmMetrics:
     cost_paise: int
     net_paise: int
     contacts: int
-    contacts_per_customer: float
+    # Contacts divided by EVENTS, not by customers. Named honestly after an audit found
+    # the old name (`contacts_per_customer`) overstated the denominator by 5.8x: one
+    # customer averages 7.1 events in this cohort. The true per-contacted-customer figure
+    # is ~1.77, and `make validate`'s contact-contract check is what actually polices it.
+    contacts_per_event: float
     actions_blocked: int
     escalated: int
     refused_negative_ev: int
@@ -70,7 +74,7 @@ def summarise(arm: str, results: list) -> ArmMetrics:
         arm=arm, events=n, recovered_events=len(recovered),
         recovery_rate=len(recovered) / n if n else 0.0,
         recovered_paise=gross, cost_paise=cost, net_paise=gross - cost,
-        contacts=contacts, contacts_per_customer=contacts / n if n else 0.0,
+        contacts=contacts, contacts_per_event=contacts / n if n else 0.0,
         actions_blocked=sum(r.actions_blocked for r in results),
         escalated=sum(1 for r in results if r.escalated),
         refused_negative_ev=sum(r.refused_negative_ev for r in results),

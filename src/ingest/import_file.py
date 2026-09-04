@@ -128,7 +128,7 @@ def to_risk_event(row: dict, merchant_id: str, amounts_are_major: bool) -> RiskE
             f"Convert the column, or configure the market for {declared}.")
 
     # Decimal, not float: 0.1 + 0.2 money is how rounding errors get into a ledger.
-    # CLAUDE.md section 12 forbids floats for money and this path was violating it.
+    # spec §12 forbids floats for money and this path was violating it.
     try:
         amount = Decimal(str(row["amount"]).strip().replace(",", ""))
     except (InvalidOperation, AttributeError) as exc:

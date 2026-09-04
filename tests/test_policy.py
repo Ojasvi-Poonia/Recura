@@ -1,4 +1,4 @@
-"""Policy engine tests (CLAUDE.md section 6 and section 13).
+"""Policy engine tests (spec §6 and section 13).
 
 Section 13's definition of done: "every rule in policy.yaml has a test proving it
 blocks". That is enforced here by `test_every_rule_has_a_blocking_test`, which fails
@@ -317,3 +317,16 @@ def test_a_merchant_config_failure_is_only_ever_offered_escalation():
     offered = {a for a, _ in candidate_actions(ctx)}
     assert offered <= {ActionType.NO_ACTION, ActionType.ESCALATE_HUMAN}, (
         f"a merchant integration bug was offered customer-facing actions: {offered}")
+
+
+def test_a_future_scheduled_contact_gives_a_sensible_reason():
+    """Contacts are recorded at their SCHEDULED time, which can be ahead of a later
+    decision's clock. 155 ledger entries used to read "Last contact was -28.7h ago"."""
+    verdict = evaluate(
+        mk_decision(channel="sms"),
+        mk_state(contacts_last_7d=1, last_contact_at=NOW + timedelta(hours=28.7)), NOW)
+    blocked = {b.rule_id: b.reason for b in verdict.rules_blocked}
+    assert "contact.min_hours_between" in blocked, "a pending contact must still block"
+    reason = blocked["contact.min_hours_between"]
+    assert "-" not in reason.split("h")[0], f"negative elapsed leaked into: {reason}"
+    assert "scheduled" in reason

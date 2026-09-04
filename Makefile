@@ -4,7 +4,7 @@ VENV ?= ./.venv/bin
 # FIRST command in the README quickstart - failed outright on 3.11 and 3.12.
 PYTHON ?= python3
 PORT ?= 8000
-.PHONY: help install test seed run eval ablate sweep replay lint
+.PHONY: help install test seed run eval ablate sweep replay
 
 help:
 	@grep -E '^[a-z-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n",$$1,$$2}'

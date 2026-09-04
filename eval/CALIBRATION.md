@@ -1,6 +1,6 @@
 # Calibration
 
-> CLAUDE.md section 9.4: *"Calibrate, don't invent. Every generator parameter cites a
+> spec §9.4: *"Calibrate, don't invent. Every generator parameter cites a
 > published source."* This file is that citation list. All sources checked **2026-08-26**.
 
 ## How to read this
@@ -15,7 +15,7 @@ and which are industry folklore.
 | **B — Primary operator** | Razorpay's own published documentation. Authoritative for taxonomy. |
 | **C — Industry secondary** | Vendor benchmark reports. **Self-interested** — vendors selling recovery tools publish recovery statistics. Used only to bound *ranges*, never as point estimates. |
 
-Every **C**-grade parameter is swept in Tier 3 (CLAUDE.md section 8). If the headline
+Every **C**-grade parameter is swept in Tier 3 (spec §8). If the headline
 result depends on a C-grade point estimate, the result is not real. The sweep exists
 precisely so that no conclusion rests on a vendor's marketing number.
 
@@ -32,7 +32,7 @@ Two regimes overlap for a payment-recovery message:
 | TRAI TCCCPR | **09:00–21:00** | Promotional commercial communication; transactional messages exempt |
 | RBI Fair Practices Code | **08:00–19:00** | Contact with borrowers for recovery — *all* channels: call, SMS, WhatsApp, email |
 
-CLAUDE.md section 6 sketches `quiet_hours: {start: "21:00", end: "09:00"}`, i.e. a
+spec §6 sketches `quiet_hours: {start: "21:00", end: "09:00"}`, i.e. a
 09:00–21:00 contact window. That follows TRAI but **breaches RBI's collections
 guidance by two hours every evening.**
 
@@ -47,7 +47,7 @@ here costs a little measured recovery and removes an entire category of objectio
 
 ### 1.2 E-mandate pre-debit notification — **verified, and the framework is new**
 
-CLAUDE.md section 6 flags `pre_debit_notification_hours: 24` as "VERIFY". Verified:
+spec §6 flags `pre_debit_notification_hours: 24` as "VERIFY". Verified:
 
 - **RBI Digital Payments — E-Mandate Framework, 2026 (issued 21 April 2026)** consolidates
   and *replaces* all earlier e-mandate circulars. Pre-debit notification to the customer
@@ -96,7 +96,7 @@ definitionally customer/instrument-side, this gives:
 | `UNKNOWN` | ~4% | **B** | Razorpay documents `payment_failed`/`payment_declined` as "exact reason not communicated" |
 
 Only the `TRANSIENT_INFRA` share and the existence of a large `UNKNOWN` bucket are
-well-grounded. **The interior split is swept across five parameterisations in Tier 3.**
+well-grounded. **The interior split is swept across ten parameterisations in Tier 3.**
 
 ### Scope of this mix (added 2026-08-26)
 
@@ -123,7 +123,7 @@ asserts against.
 ## 3. Baseline recovery without intervention (grade C — swept, load-bearing)
 
 This is the single most important generator parameter, because the holdout arm *is*
-this number. CLAUDE.md section 9.2 requires it to be non-zero.
+this number. spec §9.2 requires it to be non-zero.
 
 Published figures, all vendor-sourced and therefore graded **C**:
 
@@ -319,7 +319,7 @@ expensive") and never carried into this file. Worse, `eval/sweep.py` scaled it o
 of `_EFFICACY_KEYS`, a group of four constants moved together by a single `efficacy_scale`.
 No parameterisation could answer "how much of this result is that one number?"
 
-That is exactly the shape of assumption section 9 of `CLAUDE.md` exists to catch, and we
+That is exactly the shape of assumption section 9 of `the design spec` exists to catch, and we
 did not catch it ourselves.
 
 ### Grounding

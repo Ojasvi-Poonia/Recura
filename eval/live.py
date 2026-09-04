@@ -7,7 +7,7 @@ and a policy contract vetoing positive-expected-value actions over and over.
 This renders that stream. It is INSTRUMENTATION, not decoration: the observer is
 read-only and cannot influence the run, so the numbers it prints are the numbers
 `make eval` reports. Pacing uses a plain sleep and reads no clock, so determinism holds
-(CLAUDE.md section 12).
+(spec §12).
 
     make eval LIVE=1              stream at full speed
     make eval LIVE=1 PACE=0.06    slow enough to film

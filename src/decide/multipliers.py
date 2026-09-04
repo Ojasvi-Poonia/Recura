@@ -1,4 +1,4 @@
-"""Context multipliers applied to the sampled propensity (CLAUDE.md section 5).
+"""Context multipliers applied to the sampled propensity (spec §5).
 
 Section 5: "Keep the multipliers in one file with a comment justifying each. A panel
 will ask." This is that file.

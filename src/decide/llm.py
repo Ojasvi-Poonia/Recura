@@ -1,10 +1,10 @@
-"""LLM root-cause synthesis (CLAUDE.md sections 1, 5, 8, 13).
+"""LLM root-cause synthesis (the design spec sections 1, 5, 8, 13).
 
 The LLM's ONLY job is diagnosis: read heterogeneous signals, propose a root cause and a
 suspected failure class. It never chooses an action, never sees `policy.yaml`, and never
 sees a hidden latent. Those boundaries are enforced by tests/test_invariants.py.
 
-DETERMINISM - a correction to CLAUDE.md section 2
+DETERMINISM - a correction to spec §2
 --------------------------------------------------
 Section 2 specifies "temperature 0, pinned model string". **`temperature` no longer
 exists on current Claude models** - it was removed on Opus 5 / Sonnet 5 / Fable 5 and

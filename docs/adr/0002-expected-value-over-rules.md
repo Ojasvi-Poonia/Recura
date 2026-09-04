@@ -56,7 +56,7 @@ genuinely binding and the "exactly ₹0" demonstration belongs to the *spend* ca
 **"A random chooser posts −4.70pp."** It now posts **+5.99pp** on an interval excluding
 zero. Randomly chosen interventions, run through the same policy gate and stopping rules,
 do recover money. The optimiser's advantage is efficiency, not existence: 26% more lift on
-45% fewer contacts, at ₹387 per marginal recovery against ₹643. That is a narrower claim
+45% fewer contacts, at ₹401 per marginal recovery against ₹643. That is a narrower claim
 than this ADR originally made, and it is the true one.
 
 **"The sweep shows a parameterisation where the agent loses money."** It no longer does —

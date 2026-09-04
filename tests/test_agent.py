@@ -1,4 +1,4 @@
-"""Agent loop tests (CLAUDE.md sections 1, 8, 12)."""
+"""Agent loop tests (the design spec sections 1, 8, 12)."""
 
 from datetime import datetime, timedelta
 
@@ -275,7 +275,7 @@ def test_agent_does_not_repeat_a_refused_action():
     """A blocked action yields no outcome, so the bandit cannot learn from it.
 
     Without this the agent re-proposes the same forbidden retry every step and
-    degenerates into a retry bot - CLAUDE.md section 12's explicit anti-goal.
+    degenerates into a retry bot - spec §12's explicit anti-goal.
     """
     agent = mk_agent()
     result = agent.run_episode(
@@ -468,3 +468,26 @@ def test_a_message_that_could_not_be_written_is_never_scored_as_sent(monkeypatch
     assert failures > 0, "no episode reached the unwritable branch; test proves nothing"
     assert ActionType.NUDGE not in scored, (
         "the world was asked to score a NUDGE that was never composed")
+
+
+def test_the_rationale_names_a_genuinely_different_action():
+    """The ledger is the audit trail. A fifth of it used to be tautology.
+
+    RETRY_SCHEDULED and NUDGE each yield several candidates differing only in timing or
+    channel, so a plain second-best was frequently the same action type at the same value:
+    "EV 27 paise beats RETRY_SCHEDULED at 27".
+    """
+    agent = mk_agent()
+    tautologies = 0
+    checked = 0
+    for i in range(25):
+        decision, _ = agent._decide(mk_event(event_id=f"e{i}"), NOW, 0)
+        if "beats" not in decision.rationale:
+            continue
+        checked += 1
+        named = decision.rationale.split("beats ")[1].split(" at ")[0].strip()
+        if named == decision.action.value:
+            tautologies += 1
+    assert checked, "no rationale named a runner-up; test proves nothing"
+    assert tautologies == 0, (
+        f"{tautologies}/{checked} rationales named the chosen action as its own runner-up")

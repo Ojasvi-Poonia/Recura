@@ -1,4 +1,4 @@
-"""FastAPI surface (CLAUDE.md section 10): /health plus the webhook receiver.
+"""FastAPI surface (spec §10): /health plus the webhook receiver.
 
 The one thing that matters here: the raw request body is read and verified BEFORE
 any parsing. FastAPI's automatic JSON binding would re-serialise the payload and

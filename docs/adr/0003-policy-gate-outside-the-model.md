@@ -37,7 +37,7 @@ sentence is the one we most want to be able to say, and it is now cheap to verif
 
 **The model cannot explain a block.** It does not know the rules exist. Explanation comes
 from the ledger, which records the rule id and a human-readable reason for every block —
-8,663 of them in the reported run.
+6,256 of them in the reported run.
 
 **Compliance is legible.** `policy.yaml` is 20 rules a merchant could read, each with a
 citation and a date checked. Changing behaviour means editing a contract, not a prompt.

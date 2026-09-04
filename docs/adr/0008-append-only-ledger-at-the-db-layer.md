@@ -34,7 +34,7 @@ get a writable ledger. Both are asserted by tests, including one that reopens th
 rejected. That is how a reviewer verifies the decision was reasoned rather than hardcoded.
 
 **A blocked action is evidence, not an error.** Blocks are recorded with rule id and
-human-readable reason. 8,663 in the reported run.
+human-readable reason. 6,256 in the reported run.
 
 **Corrections require a compensating entry.** There is no edit path, by design. That is
 how ledgers work.

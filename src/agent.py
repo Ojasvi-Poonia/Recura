@@ -1,4 +1,4 @@
-"""The agent loop (CLAUDE.md sections 1, 11, 12).
+"""The agent loop (the design spec sections 1, 11, 12).
 
 Hand-rolled on purpose. No LangChain, no CrewAI, no LangGraph - because we need
 deterministic replay and a policy gate the model cannot reach. This file is meant to be
@@ -258,7 +258,7 @@ class Agent:
         #
         # A blocked action yields no outcome, so the bandit learns nothing from it and
         # would happily propose the same forbidden retry every step. Left unfixed the
-        # agent degenerates into a retry bot - CLAUDE.md section 12's explicit anti-goal -
+        # agent degenerates into a retry bot - spec §12's explicit anti-goal -
         # burning its whole decision budget on requests the policy already denied. The
         # first refusal is still logged as evidence (section 6); only the repeats stop.
         if refused:
@@ -275,8 +275,16 @@ class Agent:
             best = considered[int(self.rng.integers(len(considered)))]
         else:
             best = choose(considered)
-        runner_up = max((c for c in considered if c is not best),
+        # The runner-up must be a DIFFERENT kind of action, or the rationale explains
+        # nothing. RETRY_SCHEDULED and NUDGE each produce several candidates that differ
+        # only in timing or channel, so a plain second-best was the same action type 22%
+        # of the time and read "EV 27 paise beats RETRY_SCHEDULED at 27". The ledger is
+        # the audit trail this project is judged on; a fifth of it was tautology.
+        runner_up = max((c for c in considered if c.action is not best.action),
                         key=lambda c: c.expected_value_paise, default=None)
+        if runner_up is None:  # only one action type was available at all
+            runner_up = max((c for c in considered if c is not best),
+                            key=lambda c: c.expected_value_paise, default=None)
 
         rationale = (
             f"EV {best.expected_value_paise} paise beats "
@@ -381,9 +389,18 @@ class Agent:
                 break
 
             # Re-observe: contact count is the one observable the loop itself changes.
+            #
+            # Computed ONCE and used everywhere: pricing, the policy gate, and the world.
+            # The per-customer ledger was originally wired into the gate alone, so
+            # `evaluate()` and `_cost_of()` disagreed about how often we had contacted the
+            # same person at the same instant. Attention cost was priced off an
+            # episode-local tally that resets to zero, which made a fourth contact look
+            # like a first one.
+            seen = self._contacts_in_last_7d(event.customer_id, now,
+                                             history.contacts_last_7d)
             observed = event.model_copy(update={
                 "customer_history": history.model_copy(
-                    update={"contacts_last_7d": contacts})
+                    update={"contacts_last_7d": seen})
             })
 
             budget = self.merchant_day(event.merchant_id, now)
@@ -403,8 +420,7 @@ class Agent:
             state = EpisodeState(
                 event_id=event.event_id, episode_started_at=started,
                 attempts_made=attempts, attempts_this_mandate_cycle=attempts,
-                contacts_last_7d=self._contacts_in_last_7d(event.customer_id, now,
-                                                          history.contacts_last_7d),
+                contacts_last_7d=seen,
                 last_contact_at=self._last_contact_at(event.customer_id),
                 pre_debit_notice_sent_at=pre_debit_notice_at,
                 consented_channels=history.consented_channels,
@@ -417,7 +433,7 @@ class Agent:
                 merchant_spend_today_paise=budget.spend_paise,
                 escalations_today=budget.escalations,
                 broken_promise_to_pay=promise_broken,
-                action_cost_paise=self._cost_of(decision, contacts),
+                action_cost_paise=self._cost_of(decision, seen),
             )
             # ---- step 4: GOVERN --------------------------------------------
             if self.use_policy:
@@ -502,7 +518,7 @@ class Agent:
                 continue
 
             # ---- step 5 (act) ----------------------------------------------
-            action_cost = self._cost_of(decision, contacts)
+            action_cost = self._cost_of(decision, seen)
             if decision.action is ActionType.NUDGE:
                 # Render the ACTUAL copy through the DLT template registry. If no
                 # registered template covers this diagnosis, no message goes out -

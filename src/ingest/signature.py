@@ -1,4 +1,4 @@
-"""Razorpay webhook signature verification (CLAUDE.md section 7).
+"""Razorpay webhook signature verification (spec §7).
 
 Razorpay computes HMAC-SHA256 with the webhook secret as key and the RAW request
 body as message, delivered in the `X-Razorpay-Signature` header.

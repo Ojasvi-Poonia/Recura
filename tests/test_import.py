@@ -165,7 +165,7 @@ def test_a_declared_zero_margin_is_honoured_not_replaced_by_the_default():
 
 
 def test_money_does_not_pass_through_a_float(tmp_path):
-    """CLAUDE.md section 12 forbids floats for money; this path was violating it."""
+    """spec §12 forbids floats for money; this path was violating it."""
     path = _write(tmp_path, "m.csv",
                   b"event_id,amount,failed_at\nevt_1,1234.45,2026-08-30T10:00:00\n")
     event = to_risk_event(read_rows(path)[0], "m", amounts_are_major=True)

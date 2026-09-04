@@ -1,4 +1,4 @@
-"""Append-only ledger tests (CLAUDE.md sections 4, 10, 13)."""
+"""Append-only ledger tests (the design spec sections 4, 10, 13)."""
 
 from datetime import datetime, timedelta
 

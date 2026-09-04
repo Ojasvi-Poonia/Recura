@@ -1,4 +1,4 @@
-"""LLM diagnosis-layer tests (CLAUDE.md sections 1, 8, 13)."""
+"""LLM diagnosis-layer tests (the design spec sections 1, 8, 13)."""
 
 from datetime import datetime
 

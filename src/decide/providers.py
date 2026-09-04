@@ -1,4 +1,4 @@
-"""LLM provider adapters (CLAUDE.md section 7's adapter-boundary principle).
+"""LLM provider adapters (spec §7's adapter-boundary principle).
 
 Recura's diagnosis layer is provider-agnostic, exactly like its payment layer. One
 protocol, several implementations, selected at runtime. The decision core does not know
@@ -67,7 +67,7 @@ class AnthropicProvider:
     our control rather than defaulting to `high`.
 
     `temperature` is NOT sent - removed on current Claude models, HTTP 400 if present.
-    Determinism comes from the committed fixture set (CLAUDE.md section 8).
+    Determinism comes from the committed fixture set (spec §8).
     """
 
     name: str = "anthropic"
@@ -153,7 +153,7 @@ class GeminiProvider:
 
     Structured output is native: pass a Pydantic class as `response_schema` and read
     `response.parsed`. `temperature=0` IS supported here, which restores the literal
-    determinism knob CLAUDE.md section 2 originally asked for - though the committed
+    determinism knob spec §2 originally asked for - though the committed
     fixture set remains the real guarantee.
 
     Multiple keys are supported and rotated on quota/auth failures, because free-tier
