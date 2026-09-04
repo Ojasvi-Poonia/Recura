@@ -40,6 +40,10 @@ class ArmMetrics:
     # identical to a healthy one in every other number here - see BUILD_NOTES section R.
     messages_sent: int = 0
     template_failures: int = 0
+    # Promise-to-pay is a named Track 03 direction. Reported because the counter read 0
+    # across the whole cohort while the escalation rule for it was firing - the two used
+    # different definitions of "broken".
+    broken_promises: int = 0
 
 
 @dataclass(frozen=True)
@@ -74,6 +78,7 @@ def summarise(arm: str, results: list) -> ArmMetrics:
         llm_fallbacks=sum(r.llm_fallbacks for r in results),
         messages_sent=sum(getattr(r, "messages_sent", 0) for r in results),
         template_failures=sum(getattr(r, "template_failures", 0) for r in results),
+        broken_promises=sum(getattr(r, "broken_promises", 0) for r in results),
     )
 
 

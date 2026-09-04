@@ -31,20 +31,38 @@ the ledger.
 
 **`NO_ACTION` becomes arithmetic rather than a rule.** Asked why a transaction was
 skipped, the answer is a number, not a policy line. In the reported run the agent refuses
-2,551 times, and each refusal has a reason a merchant can audit.
+**3,632 times**, and each refusal has a reason a merchant can audit.
 
-**The agent stops on its own.** Attention cost rises superlinearly and includes expected
-opt-out loss, so the fourth message prices itself out. Replay shows that loosening the
-contact cap from 3 to 5 changes the outcome by **exactly ₹0** — the maths binds before the
-contract does.
+**The agent stops on its own — on spend.** Attention cost rises superlinearly and includes
+expected opt-out loss, so the fourth message prices itself out. `make replay` with the
+merchant spend cap removed entirely changes the outcome by **exactly ₹0**: the maths binds
+before the contract does.
 
 **Every term must be justified.** `margin`, `direct_cost`, `attention_cost` and the
-propensity model are all assumptions. They are cited in `CALIBRATION.md` and swept in
-Tier 3, and the sweep shows a parameterisation where the agent *loses money*.
+propensity model are all assumptions, cited in `CALIBRATION.md` and swept in Tier 3.
 
 **It can be wrong in ways rules cannot.** A mis-estimated propensity produces a confidently
-wrong action. The ablation is the guard: a random chooser posts −4.70pp, so we can at
-least demonstrate the optimiser is doing real work.
+wrong action, and the ablation is the guard.
+
+## Three claims in this record did not survive
+
+Left standing rather than quietly edited, because how a decision aged is part of the record.
+
+**"Loosening the contact cap from 3 to 5 changes the outcome by exactly ₹0."** That was
+measured while the contact cap was counted per episode rather than per customer, so it was
+not being enforced at all. Loosening it now costs ₹3,244 — still small, but the clause is
+genuinely binding and the "exactly ₹0" demonstration belongs to the *spend* cap alone.
+
+**"A random chooser posts −4.70pp."** It now posts **+5.99pp** on an interval excluding
+zero. Randomly chosen interventions, run through the same policy gate and stopping rules,
+do recover money. The optimiser's advantage is efficiency, not existence: 26% more lift on
+45% fewer contacts, at ₹387 per marginal recovery against ₹643. That is a narrower claim
+than this ADR originally made, and it is the true one.
+
+**"The sweep shows a parameterisation where the agent loses money."** It no longer does —
+all ten parameterisations now clear zero. We are less comfortable with that than it sounds:
+the row that used to lose money was the one keeping us honest, and it moved because of
+correctness fixes elsewhere, not because the world got kinder.
 
 ## Alternatives considered
 

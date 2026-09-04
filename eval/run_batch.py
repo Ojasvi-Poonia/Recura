@@ -190,6 +190,7 @@ def report(config: RunConfig, c, agent: Agent,
         ("Contacts per customer", f"{t.contacts_per_customer:.2f}", f"{h.contacts_per_customer:.2f}"),
         ("Messages actually sent", f"{t.messages_sent:,}", f"{h.messages_sent:,}"),
         ("  unwritable (no template)", f"{t.template_failures:,}", "-"),
+        ("Promises to pay broken", f"{t.broken_promises:,}", "-"),
         ("Actions blocked by policy", f"{t.actions_blocked:,}", "-"),
         ("Escalated to human", f"{t.escalated:,}", "-"),
         ("Refused (EV < 0)", f"{t.refused_negative_ev:,}", "-"),
@@ -223,7 +224,10 @@ def report(config: RunConfig, c, agent: Agent,
             print(f"  {label:<24}{seg.treatment.events:>7,}{seg.lift_pp:>+8.2f}{mark}"
                   f"{ci:>17}{rupees(seg.net_incremental_paise):>16}")
         print("  " + "-" * 72)
-        print("  * interval includes zero - not significant at 95% on this surface alone")
+        # Only explain the marker if a row actually carries one. Printing the legend
+        # unconditionally sends a reader hunting for an asterisk that is not there.
+        if any(not seg.significant for seg in segments.values()):
+            print("  * interval includes zero - not significant at 95% on this surface alone")
 
     from src.policy.engine import rule_ids
     fired = agent.rule_blocks

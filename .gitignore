@@ -19,6 +19,7 @@ data/ablations.json
 
 # Private submission notes - not part of the public repo
 BUILD_NOTES.md
+VIDEO.md
 data/sweep.json
 data/replay.json
 data/validity.json

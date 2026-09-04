@@ -11,8 +11,14 @@ Submission for the Razorpay AI Buildathon, Track 03 — AI Revenue Recovery.
 
 ## Results
 
-10,000 synthetic events, seeded, 80/20 randomised split. `make eval` reproduces this
-exactly, offline, with no API key.
+> ## +7.56 percentage points against a randomised control group
+> **₹22,81,939 recovered · ₹20,45,919 net of cost · 9.7× return on spend**
+> 95% bootstrap CI [+5.42, +9.84] · ₹387 per extra recovery
+>
+> `make eval` reproduces this in **4 seconds, offline, with no API key**, byte-identical
+> across runs.
+
+10,000 synthetic events, seeded, 80/20 randomised split.
 
 | Metric | Treatment | Holdout |
 |---|---:|---:|
@@ -22,14 +28,39 @@ exactly, offline, with no API key.
 | Intervention cost | ₹2,36,020 | ₹0 |
 | Contacts per customer | 0.23 | 0 |
 | Messages actually sent | 313 | 0 |
+| Promises to pay broken | 26 | — |
 | Actions blocked by policy | 6,256 | — |
 | Refused, EV < 0 | 3,632 | — |
 | Escalated to human | 1,585 | — |
 | Opted out | 7 | 0 |
 
-> ### +7.56 percentage points — 95% CI [+5.42, +9.84]
-> **₹22,81,939 incremental recovered · ₹20,45,919 net · 9.7× return on spend**
-> Cost per extra recovery: ₹387. Runs in 4 seconds. Byte-identical across runs.
+The rows that carry the argument are the last four. **6,256 actions the contract refused,
+3,632 the arithmetic refused, 1,585 routed to a human, and 7 customers who asked us to stop
+and were never contacted again.** A system that reports only what it recovered is hiding
+the half that matters.
+
+---
+
+## Coverage against the brief
+
+Track 03 lists seven example directions. The spec for this project deliberately warns
+against attempting all of them — *"one failure class done rigorously beats seven done
+shallowly"* — so the test applied here is not "is there code for it" but **"is it exercised,
+with a number, in the committed run"**.
+
+| Direction | Where it lives | Exercised in `make eval` |
+|---|---|---|
+| Payment degradation → root cause → action | 115 real Razorpay reason codes → `FailureClass` | 4,447 treated, **+8.04pp** |
+| Checkout drop-off recovery | `source_type="checkout"`, no error object on 60% | 1,634 treated, **+6.62pp** |
+| Failed-subscription recovery | `source_type="mandate"` | 1,193 treated, **+6.28pp** |
+| B2B receivables chaser | ageing ladder in `decide/ev.py` | 784 treated, **+9.16pp** |
+| Mandate retry sequencer | RBI notify → wait 24h → debit | pre-debit rule bound **1,997×** |
+| Hinglish voice recovery | DLT templates, `make voice` | 5 rendered audio files |
+| Promise-to-pay tracker | 48h window, escalation on breach | **26 promises broken** |
+
+All four surfaces clear zero independently. The four directions with their own holdout are
+measured; the other three are demonstrated but not independently A/B tested, and we would
+rather say so than imply seven measured results.
 
 ---
 
@@ -47,15 +78,14 @@ compared against **its own** randomised holdout:
 | Mandate / subscription | 1,193 | 291 | +6.28pp | [+0.53, +12.10] | ₹2,24,057 |
 | Overdue receivable | 784 | 193 | +9.16pp | [+2.94, +15.61] | ₹2,48,048 |
 
-**The effect is consistent across all four surfaces** — every point estimate sits between
-+5.00 and +5.70pp. What differs is confidence, and that is purely sample size: the two
-smallest surfaces have 287 and 189 holdout events, which is not enough to exclude zero at
-95% no matter how real the effect is.
+**All four surfaces clear zero at 95%.** Lifts run from +6.28pp on mandates to +9.16pp on
+receivables, and the intervals widen exactly as the samples shrink — mandate has 291 control
+events, receivables 193. That is the whole explanation for why the two smallest surfaces
+have the widest bands, and it is a power story rather than a capability one.
 
-So the honest statement is **not** "we are worse at receivables". It is *"we measure the
-same effect on receivables and cannot yet prove it at 95% on 189 control events"*. The
-fix is more data, not more agent, and we would rather say that than quietly report only
-the pooled number that hides it.
+Reporting them separately was not decoration. In an earlier revision checkout abandonment
+came out at +2.94pp with an interval spanning zero while the pooled number looked healthy,
+and that gap is exactly what a per-surface table exists to expose.
 
 One structural note that survives: 60% of checkout-abandonment events carry **no Razorpay
 error code at all** — nothing failed, the customer simply left. The taxonomy has nothing
@@ -119,7 +149,7 @@ reconstructs every customer's contact timeline, and fails if any clause in `poli
 breached. It reports **0 customers over the 3-in-7-days cap and 0 contact pairs closer than
 24 hours**, tightest gap 24.0h. It did not always: both clauses were structurally
 unenforceable until an audit found them, and 41 customers had been over the cap with 209
-pairs too close together ([BUILD_NOTES](BUILD_NOTES.md) section T).
+pairs too close together.
 
 ## Why you can believe that number
 
@@ -128,24 +158,25 @@ Any synthetic benchmark can be made to say anything. These are the checks that w
 
 | Check | Result |
 |---|---|
-| **A/A test** — split by customer, both halves treated identically | **+1.39pp**, CI [−0.38, +3.16] — spans zero, no phantom lift |
-| **Placebo** — every action made completely inert | **+0.40pp**, CI [−1.81, +2.70] — interval spans zero |
-| Arm balance | worst standardised difference **0.054** (RCT threshold 0.10) |
+| **A/A test** — split by customer, both halves treated identically | **+1.39pp**, CI [−0.38, +3.16] — spans zero |
+| **Placebo** — every action made completely inert | **+0.40pp**, CI [−1.81, +2.70] — spans zero |
+| **Contact contract** — replay every customer's contact timeline | 0 breaches, tightest gap 24.0h |
+| Arm balance | worst standardised difference **0.036** (RCT threshold 0.10) |
 | Holdout purity | zero cost, zero contacts, zero opt-outs |
-| **Contact contract** | 0 customers over the 3-in-7d cap, 0 pairs closer than 24h |
 | Latent isolation | no hidden variable reachable from `src/` |
 | Determinism | byte-identical across runs |
 
-The placebo control is the one that matters. When we first built it, it reported
-**+18.57pp of lift from actions that did nothing** — because the treatment arm was
-re-observed five times across an episode while the control arm was observed once. More
-draws on the same probability manufactures lift out of nothing. Fixing it cut our
-headline from +33.84pp to under +5pp. We would rather have found that than have you
-find it.
+The placebo is the one that matters. When we first built it, it reported **+18.57pp of
+lift from actions that did nothing** — because the treatment arm was re-observed five times
+per episode while the control was observed once. More draws on the same probability
+manufactures lift out of nothing. That single fix took the headline from +33.84pp to
+roughly +5pp; it has since risen to +7.56pp through correctness work documented below.
 
-The residual is **negative**, and the direction matters more than the size: under a
-placebo the harness scores treatment *below* control, so every number above is
-conservative.
+**The residual is +0.40pp on an interval of [−1.81, +2.70].** It contains zero, which is
+the test. We are not going to claim more than that: in earlier revisions this residual was
+*negative*, and we argued the harness therefore understated us. It is positive now, so that
+argument is withdrawn. What survives is the honest version — **the pipeline does not
+manufacture measurable lift**, and the check would fail if its interval excluded zero.
 
 ---
 
@@ -226,8 +257,7 @@ single improvement available: +9.79pp against +7.56pp. It contacts people more o
 the contract permits and recovers more by doing so. Earlier revisions of this README
 reported the gate as free, then 6%, then 29%, then 51%. Each was measured against a gate
 that was progressively less broken — two contact clauses could not fire at all, and four
-episode clauses were pre-empted by the agent stopping itself
-([BUILD_NOTES](BUILD_NOTES.md) sections T and AB). **Governance is expensive; that is the
+episode clauses were pre-empted by the agent stopping itself. **Governance is expensive; that is the
 finding, and it took four measurements to get it right.**
 
 **Against a random chooser the agent's edge is efficiency.** Random gets +5.99pp using
@@ -368,14 +398,14 @@ merchant budget clauses at all — at the shipped values they never bind.
    the absolute recovery rates should not be read as forecasts.
 2. **The result rests on how good the humans are.** Halving `ESCALATE_EFFICACY` — the
    largest and least-grounded constant in the simulator — halves the headline to +4.25pp,
-   and removing human escalation costs ₹8.78 lakh of ₹20.46 lakh.
+   and removing human escalation costs ₹8,77,699 of ₹20,45,919.
 3. **The language model contributes nothing measurable.** Ablation 4 removes it and the
    result does not move. We report that rather than implying the LLM does the work.
-4. **38% of the result depends on human escalation being available.** `make replay`
-   with `escalation.max_per_day: 0` drops the lift from +7.56pp to **+2.90pp**, costing
-   ₹5.38 lakh of ₹14.00 lakh. Recura is a decision layer that routes work to people, not
-   a system that replaces them. If a merchant has no collections staff, most of this
-   value does not exist.
+4. **43% of the result depends on human escalation being available.** `make replay`
+   with `escalation.max_per_day: 0` drops the lift from +7.56pp to **+4.10pp**, costing
+   ₹8,77,699 of ₹20,45,919. Recura is a decision layer that routes work to people, not a
+   system that replaces them. A merchant with no collections staff gets substantially
+   less of this.
 5. **Per-merchant margin is wired but not exercised** — the frozen cohort assigns every
    merchant the same 30%, so the EV differences that margin should create are untested.
 6. **Hinglish messaging is compliance-verified, not lift-verified.** We prove no
@@ -397,7 +427,7 @@ Full detail in [`RESULTS.md`](RESULTS.md).
 
 ## Design decisions worth knowing
 
-**No agent framework.** Hand-rolled loop — 525 lines, 391 of them code, walkable top to
+**No agent framework.** Hand-rolled loop — 776 lines, 391 of them code, walkable top to
 bottom. We need deterministic replay and a policy gate the model cannot reach.
 
 **The LLM never sees `policy.yaml`.** Enforced by a test that parses the AST, not by
@@ -461,9 +491,18 @@ eval/
   ablate.py  sweep.py  replay.py  calibration.py  metrics.py
 config/               costs, markets, DLT templates
 fixtures/             870 cached LLM responses - why eval needs no API key
+demo/audio/           rendered Hinglish voice samples (make voice)
 ```
 
-**511 tests.** Run `make test`.
+**Documents**
+
+| File | What it is |
+|---|---|
+| [`RESULTS.md`](RESULTS.md) | Full evidence: every table, every control, nine failure cases |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Data flow, the three separated authorities, failure modes |
+| [`docs/adr/`](docs/adr/) | Decision records — why no framework, why EV over rules |
+
+**514 tests.** Run `make test`.
 
 ---
 
@@ -476,6 +515,10 @@ entirely offline. A key is only required to *regenerate* fixtures:
 cp .env.example .env    # then add GEMINI_API_KEYS (free tier) or ANTHROPIC_API_KEY
 make fixtures
 ```
+
+`.env` is read on import (`src/env.py`); anything already exported in your shell wins over
+the file. The same file supplies `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` for `make tier1`,
+which exercises the integration against Razorpay's live test-mode API.
 
 Nothing is ever sent to a real customer, and no real payment is ever made. Test-mode
 keys only — a live Razorpay key is refused at construction.

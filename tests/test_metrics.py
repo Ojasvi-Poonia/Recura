@@ -172,3 +172,22 @@ def test_stopping_rules_are_more_than_running_out_of_road():
     assert list(census) == ["exhausted"]
     census2 = stop_reasons([SegR(stop_reason="recovered"), SegR(stop_reason="opted_out")])
     assert len(census2) == 2
+
+
+def test_a_validity_check_result_is_json_serializable():
+    """`make validate` writes data/validity.json as its last act.
+
+    numpy comparisons return np.bool_, which json.dumps refuses. That crashed the
+    command AFTER it had printed ALL CHECKS PASSED - so it exited 1 while claiming
+    success, and the committed validity.json silently stopped being updated. A reviewer
+    following the quickstart saw "Error 1" on the third command.
+    """
+    import json
+
+    import numpy as np
+
+    from eval.validate import Check
+
+    check = Check("n", "q", np.float64(1.0) <= np.float64(2.0), "d")
+    assert check.passed is True, "np.bool_ was not coerced to a Python bool"
+    assert json.dumps({"passed": check.passed})

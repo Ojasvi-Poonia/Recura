@@ -5,6 +5,7 @@ point Recura at their OWN export instead of arguing about our data.
 """
 
 import json
+import os
 
 import pytest
 
@@ -169,3 +170,35 @@ def test_money_does_not_pass_through_a_float(tmp_path):
                   b"event_id,amount,failed_at\nevt_1,1234.45,2026-08-30T10:00:00\n")
     event = to_risk_event(read_rows(path)[0], "m", amounts_are_major=True)
     assert event.amount_paise == 123445
+
+
+def test_dotenv_is_actually_loaded_and_never_clobbers_the_shell(tmp_path, monkeypatch):
+    """The README says `cp .env.example .env`. Nothing read that file.
+
+    So a reviewer followed the documented setup, got a .env on disk, and `make tier1`
+    still told them the key was missing. A documented step that silently does nothing is
+    worse than no step.
+    """
+    from src.env import load_env
+
+    env = tmp_path / ".env"
+    env.write_text(
+        "# a comment\n\nFROM_FILE=file-value\nALREADY_SET=file-value\nMALFORMED\n",
+        encoding="utf-8")
+
+    monkeypatch.setenv("ALREADY_SET", "shell-value")
+    monkeypatch.delenv("FROM_FILE", raising=False)
+
+    loaded = load_env(env)
+
+    assert os.environ["FROM_FILE"] == "file-value", ".env was not applied"
+    assert os.environ["ALREADY_SET"] == "shell-value", (
+        "a variable exported in the shell was overwritten by the file")
+    assert loaded == 1
+
+
+def test_a_missing_dotenv_is_not_an_error(tmp_path):
+    """Most reviewers never create one - `make eval` needs no key at all."""
+    from src.env import load_env
+
+    assert load_env(tmp_path / "nope.env") == 0

@@ -50,6 +50,13 @@ class Check:
     passed: bool
     detail: str
 
+    def __post_init__(self) -> None:
+        # numpy comparisons return np.bool_, which json.dumps refuses. Coerced here
+        # rather than at each call site so a new check cannot reintroduce it: this
+        # crashed `make validate` AFTER it had printed ALL CHECKS PASSED, so the
+        # command exited 1, and data/validity.json silently stopped being updated.
+        self.passed = bool(self.passed)
+
 
 @contextmanager
 def placebo():

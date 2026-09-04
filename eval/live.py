@@ -65,8 +65,9 @@ class LiveStream:
 
     def header(self) -> None:
         print(f"\n{BOLD('  RECURA — live decision stream')}")
-        print(DIM("  every line is one decision. ✗ marks positive expected value that "
-                  "the contract vetoed anyway.\n"))
+        print(DIM("  every line is one decision."))
+        print(DIM("  BLOCKED = positive expected value the policy contract vetoed, "
+                  "rule named underneath."))
         print(DIM(f"  {'#':>7} │ {'event':<11} {'amount':>9}  {'diagnosis':<19}"
                   f"{'action':<17}{'EV':>10}   outcome"))
         print(DIM(f"  {'':>7} ┼{'─' * 88}"))

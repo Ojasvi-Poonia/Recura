@@ -158,7 +158,7 @@ anywhere, which is what lets a stochastic algorithm produce byte-identical eval 
 | `market/` | Currency, timezone, rails, lawful contact window | Be hardcoded in the core |
 
 `src/agent.py` is the orchestrator and the only module allowed to know about both
-`decide/` and `policy/`. It is 525 lines, 391 of them code, and reads top to bottom.
+`decide/` and `policy/`. It is 776 lines, 543 of them code, and reads top to bottom.
 
 ---
 
@@ -170,7 +170,7 @@ Each of these has a full [ADR](docs/adr/) with the alternatives we rejected.
 
 Hand-rolled loop. We need three things a framework makes harder: deterministic replay,
 a policy gate outside the model's reach, and a control flow an interviewer can walk line
-by line. The loop is ~200 lines of actual control flow; the rest is the five steps and
+by line. The loop is ~307 lines of actual control flow; the rest is the five steps and
 their logging.
 
 ### The taxonomy is theirs; the judgement is ours

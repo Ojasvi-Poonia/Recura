@@ -3,6 +3,7 @@ VENV ?= ./.venv/bin
 # pyproject declares >=3.11. This used to hardcode python3.13, so `make install` - the
 # FIRST command in the README quickstart - failed outright on 3.11 and 3.12.
 PYTHON ?= python3
+PORT ?= 8000
 .PHONY: help install test seed run eval ablate sweep replay lint
 
 help:
@@ -29,6 +30,9 @@ fixtures: seed  ## one-off: generate the committed LLM fixture set (needs a prov
 
 fixtures-plan: seed  ## how many model calls the fixture set still needs
 	$(VENV)/python -m eval.generate_fixtures --dry-run
+
+serve:  ## run the webhook receiver on :8000 (GET /health, POST /webhooks/razorpay)
+	$(VENV)/python -m uvicorn src.api.main:app --host 127.0.0.1 --port $(PORT)
 
 import:  ## run Recura against YOUR data: make import FILE=failures.csv [DECIDE=1]
 	$(VENV)/python -m src.ingest.import_file --file $(FILE) $(if $(MAJOR),--major) $(if $(DECIDE),--decide)

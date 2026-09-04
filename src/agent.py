@@ -335,6 +335,12 @@ class Agent:
         promise_due_at: datetime | None = None
         pre_debit_notice_at: datetime | None = None
         broken_promises = 0
+        # Latched once a promise window closes unpaid. The counter used to increment only
+        # if the agent happened to nudge AGAIN afterwards, so it read 0 across the whole
+        # cohort while `escalation.after_broken_promise_to_pay` was firing - two different
+        # definitions of the same event, disagreeing. A promise is broken when the window
+        # passes without payment, whatever we do next.
+        promise_broken = False
         refused_actions: set[ActionType] = set()
         cost = recovered = 0
         blocked = refused = taken = 0
@@ -389,6 +395,11 @@ class Agent:
             if self.use_llm:
                 llm_consulted += 1
 
+            # A promise window that has closed unpaid is a broken promise, recorded once.
+            if promise_due_at is not None and now > promise_due_at and not promise_broken:
+                promise_broken = True
+                broken_promises += 1
+
             state = EpisodeState(
                 event_id=event.event_id, episode_started_at=started,
                 attempts_made=attempts, attempts_this_mandate_cycle=attempts,
@@ -405,8 +416,7 @@ class Agent:
                 merchant_actions_today=budget.actions,
                 merchant_spend_today_paise=budget.spend_paise,
                 escalations_today=budget.escalations,
-                broken_promise_to_pay=(
-                    promise_due_at is not None and now > promise_due_at),
+                broken_promise_to_pay=promise_broken,
                 action_cost_paise=self._cost_of(decision, contacts),
             )
             # ---- step 4: GOVERN --------------------------------------------
@@ -555,10 +565,12 @@ class Agent:
             if decision.action is ActionType.NUDGE:
                 if got_it:
                     promise_due_at = None
+                    promise_broken = False
                 else:
-                    if promise_due_at is not None and scheduled > promise_due_at:
-                        broken_promises += 1
+                    # A delivered nudge that did not convert opens a fresh window: the
+                    # customer has effectively said "I will pay" by being reachable.
                     promise_due_at = scheduled + timedelta(hours=self.promise_window_hours)
+                    promise_broken = False
 
             # ---- step 5: LEARN ---------------------------------------------
             self.model.update_distribution(dx.beliefs, decision.action, got_it)

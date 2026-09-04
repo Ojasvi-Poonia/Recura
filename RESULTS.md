@@ -67,7 +67,7 @@ a strong surface carry a weak one. Each is compared against its own randomised h
 | Overdue receivable | 784 | 193 | +9.16pp | [+2.94, +15.61] | ₹2,48,048 |
 
 **The effect is consistent across all four surfaces** — every point estimate falls between
-+5.00 and +5.70pp. What differs is confidence, and that is sample size alone: mandate and
++6.28 and +9.16pp. What differs is confidence, and that is sample size alone: mandate and
 receivable have 287 and 189 holdout events respectively, which cannot exclude zero at 95%
 however real the effect.
 
@@ -136,10 +136,11 @@ restraint.
 |---|---|---|
 | **A/A test** (clustered by customer) | +1.39pp, CI [−0.38, +3.16] | The harness inventing a difference where none exists |
 | **Placebo (inert actions)** | +0.40pp, CI [−1.81, +2.70] | Lift that is an artefact of the pipeline rather than the agent |
-| Arm balance | worst standardised difference 0.054 (threshold 0.10) | Confounding from an unbalanced randomisation |
-| Holdout purity | cost 0, contacts 0, opt-outs 0 | Contamination of the control arm |
-| Latent isolation | no hidden field present in the observable cohort | The agent reading the answer |
-| Determinism | byte-identical across runs | Cherry-picked runs |
+| **Contact contract** | 0 breaches, tightest gap 24.0h | A compliance clause that cannot actually be enforced |
+| Arm balance | worst standardised difference 0.036 | Randomisation that did not randomise |
+| Holdout purity | cost 0, contacts 0, opt-outs 0 | A control arm that was quietly treated |
+| Latent isolation | no latent field reachable from `src/` | The agent reading the answer key |
+| Determinism | byte-identical across runs | Numbers that move when you look again |
 
 ### The placebo control cut our headline by 85%
 
@@ -155,7 +156,8 @@ actions scheduled beyond the episode horizon, which was silently expiring episod
 **The headline fell from +33.84pp to under +5pp.** Roughly 29 points of what we had been
 about to report was measurement artefact.
 
-The residual placebo reading is **−1.71pp** — negative. Direction matters more than
+The residual placebo reading is **+0.40pp**, on an interval of [−1.81, +2.70] that
+contains zero. Direction matters more than
 magnitude here: under a placebo the harness scores treatment *below* control, so every
 number in this document is conservative. A positive residual would have invalidated the
 headline.
@@ -200,11 +202,11 @@ against our +7.56pp — still the largest single improvement available to this a
 That figure has now been reported as free, 6%, 29%, 51% and 29% again. Every earlier number
 was measured against a gate that was partly inoperative: two contact clauses could not fire
 (section 9.9), and four episode clauses were pre-empted because the agent closed episodes
-itself instead of letting the contract close them (`BUILD_NOTES` section AB). **The honest
+itself instead of letting the contract close them. **The honest
 summary is that we needed five measurements to price governance, and the first four were
 all too cheap.**
 
-**Three of the four ablations still recover more than the full agent.** Read the table by
+**One of the four ablations recovers more than the full agent** — removing the policy gate.** Read the table by
 cost per recovery and contacts per customer as well as by lift: against a random chooser
 the agent recovers 26% more (+7.56 vs +5.99) using **54% fewer contacts** (0.231 vs 0.500)
 at **₹387 against ₹643** per marginal recovery.
@@ -237,8 +239,8 @@ sign changed without anyone touching the taxonomy — see section 6 for why that
 ## 6. What the LLM actually contributes
 
 **Nothing measurable, on lift.** Ablation 4 removes the language model entirely and the
-result is **+5.67pp against the full agent's +7.56pp** — marginally *better* without it,
-well inside the interval ([+3.50, +7.83] against [+5.42, +9.84]).
+result is **+7.48pp against the full agent's +7.56pp** — a 1% contribution, deep inside
+the interval ([+5.33, +9.72] against [+5.42, +9.84]).
 
 ### The number has moved four times, and that is the finding
 
@@ -255,7 +257,7 @@ well inside the interval ([+3.50, +7.83] against [+5.42, +9.84]).
 Every row is a real defect fixed somewhere *other than* the model. The fourth is the most
 embarrassing and the most instructive: for several runs the agent selected 607 nudges,
 **composed none of them**, and was charged and scored for all 607 anyway (section 9.8 and
-`BUILD_NOTES` section R). With that corrected, the model's apparent contribution collapsed
+our engineering log). With that corrected, the model's apparent contribution collapsed
 to zero.
 
 **The model's measured contribution has swung 17 points without the model changing at
@@ -335,9 +337,9 @@ It now moves alone, with the other three held fixed:
 
 | | `ESCALATE_EFFICACY` | Lift | 95% CI |
 |---|---:|---:|---|
-| sceptical | 1.30 | +2.86pp | [+0.67, +5.06] |
+| sceptical | 1.30 | +4.25pp | [+2.07, +6.51] |
 | baseline | 2.60 | +7.56pp | [+5.42, +9.84] |
-| optimistic | 4.00 | +8.11pp | [+5.95, +10.28] |
+| optimistic | 4.00 | +9.54pp | [+7.41, +11.75] |
 
 **Halve it and the result nearly halves but survives.** At 1.30 — a human agent no more
 effective than an automated contact — Recura still posts +4.25pp on an interval excluding zero. The
@@ -428,7 +430,7 @@ Nine honest failure cases.
 
 ### 1. Forty-three percent of the value depends on human availability
 
-With `escalation.max_per_day: 0` the lift falls from +7.56pp to **+2.90pp** — still
+With `escalation.max_per_day: 0` the lift falls from +7.56pp to **+4.10pp** — still
 significant, but costing ₹5,37,818 of ₹20,45,919 in net incremental value.
 
 Recura is a decision layer that routes work to people, not a system that replaces them.
@@ -462,24 +464,16 @@ customers self-select — someone who did not pay on attempt one is less likely 
 unprompted on attempt four. The error is conservative in direction but the absolute
 rates are not forecasts.
 
-### 4. The language model contributes 5%, and only because trust is learned
+### 4. The language model contributes nothing measurable
 
-Removing it costs 5%. That figure has moved three times: +8% with our original invented
-fatigue curve, −9% once that curve was fitted to 86,399 real records, and +5% once the
-agent stopped using a hand-picked trust weight and learned one.
+Removing it costs 1% — deep inside the interval, which is to say nothing. Section 6 has the
+full history: the figure has moved seven times across revisions, a 17-point swing, without
+the model changing at all. Every move came from fixing a defect somewhere else.
 
-The middle reading matters most. Correcting an unrelated parameter flipped the model's
-apparent contribution from helpful to harmful — an effect that fragile was never an
-effect, and we would not have known without the calibration work.
-
-The learned trust posterior explains the third: `blended` — the hand-picked setting —
-recovers 20.2% against 28.5% for taxonomy-only and 28.9% for the model. **We had chosen
-the worst of three options** by splitting the difference between two better ones.
-
-The model remains poorly calibrated (Brier 0.9838 against a 0.8196 base rate). Nothing
-here should be read as evidence that a language model improves payment recovery. What it
-shows is that a system which *measures* its model's contribution, and adapts how far it
-trusts it, extracts value from a weak model without pretending the model is strong.
+We keep the component because the architecture around it is the defensible part — the model
+is isolated behind a learned trust weight, so a better-calibrated model earns more influence
+with no code change. But on today's evidence it does not earn its place, and a submission
+that implied otherwise would be claiming something its own ablation refutes.
 
 ### 5. Per-merchant margin is implemented but untested
 
@@ -541,7 +535,7 @@ a slot validator rejected the merchant identifier, `_render_message` correctly r
 customer's contact budget, and asked the simulator to score the effect of a nudge that had
 never been written.
 
-It is fixed (`BUILD_NOTES` section R): unwritable nudges are now scored as `NO_ACTION`, the
+It is fixed: unwritable nudges are now scored as `NO_ACTION`, the
 candidate set is filtered by what a registered template can actually carry, and
 `messages_sent` and `template_failures` both appear in the metrics table so that the next
 occurrence is a number rather than an absence. The run now composes 419 real messages and
@@ -571,8 +565,7 @@ enforcement while two clauses were inert.
 
 Both are fixed and — more importantly — both are now *checked*: `make validate` replays the
 batch, reconstructs every customer's contact timeline, and fails if any clause is breached.
-It currently reports 0 breaches with a tightest gap of 24.0h. Details in `BUILD_NOTES`
-section T.
+It currently reports 0 breaches with a tightest gap of 24.0h. 
 
 **The reason this belongs in a failure section rather than a changelog:** every compliance
 claim this project made before that fix was unverified, and several published numbers were
