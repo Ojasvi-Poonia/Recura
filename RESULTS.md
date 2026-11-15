@@ -44,7 +44,7 @@ The control arm recovers **71.5% unaided**. That is high, and it is the most imp
 caveat on this page. Our response model gives each event five recovery opportunities
 across a 21-day episode and treats them as independent draws on the same per-step
 probability. Real customers who fail once are less likely to pay spontaneously on each
-subsequent attempt — the population self-selects — so 73% almost certainly overstates
+subsequent attempt — the population self-selects — so 71.5% almost certainly overstates
 what happens without intervention.
 
 The direction of that error runs **against us**: a lower real baseline means more
@@ -111,17 +111,17 @@ treated episode records exactly one terminating reason and `make eval` prints th
 
 Two rows carry the argument.
 
-**`recovered_unprompted` — 25.4%.** The customer paid without us, and the agent noticed and
+**`recovered_unprompted` — 25.1%.** The customer paid without us, and the agent noticed and
 stood down. It re-observes state before every decision rather than executing a plan fixed at
 episode start, so these 2,022 episodes cost nothing beyond the observation. A
 workflow-shaped system that queued three messages up front would have sent them all.
 
-**`exhausted` — only 13.0%.** That is the share that simply ran out of permitted actions.
+**`exhausted` — only 13.6%.** That is the share that simply ran out of permitted actions.
 An agent whose census was dominated by `exhausted` would not have stopping rules at all; it
 would have a budget it collided with. Most episodes here end because something true became
 true — the money arrived, the arithmetic turned negative, or the customer opted out.
 
-`refused_negative_ev` at 7.5% is the one that is a decision rather than an event: 607
+`refused_negative_ev` at 7.1% is the one that is a decision rather than an event: 573
 episodes where the agent computed the expected value of every available action, found them
 all negative, and did nothing. Section 5's ablation shows what happens without that
 restraint.
@@ -191,8 +191,8 @@ Supporting counts:
 | No policy gate | 0 | 5,011 | 0.270 | 1,652 |
 | No LLM | 5,962 | 4,294 | 0.233 | 1,546 |
 
-**Random action selection is 1.7× less efficient**, at ₹912 per marginal recovery against
-our ₹401, and it burns 2.2× the contacts to get there (0.500 against 0.217).
+**Random action selection is 2.3× less efficient**, at ₹912 per marginal recovery against
+our ₹401, and it burns 2.3× the contacts to get there (0.500 against 0.217).
 
 Being precise about what that does and does not establish: random's own lift interval is
 [+3.82, +8.23], which **excludes zero**. Randomly chosen interventions, run through the
@@ -211,25 +211,26 @@ itself instead of letting the contract close them. **The honest
 summary is that we needed five measurements to price governance, and the first four were
 all too cheap.**
 
-**One of the four ablations recovers more than the full agent** — removing the policy gate.** Read the table by
+**Only one of the four ablations recovers materially more than the full agent** — removing
+the policy gate. Read the table by
 cost per recovery and contacts per event as well as by lift: against a random chooser
 the agent recovers 22% more (+7.28 vs +5.99) using **57% fewer contacts** (0.217 vs 0.500)
 at **₹401 against ₹912** per marginal recovery.
 
 ### The taxonomy pays off late, not early
 
-Removing it costs 4%. The average hides the shape: the taxonomy splits learning across
+Removing it leaves the pooled lift unchanged (+7.29pp against +7.28pp). The average hides the shape: the taxonomy splits learning across
 **42 posterior cells** (7 failure classes × 6 action types), where pooling gives roughly 6.
 On a finite run that is a sample-size penalty. Splitting the cohort in half:
 
 | | first half | second half |
 |---|---:|---:|
-| with taxonomy | +6.11pp | +8.87pp |
-| no taxonomy | +6.33pp | +8.15pp |
-| **difference** | **−0.22pp** | **+0.72pp** |
+| with taxonomy | +5.93pp | +8.65pp |
+| no taxonomy | +6.51pp | +8.10pp |
+| **difference** | **−0.57pp** | **+0.54pp** |
 
 It starts behind and finishes ahead — the shape of a learning-rate penalty, which implies
-the 4% headline understates what the taxonomy is worth at scale.
+the flat pooled figure understates what the taxonomy is worth at scale.
 
 **Flagged as a hypothesis, not a result**: within-half comparisons, no confidence
 intervals, both differences small. The defensible claim is that mapping Razorpay's own
@@ -244,10 +245,10 @@ sign changed without anyone touching the taxonomy — see section 6 for why that
 ## 6. What the LLM actually contributes
 
 **Nothing measurable, on lift.** Ablation 4 removes the language model entirely and the
-result is **+7.48pp against the full agent's +7.28pp** — a 1% contribution, deep inside
-the interval ([+5.33, +9.72] against [+5.11, +9.54]).
+result is **+7.25pp against the full agent's +7.28pp** — 0.03 points, deep inside
+the interval ([+5.09, +9.50] against [+5.11, +9.54]).
 
-### The number has moved four times, and that is the finding
+### The number has moved seven times, and that is the finding
 
 | Configuration of the rest of the system | LLM contribution |
 |---|---:|
@@ -257,7 +258,7 @@ the interval ([+5.33, +9.72] against [+5.11, +9.54]).
 | every customer message actually sending | +0% |
 | the compliance contract actually enforced | −3% |
 | Thompson sampling drawing once per arm | −9% |
-| **episodes closing on the contract; merchant bugs in the cohort** | **+1%** |
+| **episodes closing on the contract; merchant bugs in the cohort** | **+0%** |
 
 Every row is a real defect fixed somewhere *other than* the model. The fourth is the most
 embarrassing and the most instructive: for several runs the agent selected 607 nudges,
@@ -269,7 +270,7 @@ to zero.
 all.** Every row above is a defect fixed somewhere else — a fatigue curve, a trust weight,
 a messaging bug, a contact contract, a sampling error, an episode-closing rule. On this
 benchmark the LLM's apparent value is dominated by the correctness of everything around
-it, and any single reading of it — the current +1% included — should be treated as noise
+it, and any single reading of it — the current zero included — should be treated as noise
 rather than evidence.
 
 ### What survives
@@ -277,7 +278,7 @@ rather than evidence.
 Two things, neither of them a headline.
 
 **Cost efficiency.** Nothing here either: ₹401 per marginal recovery against the
-rules-only ₹388 — indistinguishable. Whatever edge the model had on efficiency has
+rules-only ₹417 — indistinguishable. Whatever edge the model had on efficiency has
 gone the same way as its edge on lift. We are not building an argument on it.
 
 **The architecture is still the right one.** The model is isolated behind a learned trust
@@ -288,8 +289,8 @@ about today.
 ### Calibration, for completeness
 
 `make calibration` measures whether the model's stated confidence means anything: Brier
-score **0.9838** against a base rate of 0.8196, with 61%-confident predictions landing
-about 20% of the time. It is badly calibrated, which is consistent with contributing
+score **0.9721** against a base rate of 0.8167, with predictions stated at 46% confidence
+right 18.5% of the time. It is badly calibrated, which is consistent with contributing
 nothing, and is why the trust weight is learned rather than assumed.
 
 The learned trust posterior is reported by `make eval`, but note that Thompson sampling
@@ -312,15 +313,15 @@ evaluation is re-run across ten parameterisations.
 | Parameterisation | Holdout | Lift | 95% CI | Net incremental |
 |---|---:|---:|---|---:|
 | baseline (calibrated) | 71.5% | +7.28pp | [+5.11, +9.54] | ₹19,62,667 |
-| pessimistic: high self-recovery | 81.3% | +6.93pp | [+5.09, +8.83] | ₹18,90,283 |
-| optimistic: low self-recovery | 53.8% | +7.31pp | [+4.85, +9.80] | ₹19,88,200 |
-| **weak interventions** | 71.5% | **+2.54pp** | **[+0.33, +4.82]** | ₹5,93,711 |
-| hard failure mix + noisier labels | 56.8% | +10.58pp | [+8.18, +12.93] | ₹28,52,364 |
-| **sceptical human escalation** | 71.5% | **+4.26pp** | **[+2.08, +6.51]** | ₹11,67,579 |
-| optimistic human escalation | 71.5% | +9.35pp | [+7.21, +11.56] | ₹25,81,841 |
-| cheap human review (₹60) | 71.5% | +7.76pp | [+5.58, +10.01] | ₹22,25,198 |
-| expensive human review (₹240) | 71.5% | +6.35pp | [+4.17, +8.60] | ₹15,69,096 |
-| thin margin (10%) | 71.5% | +5.36pp | [+3.16, +7.63] | ₹16,65,663 |
+| pessimistic: high self-recovery | 81.3% | +6.93pp | [+5.09, +8.83] | ₹18,95,080 |
+| optimistic: low self-recovery | 53.8% | +7.31pp | [+4.85, +9.80] | ₹19,71,545 |
+| **weak interventions** | 71.5% | **+2.54pp** | **[+0.33, +4.82]** | ₹6,23,900 |
+| hard failure mix + noisier labels | 56.8% | +10.58pp | [+8.18, +12.93] | ₹28,81,681 |
+| **sceptical human escalation** | 71.5% | **+4.26pp** | **[+2.08, +6.51]** | ₹11,66,853 |
+| optimistic human escalation | 71.5% | +9.35pp | [+7.21, +11.56] | ₹25,44,026 |
+| cheap human review (₹60) | 71.5% | +7.76pp | [+5.58, +10.01] | ₹21,20,520 |
+| expensive human review (₹240) | 71.5% | +6.35pp | [+4.17, +8.60] | ₹16,49,773 |
+| thin margin (10%) | 71.5% | +5.36pp | [+3.16, +7.63] | ₹15,40,149 |
 
 **Envelope: +2.54 to +10.58pp, and all ten intervals exclude zero.**
 
@@ -437,7 +438,7 @@ Nine honest failure cases.
 ### 1. Forty-four percent of the value depends on human availability
 
 With `escalation.max_per_day: 0` the lift falls from +7.28pp to **+3.87pp** — still
-significant, but costing ₹5,37,818 of ₹19,62,667 in net incremental value.
+significant, but costing ₹8,63,372 of ₹19,62,667 in net incremental value.
 
 Recura is a decision layer that routes work to people, not a system that replaces them.
 A merchant with no collections staff gets substantially less of this. We would rather
@@ -472,7 +473,7 @@ rates are not forecasts.
 
 ### 4. The language model contributes nothing measurable
 
-Removing it costs 1% — deep inside the interval, which is to say nothing. Section 6 has the
+Removing it costs 0.03 points — deep inside the interval, which is to say nothing. Section 6 has the
 full history: the figure has moved seven times across revisions, a 17-point swing, without
 the model changing at all. Every move came from fixing a defect somewhere else.
 
@@ -505,7 +506,7 @@ unmeasured.
   prevents future failures, which our customer-recovery EV cannot see, so the agent
   under-escalates configuration problems.
 - **The bandit sees 42 cells and ~8,000 events with delayed outcomes.** Learning is real
-  but shallow; 37 of 42 cells acquire data.
+  but shallow; 41 of 42 cells acquire data, several of them from a handful of observations.
 
 ---
 
@@ -544,7 +545,7 @@ never been written.
 It is fixed: unwritable nudges are now scored as `NO_ACTION`, the
 candidate set is filtered by what a registered template can actually carry, and
 `messages_sent` and `template_failures` both appear in the metrics table so that the next
-occurrence is a number rather than an absence. The run now composes 313 real messages and
+occurrence is a number rather than an absence. The run now composes 281 real messages and
 fails on none.
 
 The reason it belongs in this section rather than only in the changelog: **for several
@@ -576,7 +577,7 @@ It currently reports 0 breaches with a tightest gap of 24.0h.
 **The reason this belongs in a failure section rather than a changelog:** every compliance
 claim this project made before that fix was unverified, and several published numbers were
 quantitatively wrong because of it — including the claim that the policy gate was free
-(it costs 51%) and every published figure for what the stricter TRAI reading is worth.
+(section 5 now prices it at 24% of achievable lift) and every published figure for what the stricter TRAI reading is worth.
 
 ---
 

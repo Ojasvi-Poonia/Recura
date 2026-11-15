@@ -484,3 +484,27 @@ Every clause is pointable-to in the repo. That is the whole trick.
 | 4:00–5:00 | Architecture: policy gate, why no framework |
 
 Nobody else will spend 90 seconds admitting what didn't work. That is the moment they decide to call you in.
+
+---
+
+## 15. After the submission (added 2026-11-16)
+
+The buildathon deadline has passed. The repo is now also the base for taking Recura to
+real merchants, and three things were added for that. None of them may change a
+benchmark number: `make eval` output must stay byte-identical.
+
+- **`Agent.preview()`** — the first decision for an event plus the contract's verdict,
+  through the same `_decide` and `_govern` as `run_episode`. Used by `make import`,
+  `make audit` and shadow mode. Previews use `Agent.for_preview()`: posterior means, no
+  network, and capped priors from `config/benchmark_priors.json` (`make priors`). The
+  benchmark still starts from Beta(1, 1).
+- **PSP profiles** — `config/psp/<name>.yaml` maps a gateway's export onto the importer's
+  columns and its codes onto Razorpay reasons. A profile may never translate to a reason
+  `taxonomy/mapping.py` does not map, and code lists are transcribed from the gateway's
+  published docs with the date, never recalled. See `docs/PSP_PROFILES.md`.
+- **Shadow mode** — `src/shadow.py`. `RECURA_SHADOW_DB` makes the webhook receiver decide
+  and log under `arm="shadow"` with `executed=false`. Insert-only. Reading it back needs
+  `RECURA_API_KEY`.
+
+`business/` is gitignored and holds private commercial material. The repo is public:
+never commit anything from it, and never put pricing, outreach or plans under `docs/`.

@@ -26,7 +26,7 @@ people trusted rather than a property anyone checked.
 Content-address every model response and commit the cache.
 
 The key is `SHA-256(model, system_prompt, payload)`, truncated to 32 hex characters.
-Responses live in `fixtures/` — 870 files — and are committed to the repository.
+Responses live in `fixtures/` — 872 files — and are committed to the repository.
 
 Payloads are **banded** before hashing: an amount becomes `Rs2k-10k`, an hour becomes
 `afternoon`. A root cause does not depend on the last two digits of an amount, and

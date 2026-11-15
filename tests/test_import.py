@@ -32,7 +32,7 @@ def row(**kw):
 def test_shipped_sample_imports_cleanly():
     rows = read_rows(__import__("pathlib").Path(SAMPLE))
     events = [to_risk_event(r, "m", True) for r in rows]
-    assert len(events) == 10
+    assert len(events) == 13
 
 
 def test_required_columns_are_enforced_with_a_usable_message():

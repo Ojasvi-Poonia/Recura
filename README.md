@@ -5,7 +5,9 @@ failed payments, abandoned checkouts and overdue invoices, prices every possible
 intervention in money, acts only when the arithmetic supports it, and reports what it
 recovered against a randomised control group.
 
-Submission for the Razorpay AI Buildathon, Track 03 — AI Revenue Recovery.
+Built for the Razorpay AI Buildathon, Track 03 (AI Revenue Recovery), and developed
+further since. [Try it on your own failures](#try-it-on-your-own-failures) in about two
+minutes; nothing in this repository sends a message or moves money.
 
 ---
 
@@ -28,7 +30,7 @@ Submission for the Razorpay AI Buildathon, Track 03 — AI Revenue Recovery.
 | Intervention cost | ₹2,35,648 | ₹0 |
 | Contacts per event | 0.22 | 0 |
 | Messages actually sent | 281 | 0 |
-| Promises to pay broken | 26 | — |
+| Promises to pay broken | 19 | — |
 | Actions blocked by policy | 6,249 | — |
 | Refused, EV < 0 | 3,626 | — |
 | Escalated to human | 1,502 | — |
@@ -41,6 +43,60 @@ the half that matters.
 
 ---
 
+## Try it on your own failures
+
+The benchmark below is synthetic, and there is a limit to what synthetic data can show.
+So the repo also reads yours. Three steps, each asking for a little more trust than the
+last, and none of them contacts a customer.
+
+**1. Audit an export.** No integration, no keys.
+
+```bash
+make install
+make audit FILE=data/samples/example_failures.csv MAJOR=1    # writes reports/…_audit.html
+make audit FILE=charges.json PSP=stripe                       # a gateway's export, as exported
+```
+
+One self-contained HTML page ([sample](docs/sample_audit.html)): how much is recoverable
+from the customer at all, which failures are your own integration bugs, what the agent
+would do first, what the policy contract would refuse, and how much of the file the
+taxonomy understood. It says on the page that it is a triage and not a forecast.
+
+| Gateway | Profile | Reads |
+|---|---|---|
+| Razorpay | `PSP=razorpay` | payment entities as `GET /v1/payments` returns them; all 115 published reasons |
+| Stripe | `PSP=stripe` | Charge objects; all 50 published card decline codes |
+| anything else | none | a CSV with `event_id`, `amount`, `failed_at` — see [`docs/PSP_PROFILES.md`](docs/PSP_PROFILES.md) |
+
+A profile is one YAML file. It may not invent: a test fails if it translates a code to a
+reason the taxonomy does not map, and a code it does not list is counted as unrecognised
+rather than guessed.
+
+**2. Shadow mode.** Point a webhook at it. It decides and logs; it executes nothing.
+
+```bash
+RAZORPAY_WEBHOOK_SECRET=… RECURA_API_KEY=… make serve SHADOW=1
+./demo/shadow_demo.sh        # three failures, then the payment that settles one
+make shadow-report
+```
+
+Every verified failure goes through the same decide and govern steps as the batch and is
+written to the append-only ledger with `executed: false`. Because nothing is sent, every
+payment that arrives afterwards arrived under your existing process, so the report's
+**paid unaided** line is your real baseline: the number any recovery claim has to beat,
+measured before a single customer is treated.
+
+**3. A live test against a holdout is not in this repository.** Sending is simulated and a
+live Razorpay key is refused at construction. [`docs/ROADMAP.md`](docs/ROADMAP.md) lists
+what that step needs.
+
+What a preview knows: the proposed actions in steps 1 and 2 start from priors the agent
+learned on the synthetic cohort, capped at twenty pseudo-observations
+([`src/decide/priors.py`](src/decide/priors.py)). They show the decision path. They are
+not tuned to your customers, and the benchmark itself never sees them.
+
+---
+
 ## Coverage against the brief
 
 Track 03 lists seven example directions. The spec for this project deliberately warns
@@ -50,13 +106,13 @@ with a number, in the committed run"**.
 
 | Direction | Where it lives | Exercised in `make eval` |
 |---|---|---|
-| Payment degradation → root cause → action | 115 real Razorpay reason codes → `FailureClass` | 4,447 treated, **+8.04pp** |
-| Checkout drop-off recovery | `source_type="checkout"`, no error object on 60% | 1,634 treated, **+6.62pp** |
+| Payment degradation → root cause → action | 115 real Razorpay reason codes → `FailureClass` | 4,447 treated, **+7.93pp** |
+| Checkout drop-off recovery | `source_type="checkout"`, no error object on 59% | 1,634 treated, **+5.45pp** |
 | Failed-subscription recovery | `source_type="mandate"` | 1,193 treated, **+6.28pp** |
-| B2B receivables chaser | ageing ladder in `decide/ev.py` | 784 treated, **+9.16pp** |
-| Mandate retry sequencer | RBI notify → wait 24h → debit | pre-debit rule bound **1,997×** |
+| B2B receivables chaser | ageing ladder in `decide/ev.py` | 784 treated, **+9.29pp** |
+| Mandate retry sequencer | RBI notify → wait 24h → debit | pre-debit rule bound **2,090×** |
 | Hinglish voice recovery | DLT templates, `make voice` | 5 rendered audio files |
-| Promise-to-pay tracker | 48h window, escalation on breach | **26 promises broken** |
+| Promise-to-pay tracker | 48h window, escalation on breach | **19 promises broken** |
 
 All four surfaces clear zero independently. The four directions with their own holdout are
 measured; the other three are demonstrated but not independently A/B tested, and we would
@@ -78,7 +134,7 @@ compared against **its own** randomised holdout:
 | Mandate / subscription | 1,193 | 291 | +6.28pp | [+0.55, +12.03] | ₹2,24,081 |
 | Overdue receivable | 784 | 193 | +9.29pp | [+3.08, +15.74] | ₹2,52,001 |
 
-**All four surfaces clear zero at 95%.** Lifts run from +6.28pp on mandates to +9.16pp on
+**All four surfaces clear zero at 95%.** Lifts run from +5.45pp on checkout to +9.29pp on
 receivables, and the intervals widen exactly as the samples shrink — mandate has 291 control
 events, receivables 193. That is the whole explanation for why the two smallest surfaces
 have the widest bands, and it is a power story rather than a capability one.
@@ -87,7 +143,7 @@ Reporting them separately was not decoration. In an earlier revision checkout ab
 came out at +2.94pp with an interval spanning zero while the pooled number looked healthy,
 and that gap is exactly what a per-surface table exists to expose.
 
-One structural note that survives: 60% of checkout-abandonment events carry **no Razorpay
+One structural note that survives: 59% of checkout-abandonment events carry **no Razorpay
 error code at all** — nothing failed, the customer simply left. The taxonomy has nothing
 to read on those, so the agent works from amount, history, hour and method alone. That
 surface is significant now, but it is the one where a real integration would gain most
@@ -113,7 +169,7 @@ recorded reason, and the census is part of `make eval`:
 re-observes before every decision and stands down when the money arrives — those 2,022
 episodes are ones a workflow-shaped system would have kept messaging.
 
-Only 13.0% end in `exhausted`. An agent whose census was dominated by that row would not
+Only 13.6% end in `exhausted`. An agent whose census was dominated by that row would not
 have stopping rules at all, just a budget it collided with.
 
 ### Which clauses actually bind
@@ -208,6 +264,8 @@ make ablate      # what each component actually contributes
 make sweep       # the same result across five generator parameterisations
 make replay      # what different policy contracts would have cost
 make voice       # Hinglish recovery audio samples
+make audit FILE=…  PSP=…     # recovery audit of your own export
+make serve SHADOW=1          # shadow mode; then: make shadow-report
 ```
 
 ---
@@ -265,8 +323,8 @@ finding, and it took four measurements to get it right.**
 With a hard regulated contact budget the question is not "can you recover more by messaging
 more" — it is what you do with the three contacts a customer is legally allowed.
 
-**The taxonomy contributes 4% and the LLM 1%.** Both are small and both sit well inside
-their intervals, so neither is established. What changed is the sign: at the previous
+**On the pooled number the taxonomy and the LLM each contribute nothing measurable**: +7.29pp
+without the taxonomy and +7.25pp without the LLM, against +7.28pp with both. At the previous
 revision both measured as mildly *harmful*, and the difference was not a model improvement
 but a set of correctness fixes elsewhere — episodes now closing on the contract, and
 merchant-configuration failures existing in the cohort at all.
@@ -277,18 +335,18 @@ the system**, which is a reason to distrust any single reading of it, including 
 
 ### The taxonomy pays off late, not early
 
-Removing the taxonomy costs 4%, but that average hides the shape. It splits learning across
+Removing the taxonomy leaves the pooled lift unchanged, but that average hides the shape. It splits learning across
 **42 posterior cells** (7 failure classes × 6 action types); without it the agent pools into
 roughly 6. On a finite run that is a real sample-size penalty. Splitting the cohort in half:
 
 | | first half | second half |
 |---|---:|---:|
-| with taxonomy | +6.11pp | +8.87pp |
-| no taxonomy | +6.33pp | +8.15pp |
-| **difference** | **−0.22pp** | **+0.72pp** |
+| with taxonomy | +5.93pp | +8.65pp |
+| no taxonomy | +6.51pp | +8.10pp |
+| **difference** | **−0.57pp** | **+0.54pp** |
 
 It starts behind and finishes ahead. That is what a learning-rate penalty looks like, and
-it implies the 4% headline figure understates what the taxonomy is worth at scale.
+it implies the flat pooled figure understates what the taxonomy is worth at scale.
 
 **Flagged as a hypothesis, not a result**: within-half comparisons, no confidence intervals,
 and both differences are small. What we will say is that mapping Razorpay's own `reason`
@@ -297,8 +355,8 @@ crossover.
 
 ### The language model contributes nothing measurable, and we are going to say so
 
-Removing the LLM entirely gives **+7.48pp against the full agent's +7.28pp** — a 1%
-contribution, deep inside the interval. That number has now moved seven times:
+Removing the LLM entirely gives **+7.25pp against the full agent's +7.28pp** — 0.03 points,
+deep inside the interval. That number has now moved seven times:
 
 | | LLM contribution |
 |---|---:|
@@ -308,12 +366,12 @@ contribution, deep inside the interval. That number has now moved seven times:
 | every customer message actually sending | +0% |
 | the compliance contract actually enforced | −3% |
 | Thompson sampling drawing once per arm | −9% |
-| **episodes closing on the contract; merchant bugs in the cohort** | **+1%** |
+| **episodes closing on the contract; merchant bugs in the cohort** | **+0%** |
 
 Every row is a real defect fixed somewhere *else*. **The model's measured contribution has
 swung 17 points without the model changing at all.** That is the finding: on this benchmark
 the LLM's apparent value is dominated by the correctness of everything around it, and any
-single reading of it — including +1% — should be treated as noise.
+single reading of it — including today's zero — should be treated as noise.
 
 The architecture is still the one we would defend. The model sits behind a learned trust
 weight, so a better-calibrated model earns more influence with no code change. But we are
@@ -387,8 +445,6 @@ Under-budgeting is what actually destroys value: the action budget at 200/day co
 
 ---
 
----
-
 ## Where this breaks
 
 1. **The holdout recovers 71.5% unaided.** Our response model treats each opportunity as
@@ -426,8 +482,8 @@ Full detail in [`RESULTS.md`](RESULTS.md).
 
 ## Design decisions worth knowing
 
-**No agent framework.** Hand-rolled loop — 776 lines, 543 of them code, walkable top to
-bottom. We need deterministic replay and a policy gate the model cannot reach.
+**No agent framework.** Hand-rolled loop — one file of about 860 lines, roughly 525 of them
+code, walkable top to bottom. We need deterministic replay and a policy gate the model cannot reach.
 
 **The LLM never sees `policy.yaml`.** Enforced by a test that parses the AST, not by
 convention. No prompt injection can unlock a money action.
@@ -453,7 +509,7 @@ notification cites RBI's E-Mandate Framework 2026.
 money, no agent-framework imports, no locale hardcoded in the decision core, `src/`
 cannot reach the simulator's hidden state.
 
-**The tests are themselves tested.** `make mutants` plants eight bugs this project has
+**The tests are themselves tested.** `make mutants` plants thirteen bugs, most of which this project has
 actually shipped — the policy gate silently disabled, template slot validation removed,
 the horizon discount deleted — and checks the suite notices. A green suite proves the
 tests pass; mutation testing proves they would object. 13/13 caught.
@@ -477,20 +533,22 @@ shrink our own model's confidence. Each records what we rejected and why.
 ```
 src/
   agent.py            the loop - start here
+  shadow.py           shadow mode: decide on live webhooks, execute nothing
   models.py           domain model; integer paise, frozen, extra="forbid"
   taxonomy/           115 Razorpay reason codes -> failure class + triage
-  decide/             EV, Thompson sampling, LLM diagnosis, context multipliers
+  decide/             EV, Thompson sampling, LLM diagnosis, context multipliers, preview priors
   policy/             20 deterministic rules; the LLM cannot import this
   act/                provider adapters, cost model, DLT messaging, voice
   ledger/             append-only, enforced by DB triggers
-  ingest/             webhook HMAC, late-authorisation stop, idempotency
+  ingest/             webhook HMAC, late-authorisation stop, idempotency,
+                      bring-your-own-data importer, PSP profiles, audit report
 eval/
   generate_cohort.py  FROZEN; hidden latents live here, src/ cannot import it
   validate.py         A/A and placebo negative controls
   ablate.py  sweep.py  replay.py  calibration.py  metrics.py
-config/               costs, markets, DLT templates
+config/               costs, markets, DLT templates, PSP profiles, preview priors
 fixtures/             872 cached LLM responses - why eval needs no API key
-demo/audio/           rendered Hinglish voice samples (make voice)
+demo/                 webhook and shadow-mode scripts, Hinglish voice samples
 ```
 
 **Documents**
@@ -500,8 +558,10 @@ demo/audio/           rendered Hinglish voice samples (make voice)
 | [`RESULTS.md`](RESULTS.md) | Full evidence: every table, every control, nine failure cases |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Data flow, the three separated authorities, failure modes |
 | [`docs/adr/`](docs/adr/) | Decision records — why no framework, why EV over rules |
+| [`docs/PSP_PROFILES.md`](docs/PSP_PROFILES.md) | Reading another gateway's export; adding a profile |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | What is built, what is not, and what a live pilot needs |
 
-**514 tests.** Run `make test`.
+**595 tests.** Run `make test`.
 
 ---
 

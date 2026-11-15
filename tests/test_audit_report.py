@@ -32,7 +32,7 @@ def audit_of(*rows):
 @pytest.fixture(scope="module")
 def sample_audit():
     events, rejected, _ = load_events(SAMPLE, "m", amounts_are_major=True)
-    return build_audit(events, source_name=SAMPLE.name, rows_read=10, rejected=rejected)
+    return build_audit(events, source_name=SAMPLE.name, rows_read=13, rejected=rejected)
 
 
 def test_load_events_collects_rejections_instead_of_failing_the_file(tmp_path):
@@ -47,8 +47,8 @@ def test_load_events_collects_rejections_instead_of_failing_the_file(tmp_path):
 
 
 def test_sample_totals_match_the_export(sample_audit):
-    assert sample_audit.events == 10
-    assert sample_audit.at_risk_minor == 13_549_800
+    assert sample_audit.events == 13
+    assert sample_audit.at_risk_minor == 13_889_500
 
 
 def test_every_breakdown_accounts_for_every_event_and_every_rupee(sample_audit):
@@ -129,7 +129,7 @@ def test_an_empty_export_is_refused_with_a_usable_message():
 
 def test_the_audit_is_deterministic(sample_audit):
     events, rejected, _ = load_events(SAMPLE, "m", amounts_are_major=True)
-    again = build_audit(events, source_name=SAMPLE.name, rows_read=10, rejected=rejected)
+    again = build_audit(events, source_name=SAMPLE.name, rows_read=13, rejected=rejected)
 
     assert again == sample_audit
     assert render_html(again, get_market()) == render_html(sample_audit, get_market())
@@ -140,7 +140,7 @@ def test_html_shows_the_amount_at_risk(sample_audit):
 
     html = render_html(sample_audit, market)
 
-    assert market.money(13_549_800) in html
+    assert market.money(13_889_500) in html
     assert html.lstrip().lower().startswith("<!doctype html>")
 
 
@@ -154,6 +154,15 @@ def test_html_escapes_strings_that_came_from_the_merchants_file():
 
     assert "<script>alert(1)</script>" not in html
     assert "&lt;script&gt;" in html
+
+
+def test_shipped_sample_shows_an_integration_bug_and_a_policy_refusal(sample_audit):
+    """The sample is what a visitor sees first. Its two most useful sections must not
+    read "None found"."""
+    assert [(b.label, b.events) for b in sample_audit.merchant_bugs] == [
+        ("invalid_order_id", 2)]
+    assert [b.label for b in sample_audit.blocked_rules] == [
+        "retry.pre_debit_notification_hours"]
 
 
 def test_html_states_that_it_is_not_a_lift_estimate(sample_audit):
