@@ -34,8 +34,14 @@ fixtures-plan: seed  ## how many model calls the fixture set still needs
 serve:  ## run the webhook receiver on :8000 (GET /health, POST /webhooks/razorpay)
 	$(VENV)/python -m uvicorn src.api.main:app --host 127.0.0.1 --port $(PORT)
 
-import:  ## run Recura against YOUR data: make import FILE=failures.csv [DECIDE=1]
-	$(VENV)/python -m src.ingest.import_file --file $(FILE) $(if $(MAJOR),--major) $(if $(DECIDE),--decide)
+import:  ## run Recura against YOUR data: make import FILE=failures.csv [DECIDE=1] [PSP=stripe]
+	$(VENV)/python -m src.ingest.import_file --file $(FILE) $(if $(MAJOR),--major) $(if $(DECIDE),--decide) $(if $(PSP),--psp $(PSP))
+
+audit:  ## recovery audit report for YOUR data: make audit FILE=failures.csv [MAJOR=1] [PSP=stripe] [OUT=report.html]
+	$(VENV)/python -m src.ingest.audit_report --file $(FILE) $(if $(MAJOR),--major) $(if $(PSP),--psp $(PSP)) $(if $(OUT),--out $(OUT))
+
+priors: seed  ## regenerate config/benchmark_priors.json from what the benchmark run learns
+	$(VENV)/python -m eval.export_priors
 
 voice:  ## render Hinglish recovery voice samples (demo only)
 	$(VENV)/python -m src.act.voice

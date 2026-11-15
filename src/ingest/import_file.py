@@ -17,12 +17,16 @@ value of every option it weighed.
 
     make import FILE=failures.csv
     make import FILE=failures.csv DECIDE=1     also show the decision per row
+    make import FILE=charges.json PSP=stripe   read another gateway's export as it is
 
 REQUIRED COLUMNS   event_id, amount, failed_at
 OPTIONAL           error_reason (or error_code), method, bank, customer_id,
                    source_type, currency, due_at, attempt_number,
                    prior_failed_attempts, prior_recoveries, contacts_last_7d,
                    consented_channels, language
+
+A PSP profile (config/psp/, see src/ingest/psp.py) maps a gateway's own field names and
+failure codes onto these, so its export needs no conversion first.
 
 Amounts are read as MINOR units (paise) by default; pass --major if your export is in
 rupees. Nothing here contacts a customer or moves money.
@@ -38,8 +42,10 @@ import sys
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
+from typing import NamedTuple
 
 from src.clock import IST
+from src.ingest.psp import ProfileError, PspProfile, is_failure, load_profile, translate
 from src.market import get_market
 from src.models import (
     Channel,
@@ -105,9 +111,12 @@ def read_rows(path: Path) -> list[dict]:
     text = path.read_text(encoding="utf-8-sig")
     if path.suffix.lower() == ".json":
         data = json.loads(text)
-        rows = data if isinstance(data, list) else data.get("items") or data.get("rows")
-        if not isinstance(rows, list):
-            raise ImportError_("JSON must be a list of objects, or {items:[...]}")
+        # `items` is how Razorpay wraps a collection, `data` is how Stripe does.
+        rows = data if isinstance(data, list) else next(
+            (data[k] for k in ("items", "rows", "data")
+             if isinstance(data, dict) and isinstance(data.get(k), list)), None)
+        if rows is None:
+            raise ImportError_("JSON must be a list of objects, or {items:[...]} / {data:[...]}")
         return rows
     return list(csv.DictReader(text.splitlines()))
 
@@ -154,6 +163,7 @@ def to_risk_event(row: dict, merchant_id: str, amounts_are_major: bool) -> RiskE
         due_at=_parse_time(row["due_at"]) if str(row.get("due_at") or "").strip() else None,
         razorpay_error=ErrorObject(
             reason=reason,
+            code=(str(row.get("psp_code") or "").strip() or None),
             source=(row.get("error_source") or None),
             step=(row.get("error_step") or None),
             description=(row.get("error_description") or None),
@@ -174,6 +184,53 @@ def to_risk_event(row: dict, merchant_id: str, amounts_are_major: bool) -> RiskE
             margin_bps=_int(row, "margin_bps", 3000),
         ),
     )
+
+
+class Loaded(NamedTuple):
+    events: list[RiskEvent]
+    rejected: tuple[str, ...]   # rows we could not read, each with a reason
+    skipped: int                # rows the PSP profile says were never failures
+
+
+def _profile(psp: str | None, amounts_are_major: bool) -> tuple[PspProfile | None, bool]:
+    """Resolve the profile and the amount unit, refusing a contradiction between them."""
+    if not psp:
+        return None, amounts_are_major
+    try:
+        profile = load_profile(psp)
+    except ProfileError as exc:
+        raise ImportError_(str(exc)) from exc
+    if profile.amount_unit is None:
+        return profile, amounts_are_major
+    if amounts_are_major and profile.amount_unit == "minor":
+        # Reading paise as rupees inflates every amount a hundredfold. Refuse rather
+        # than quietly prefer one instruction over the other.
+        raise ImportError_(
+            f"{profile.name} exports amounts in minor units, so --major (MAJOR=1) "
+            "would read every amount 100x too large. Drop it.")
+    return profile, profile.amount_unit == "major"
+
+
+def load_events(path: Path, merchant_id: str, amounts_are_major: bool,
+                psp: str | None = None) -> Loaded:
+    """Read an export and normalise it. One bad row is reported, never fatal to the file."""
+    profile, major = _profile(psp, amounts_are_major)
+    events: list[RiskEvent] = []
+    rejected: list[str] = []
+    skipped = 0
+    for row in read_rows(path):
+        if profile is not None:
+            if not is_failure(row, profile):
+                skipped += 1
+                continue
+            row = translate(row, profile)
+        try:
+            events.append(to_risk_event(row, merchant_id, major))
+        except ImportError_ as exc:
+            rejected.append(str(exc))
+        except Exception as exc:
+            rejected.append(f"row {row.get('event_id', '?')}: {type(exc).__name__}: {exc}")
+    return Loaded(events, tuple(rejected), skipped)
 
 
 def coverage_report(events: list[RiskEvent]) -> dict:
@@ -209,29 +266,25 @@ def main() -> None:
     ap.add_argument("--decide", action="store_true",
                     help="also show what the agent would do for each row")
     ap.add_argument("--limit", type=int, default=20, help="rows to show with --decide")
+    ap.add_argument("--psp", help="read the export with a gateway profile from config/psp/")
     args = ap.parse_args()
 
     market = get_market()
     try:
-        rows = read_rows(Path(args.file))
+        events, errors, skipped = load_events(Path(args.file), args.merchant_id,
+                                              args.major, args.psp)
     except ImportError_ as exc:
         sys.exit(str(exc))
-    if not rows:
+    rows_read = len(events) + len(errors) + skipped
+    if not rows_read:
         sys.exit("file contained no rows")
-
-    events, errors = [], []
-    for row in rows:
-        try:
-            events.append(to_risk_event(row, args.merchant_id, args.major))
-        except ImportError_ as exc:
-            errors.append(str(exc))
-        except Exception as exc:
-            errors.append(f"row {row.get('event_id', '?')}: {type(exc).__name__}: {exc}")
 
     rule = "─" * 74
     print(f"\n{rule}\n  RECURA — imported {Path(args.file).name}\n{rule}")
-    print(f"  rows read              {len(rows):,}")
+    print(f"  rows read              {rows_read:,}")
     print(f"  normalised to events   {len(events):,}")
+    if skipped:
+        print(f"  not failures, skipped  {skipped:,}")
     if errors:
         print(f"  rejected               {len(errors):,}")
         for e in errors[:5]:
@@ -244,7 +297,7 @@ def main() -> None:
     cov = coverage_report(events)
     recognised = cov["recognised_codes"] / cov["events"]
     print(f"\n  TAXONOMY COVERAGE — how much of your data we understand")
-    print(f"    recognised Razorpay codes   {cov['recognised_codes']:,}  ({recognised:.1%})")
+    print(f"    recognised failure codes    {cov['recognised_codes']:,}  ({recognised:.1%})")
     print(f"    unrecognised codes          {cov['unrecognised_codes']:,}")
     print(f"    no error object             {cov['no_error_object']:,}  "
           "(checkout drops / receivables)")
@@ -263,41 +316,24 @@ def main() -> None:
     print(f"\n  AT RISK                {market.money(total)}  across {len(events):,} events")
 
     if args.decide:
-        import numpy as np
+        from src.agent import Agent, is_blocked
 
-        from src.act.provider import SimulatedProvider
-        from src.agent import Agent
-        from src.decide.bandit import PropensityModel
-        from src.decide.providers import resolve_provider
-        from src.policy.engine import EpisodeState, evaluate
-
-        agent = Agent(model=PropensityModel(), llm_provider=resolve_provider(),
-                      executor=SimulatedProvider(), rng=np.random.default_rng(0),
-                      allow_network=False)
+        agent = Agent.for_preview()
         print(f"\n{rule}\n  WHAT THE AGENT WOULD DO  (first {args.limit}; nothing is sent)\n{rule}")
         print(f"  {'event':<16}{'amount':>12}  {'diagnosis':<20}{'action':<17}{'EV':>11}  verdict")
         blocked_count = 0
         for event in events[: args.limit]:
-            decision, _ = agent._decide(event, event.observed_at, 0)
-
-            # Run the POLICY GATE too. Printing the raw decision was misleading: it
-            # advertised actions the contract would refuse, on the judge's own data,
-            # under a heading that says what the agent WOULD do. What it would do is
-            # whatever survives the gate.
-            verdict = evaluate(decision, EpisodeState(
-                event_id=event.event_id,
-                episode_started_at=event.observed_at,
-                consented_channels=event.customer_history.consented_channels,
-                opted_out=event.customer_history.opted_out,
-                contacts_last_7d=event.customer_history.contacts_last_7d,
-            ), event.observed_at)
+            # What it would do is whatever survives the POLICY GATE. Printing the raw
+            # decision advertised actions the contract would refuse, on the judge's own
+            # data, under a heading that says what the agent WOULD do.
+            decision, verdict = agent.preview(event, event.observed_at)
 
             ev = decision.expected_value_paise
-            if verdict.allowed:
-                note = "allowed"
-            else:
+            if is_blocked(decision, verdict):
                 blocked_count += 1
                 note = "BLOCKED: " + verdict.rules_blocked[0].rule_id
+            else:
+                note = "allowed"
             print(f"  {event.event_id[:15]:<16}{market.money(event.amount_paise):>12}  "
                   f"{decision.failure_class.value:<20}{decision.action.value:<17}"
                   f"{('+' if ev > 0 else '') + market.money(ev):>11}  {note}")
@@ -305,9 +341,10 @@ def main() -> None:
             print(f"\n  {blocked_count} of {min(args.limit, len(events))} proposed actions "
                   "were refused by policy.yaml before anything could be sent.")
 
-        print("\n  NOTE: propensities here come from an untrained Beta(1,1) prior - this "
-              "run has\n  no outcomes to learn from, so treat the ACTION as a "
-              "demonstration of the\n  decision path, not as a tuned recommendation.")
+        print("\n  NOTE: this export has no outcomes to learn from, so propensities start "
+              "from\n  priors learned on the synthetic benchmark (config/benchmark_priors.json),"
+              "\n  not from your customers. Read the ACTION as the decision path, not as a "
+              "tuned\n  recommendation.")
 
     print(f"\n{rule}")
     print("  Nothing was sent and no payment was moved. To evaluate lift on your own")
