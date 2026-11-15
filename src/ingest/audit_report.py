@@ -78,7 +78,7 @@ class AuditReport:
     no_consent_events: int
 
 
-def _buckets(pairs: Iterable[tuple[str, int]]) -> tuple[Bucket, ...]:
+def buckets(pairs: Iterable[tuple[str, int]]) -> tuple[Bucket, ...]:
     """Group (label, amount) pairs. Largest amount first; label breaks ties so the
     order never depends on dict iteration."""
     counts: dict[str, int] = defaultdict(int)
@@ -128,14 +128,14 @@ def build_audit(events: list[RiskEvent], *, source_name: str, rows_read: int,
         unrecognised_codes=coverage["unrecognised_codes"],
         no_error_object=coverage["no_error_object"],
         unmapped=tuple(coverage["unmapped"].items()),
-        recoverability=_buckets((m.recoverability.value, e.amount_paise) for e, m in triage),
-        failure_classes=_buckets((m.failure_class.value, e.amount_paise) for e, m in triage),
-        merchant_bugs=_buckets(
+        recoverability=buckets((m.recoverability.value, e.amount_paise) for e, m in triage),
+        failure_classes=buckets((m.failure_class.value, e.amount_paise) for e, m in triage),
+        merchant_bugs=buckets(
             (e.razorpay_error.reason or "unspecified", e.amount_paise)
             for e, m in triage
             if m.recoverability is Recoverability.MERCHANT_CONFIG and e.razorpay_error),
-        actions=_buckets(actions),
-        blocked_rules=_buckets(blocked),
+        actions=buckets(actions),
+        blocked_rules=buckets(blocked),
         no_consent_events=sum(1 for e in events if not e.customer_history.consented_channels),
     )
 

@@ -31,8 +31,13 @@ fixtures: seed  ## one-off: generate the committed LLM fixture set (needs a prov
 fixtures-plan: seed  ## how many model calls the fixture set still needs
 	$(VENV)/python -m eval.generate_fixtures --dry-run
 
-serve:  ## run the webhook receiver on :8000 (GET /health, POST /webhooks/razorpay)
-	$(VENV)/python -m uvicorn src.api.main:app --host 127.0.0.1 --port $(PORT)
+SHADOW_DB ?= sqlite:///recura_shadow.db
+
+serve:  ## run the webhook receiver on :8000; SHADOW=1 also decides and logs, sending nothing
+	$(if $(SHADOW),RECURA_SHADOW_DB=$(SHADOW_DB) )$(VENV)/python -m uvicorn src.api.main:app --host 127.0.0.1 --port $(PORT)
+
+shadow-report:  ## what shadow mode saw, would have done, and what came back unaided
+	$(VENV)/python -m src.shadow --db $(SHADOW_DB)
 
 import:  ## run Recura against YOUR data: make import FILE=failures.csv [DECIDE=1] [PSP=stripe]
 	$(VENV)/python -m src.ingest.import_file --file $(FILE) $(if $(MAJOR),--major) $(if $(DECIDE),--decide) $(if $(PSP),--psp $(PSP))
