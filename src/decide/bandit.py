@@ -115,6 +115,15 @@ class PropensityModel:
         """Posterior mean - used by the no-exploration ablation."""
         return self.posterior(failure_class, action).mean
 
+    def seed(self, failure_class: FailureClass, action: ActionType,
+             prior: BetaPosterior) -> None:
+        """Start one cell from something other than the flat prior.
+
+        Never called on the benchmark path - see the note on uninformative priors above.
+        Previews use it (src/decide/priors.py).
+        """
+        self._cells[(failure_class, action)] = prior
+
     def update(self, failure_class: FailureClass, action: ActionType, success: bool,
                weight: float = 1.0) -> None:
         key = (failure_class, action)

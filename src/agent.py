@@ -75,6 +75,16 @@ CONTACT_ACTIONS = {ActionType.NUDGE, ActionType.ESCALATE_HUMAN}
 RETRY_ACTIONS = {ActionType.RETRY_NOW, ActionType.RETRY_SCHEDULED, ActionType.SWITCH_METHOD}
 
 
+def is_blocked(decision: Decision, verdict: PolicyVerdict) -> bool:
+    """Did the contract stop an action the arithmetic wanted?
+
+    A refusal is not a block. `run_episode` records NO_ACTION before it looks at the
+    verdict, and a preview has to read the pair the same way - otherwise doing nothing
+    about a merchant's own integration bug is reported as an action the policy refused.
+    """
+    return decision.action is not ActionType.NO_ACTION and not verdict.allowed
+
+
 class Observe(Protocol):
     """Injected by the eval harness. Returns (recovered, opted_out)."""
 
@@ -190,6 +200,24 @@ class Agent:
     # for it existed from day one with nothing to trigger it.
     promise_window_hours: float = 48.0
 
+    @classmethod
+    def for_preview(cls) -> Agent:
+        """An agent that shows decisions rather than making them.
+
+        No network, and no exploration: a Thompson draw is how a learning agent tries
+        things, but on a report it means the same export gives a different answer when
+        its rows are reordered. The posterior mean is the same for a given event
+        wherever it sits in the file.
+
+        It starts from the capped benchmark priors rather than Beta(1, 1), because with
+        every cell at 0.5 no action can beat doing nothing (src/decide/priors.py).
+        """
+        from src.decide.priors import load_benchmark_priors
+        from src.decide.providers import resolve_provider
+
+        return cls(model=load_benchmark_priors(), llm_provider=resolve_provider(),
+                   allow_network=False, explore=False)
+
     # ---- step 2: DIAGNOSE -------------------------------------------------
 
     def _diagnose(self, event: RiskEvent) -> Diagnosis:
@@ -301,6 +329,59 @@ class Agent:
             llm_fallback_used=(dx.source is ProposalSource.FALLBACK),
         )
         return decision, dx
+
+    # ---- step 4: GOVERN ---------------------------------------------------
+
+    def _govern(self, decision: Decision, dx: Diagnosis, event: RiskEvent,
+                state: EpisodeState, now: datetime, attempts: int,
+                refused: frozenset, seq: int) -> tuple[Decision, Diagnosis, PolicyVerdict]:
+        """Put a decision to the contract. Returns what the contract leaves standing."""
+        if not self.use_policy:
+            # Ablation 3: no gate. Expect more actions, worse cost-per-recovery.
+            return decision, dx, PolicyVerdict(allowed=True, rules_evaluated=())
+
+        verdict = evaluate(decision, state, now, self.policy)
+        # A rule may not merely forbid - it may MANDATE. Above the automation
+        # ceiling the contract requires human review, and refusing is not one
+        # of the permitted outcomes. Without this the agent proposed a retry
+        # on a high-value failure, got blocked, and walked away from the money.
+        if (verdict.required_action is not None
+                and decision.action is not verdict.required_action):
+            decision, dx = self._decide(event, now, attempts, refused, seq,
+                                        force=verdict.required_action)
+            verdict = evaluate(decision, state, now, self.policy)
+        return decision, dx, verdict
+
+    def preview(self, event: RiskEvent, now: datetime) -> tuple[Decision, PolicyVerdict]:
+        """The first decision for an event, and the contract's verdict on it.
+
+        Executes nothing, learns nothing and writes nothing. This is what the audit
+        report and shadow mode show a merchant, so it goes through the same decide and
+        govern steps as `run_episode` rather than a copy of them. The copies it replaced
+        never applied a contract mandate, so an automated action on an amount above the
+        ceiling was shown as blocked when the loop would have escalated it to a person.
+        """
+        history = event.customer_history
+        seen = self._contacts_in_last_7d(event.customer_id, now, history.contacts_last_7d)
+        observed = event.model_copy(update={
+            "customer_history": history.model_copy(update={"contacts_last_7d": seen})
+        })
+        budget = self._merchant_days.get((event.merchant_id, now.date()), MerchantDay())
+        decision, dx = self._decide(observed, now, 0)
+        state = EpisodeState(
+            event_id=event.event_id, episode_started_at=event.observed_at,
+            contacts_last_7d=seen,
+            last_contact_at=self._last_contact_at(event.customer_id),
+            consented_channels=history.consented_channels,
+            opted_out=history.opted_out,
+            merchant_actions_today=budget.actions,
+            merchant_spend_today_paise=budget.spend_paise,
+            escalations_today=budget.escalations,
+            action_cost_paise=self._cost_of(decision, seen),
+        )
+        decision, _, verdict = self._govern(decision, dx, observed, state, now,
+                                            0, frozenset(), 0)
+        return decision, verdict
 
     # ---- the loop ---------------------------------------------------------
 
@@ -436,22 +517,8 @@ class Agent:
                 action_cost_paise=self._cost_of(decision, seen),
             )
             # ---- step 4: GOVERN --------------------------------------------
-            if self.use_policy:
-                verdict = evaluate(decision, state, now, self.policy)
-
-                # A rule may not merely forbid - it may MANDATE. Above the automation
-                # ceiling the contract requires human review, and refusing is not one
-                # of the permitted outcomes. Without this the agent proposed a retry
-                # on a high-value failure, got blocked, and walked away from the money.
-                if (verdict.required_action is not None
-                        and decision.action is not verdict.required_action):
-                    decision, dx = self._decide(observed, now, attempts,
-                                                frozenset(refused_actions), seq,
-                                                force=verdict.required_action)
-                    verdict = evaluate(decision, state, now, self.policy)
-            else:
-                # Ablation 3: no gate. Expect more actions, worse cost-per-recovery.
-                verdict = PolicyVerdict(allowed=True, rules_evaluated=())
+            decision, dx, verdict = self._govern(decision, dx, observed, state, now,
+                                                 attempts, frozenset(refused_actions), seq)
 
             # Quiet hours SHIFT rather than block; honour the modified send time.
             scheduled = self._scheduled_at(decision, verdict, now)
