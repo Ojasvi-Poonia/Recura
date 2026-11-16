@@ -6,8 +6,9 @@ break the HMAC, so the route takes a bare `Request` and reads bytes itself.
 
 With RECURA_SHADOW_DB set, every verified failure is also decided on and written to
 an append-only ledger, and nothing is executed (src/shadow.py). POST /policy/check puts
-an action some other system wants to take to the same contract (src/policy/check.py).
-Both need RECURA_API_KEY; with no key configured they are closed.
+an action some other system wants to take to the same contract, and POST /policy/contacts
+records the contacts it then makes (src/policy/check.py). All of these need
+RECURA_API_KEY; with no key configured they are closed.
 
 Secrets come from the environment, never from source (rules/common/security.md).
 """
@@ -20,8 +21,9 @@ import logging
 import os
 import sys
 from functools import lru_cache
+from typing import Annotated
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Path, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 
@@ -30,7 +32,17 @@ from src.clock import SystemClock
 from src.ingest.signature import verify
 from src.ingest.webhook import IdempotencyStore, IngestResult, Outcome, normalise
 from src.ledger.store import Ledger
-from src.policy.check import CheckResult, PolicyCheckLog, ProposedAction, check
+from src.policy.check import (
+    MAX_ID_LENGTH,
+    CheckResult,
+    ConfirmedContact,
+    ContactEntry,
+    ContactRecorded,
+    ContactRejected,
+    PolicyCheckLog,
+    ProposedAction,
+    check,
+)
 from src.shadow import ShadowRecorder, ShadowSummary
 
 WEBHOOK_SECRET_ENV = "RAZORPAY_WEBHOOK_SECRET"
@@ -190,13 +202,49 @@ def shadow_summary() -> ShadowSummary:
     return shadow.summary()
 
 
+def check_log() -> PolicyCheckLog | None:
+    url = os.getenv(SHADOW_DB_ENV)
+    return _check_log_for(url) if url else None
+
+
+def require_check_log() -> PolicyCheckLog:
+    log = check_log()
+    if log is None:
+        raise HTTPException(status_code=503,
+                            detail=f"no contact record is kept: set {SHADOW_DB_ENV}")
+    return log
+
+
+CheckLogDep = Annotated[PolicyCheckLog, Depends(require_check_log)]
+
+
 @app.post("/policy/check", response_model=CheckResult,
           dependencies=[Depends(require_api_key)])
 def policy_check(proposal: ProposedAction) -> CheckResult:
     """May this action be taken? Answered by policy.yaml, never by a model.
 
     Recorded in the same database as shadow mode when RECURA_SHADOW_DB is set; the reply
-    says whether it was (`logged`). Nothing is executed.
+    says whether it was (`logged`), and counts contacts from that record as well as from
+    what the caller reports. Nothing is executed.
     """
-    url = os.getenv(SHADOW_DB_ENV)
-    return check(proposal, _clock.now(), _check_log_for(url) if url else None)
+    return check(proposal, _clock.now(), check_log())
+
+
+@app.post("/policy/contacts", response_model=ContactRecorded,
+          dependencies=[Depends(require_api_key)])
+def policy_contact(contact: ConfirmedContact, log: CheckLogDep) -> ContactRecorded:
+    """Record a contact the caller has made, so later checks count it."""
+    try:
+        return log.confirm(contact, _clock.now())
+    except ContactRejected as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@app.get("/policy/customers/{customer_id}/contacts", response_model=list[ContactEntry],
+         dependencies=[Depends(require_api_key)])
+def customer_contacts(
+    customer_id: Annotated[str, Path(min_length=1, max_length=MAX_ID_LENGTH)],
+    log: CheckLogDep,
+) -> list[ContactEntry]:
+    """Every recorded contact for one customer, each judged against the contract."""
+    return log.contacts(customer_id)

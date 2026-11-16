@@ -42,3 +42,25 @@ echo "   contacted three times this week:"
 curl -s "$HOST/policy/check" -H "Authorization: Bearer $API_KEY" -H "content-type: application/json" \
   -d "{\"event_id\":\"pay_shadow_1_$NOW\",\"customer_id\":\"cust_demo\",\"action\":\"NUDGE\",\"channel\":\"sms\",\"template_id\":\"tpl_funds_01\",\"amount_paise\":249900,\"episode_started_at\":\"$(date -u -r "$T1" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d "@$T1" +%Y-%m-%dT%H:%M:%SZ)\",\"failure_reason\":\"insufficient_funds\",\"customer\":{\"consented_channels\":[\"sms\"],\"contacts_last_7d\":3}}" \
   | python3 -m json.tool
+
+# The same question for a fresh customer, then the record catching an under-report.
+STARTED=$(date -u -r "$T1" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d "@$T1" +%Y-%m-%dT%H:%M:%SZ)
+SENT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+CUSTOMER="cust_fresh_$NOW"
+ASK="{\"event_id\":\"pay_fresh_$NOW\",\"customer_id\":\"$CUSTOMER\",\"action\":\"NUDGE\",\"channel\":\"sms\",\"template_id\":\"tpl_funds_01\",\"amount_paise\":249900,\"episode_started_at\":\"$STARTED\",\"failure_reason\":\"insufficient_funds\",\"customer\":{\"consented_channels\":[\"sms\"],\"contacts_last_7d\":0}}"
+
+ask() {
+  curl -s "$HOST/policy/check" -H "Authorization: Bearer $API_KEY" \
+       -H "content-type: application/json" -d "$ASK"
+}
+
+echo "7) a customer nobody has contacted - allowed - and the caller confirms it sent the SMS:"
+CHECK_ID=$(ask | python3 -c "import json,sys; r=json.load(sys.stdin); print(r['check_id']); print('   allowed:', r['allowed'], file=sys.stderr)")
+curl -s "$HOST/policy/contacts" -H "Authorization: Bearer $API_KEY" -H "content-type: application/json" \
+  -d "{\"event_id\":\"pay_fresh_$NOW\",\"customer_id\":\"$CUSTOMER\",\"channel\":\"sms\",\"contacted_at\":\"$SENT\",\"check_id\":\"$CHECK_ID\",\"contact_ref\":\"sms_$NOW\"}"; echo
+
+echo "8) a minute later the caller asks again, still claiming zero contacts this week:"
+ask | python3 -c "import json,sys; r=json.load(sys.stdin); print(json.dumps({k: r[k] for k in ('allowed','blocked_by','history')}, indent=4))"
+
+echo "9) that customer's contact record, judged against the contract:"
+curl -s "$HOST/policy/customers/$CUSTOMER/contacts" -H "Authorization: Bearer $API_KEY" | python3 -m json.tool

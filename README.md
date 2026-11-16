@@ -110,8 +110,21 @@ curl -s localhost:8000/policy/check -H "Authorization: Bearer $RECURA_API_KEY" \
 The answer comes from `policy.yaml` and no model. A contact proposed for 21:30 comes back
 allowed with `send_at` moved to 09:00; an amount above the ceiling comes back with
 `required_action: ESCALATE_HUMAN`. Every question and answer is written to a table that
-cannot be updated or deleted. The endpoint keeps no history of its own, so its answer is
-as true as the history the caller sends ([`src/policy/check.py`](src/policy/check.py)).
+cannot be updated or deleted.
+
+After sending, the caller confirms the contact (`POST /policy/contacts`, citing the
+`check_id` that allowed it). Later checks count the 7-day cap and the 24-hour gap from
+that record as well as from what the caller reports, and use the stricter of the two, so
+a caller that under-reports is caught and told (`history.caller_under_reported`). One
+allowed check is permission for one contact. A contact made without asking is still
+recorded and counted, and marked unchecked.
+
+`GET /policy/customers/{id}/contacts` returns one customer's contacts, each marked with
+any contact rule it broke (outside hours, over the weekly cap, too soon after the last);
+`make contact-export OUT=contacts.csv` writes every customer's. That is the record of when
+and how often each customer was contacted, with the breaches already found. Details and
+the one known gap — two senders asking at the same instant can both be told yes — are in
+[`src/policy/check.py`](src/policy/check.py).
 
 **4. A live test against a holdout is not in this repository.** Sending is simulated and a
 live Razorpay key is refused at construction. [`docs/ROADMAP.md`](docs/ROADMAP.md) lists
@@ -590,7 +603,7 @@ demo/                 webhook and shadow-mode scripts, Hinglish voice samples
 | [`docs/PSP_PROFILES.md`](docs/PSP_PROFILES.md) | Reading another gateway's export; adding a profile |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | What is built, what is not, and what a live pilot needs |
 
-**648 tests.** Run `make test`.
+**679 tests.** Run `make test`.
 
 ---
 

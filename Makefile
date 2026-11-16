@@ -39,6 +39,9 @@ serve:  ## run the webhook receiver on :8000; SHADOW=1 also decides and logs, se
 shadow-report:  ## what shadow mode saw, would have done, and what came back unaided
 	$(VENV)/python -m src.shadow --db $(SHADOW_DB)
 
+contact-export:  ## every recorded contact, with contract breaches: make contact-export OUT=contacts.csv
+	$(VENV)/python -m src.policy.check --db $(SHADOW_DB) --out $(OUT)
+
 import:  ## run Recura against YOUR data: make import FILE=failures.csv [DECIDE=1] [PSP=stripe]
 	$(VENV)/python -m src.ingest.import_file --file $(FILE) $(if $(MAJOR),--major) $(if $(DECIDE),--decide) $(if $(PSP),--psp $(PSP))
 

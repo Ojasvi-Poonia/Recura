@@ -310,8 +310,13 @@ and `make shadow-report` bootstraps the difference over customers to check that 
 **`POST /policy/check` is the gate with a different caller.** `src/policy/check.py` turns
 another system's proposed action into the same `Decision` and `EpisodeState` the loop
 builds, calls the same `evaluate()`, and writes the question and the answer to an
-append-only table before replying. It holds no history; the caller's is taken as given
-and recorded as given.
+append-only table before replying. Contact history comes from two places, the caller's
+report and a record of contacts the caller has confirmed (`POST /policy/contacts`), and
+the contract is given whichever is stricter. A caller can make an answer more cautious and
+never less. A confirmation that cites a check must cite an allowed contact check for the
+same customer, once; one that cites none is recorded anyway and marked unchecked.
+`breaches_in()` replays a customer's recorded contacts against the timing rules, which is
+what the contact export and the per-customer endpoint report.
 
 ---
 
