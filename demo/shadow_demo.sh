@@ -36,3 +36,9 @@ send "evt_shadow_4_$NOW" "{\"event\":\"payment.captured\",\"created_at\":$T4,\"p
 
 echo "5) what shadow mode has seen:"
 curl -s "$HOST/shadow/summary" -H "Authorization: Bearer $API_KEY" | python3 -m json.tool
+
+echo "6) another system asks the contract before texting a customer it has already"
+echo "   contacted three times this week:"
+curl -s "$HOST/policy/check" -H "Authorization: Bearer $API_KEY" -H "content-type: application/json" \
+  -d "{\"event_id\":\"pay_shadow_1_$NOW\",\"customer_id\":\"cust_demo\",\"action\":\"NUDGE\",\"channel\":\"sms\",\"template_id\":\"tpl_funds_01\",\"amount_paise\":249900,\"episode_started_at\":\"$(date -u -r "$T1" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d "@$T1" +%Y-%m-%dT%H:%M:%SZ)\",\"failure_reason\":\"insufficient_funds\",\"customer\":{\"consented_channels\":[\"sms\"],\"contacts_last_7d\":3}}" \
+  | python3 -m json.tool

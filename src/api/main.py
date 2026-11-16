@@ -5,8 +5,9 @@ any parsing. FastAPI's automatic JSON binding would re-serialise the payload and
 break the HMAC, so the route takes a bare `Request` and reads bytes itself.
 
 With RECURA_SHADOW_DB set, every verified failure is also decided on and written to
-an append-only ledger, and nothing is executed (src/shadow.py). Reading that ledger
-back needs RECURA_API_KEY; with no key configured the read endpoint is closed.
+an append-only ledger, and nothing is executed (src/shadow.py). POST /policy/check puts
+an action some other system wants to take to the same contract (src/policy/check.py).
+Both need RECURA_API_KEY; with no key configured they are closed.
 
 Secrets come from the environment, never from source (rules/common/security.md).
 """
@@ -25,9 +26,11 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 
 from src.agent import is_blocked
+from src.clock import SystemClock
 from src.ingest.signature import verify
 from src.ingest.webhook import IdempotencyStore, IngestResult, Outcome, normalise
 from src.ledger.store import Ledger
+from src.policy.check import CheckResult, PolicyCheckLog, ProposedAction, check
 from src.shadow import ShadowRecorder, ShadowSummary
 
 WEBHOOK_SECRET_ENV = "RAZORPAY_WEBHOOK_SECRET"
@@ -57,6 +60,7 @@ def _log(msg: str, **fields) -> None:
 
 app = FastAPI(title="Recura", version="0.1.0")
 _store = IdempotencyStore()
+_clock = SystemClock()   # the process edge: the one place real time is allowed in
 
 
 @lru_cache(maxsize=4)
@@ -68,6 +72,11 @@ def shadow_recorder() -> ShadowRecorder | None:
     """The shadow recorder, if shadow mode is on. One per database URL."""
     url = os.getenv(SHADOW_DB_ENV)
     return _recorder_for(url) if url else None
+
+
+@lru_cache(maxsize=4)
+def _check_log_for(url: str) -> PolicyCheckLog:
+    return PolicyCheckLog(_recorder_for(url).ledger.engine)
 
 
 def require_api_key(authorization: str = Header(default="")) -> None:
@@ -179,3 +188,15 @@ def shadow_summary() -> ShadowSummary:
     if shadow is None:
         raise HTTPException(status_code=503, detail=f"shadow mode is off: set {SHADOW_DB_ENV}")
     return shadow.summary()
+
+
+@app.post("/policy/check", response_model=CheckResult,
+          dependencies=[Depends(require_api_key)])
+def policy_check(proposal: ProposedAction) -> CheckResult:
+    """May this action be taken? Answered by policy.yaml, never by a model.
+
+    Recorded in the same database as shadow mode when RECURA_SHADOW_DB is set; the reply
+    says whether it was (`logged`). Nothing is executed.
+    """
+    url = os.getenv(SHADOW_DB_ENV)
+    return check(proposal, _clock.now(), _check_log_for(url) if url else None)

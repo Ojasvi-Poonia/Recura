@@ -13,6 +13,8 @@ Dated 2026-11-16.
 | Benchmark with holdout, A/A, placebo, ablations, sweep, replay | `make eval` and friends | Byte-identical across runs |
 | Bring-your-own-data import and audit report | `make import`, `make audit` | Razorpay and Stripe profiles |
 | Shadow mode with a measured unaided baseline | `make serve SHADOW=1` | Single tenant, SQLite |
+| Arm assignment on arrival, and an A/A check on live traffic | `src/assignment.py`, `make shadow-report` | Both arms untreated; no live test yet |
+| Contract check for other systems | `POST /policy/check` | Stateless: the caller supplies the customer's history |
 | Razorpay test-mode integration | `make tier1` | Verified against the live test API |
 
 ## What is not
@@ -36,7 +38,7 @@ Stated plainly, because each one changes what the benchmark number means.
 | Gap | Build |
 |---|---|
 | Decides once per failure | A durable job queue behind the existing `Clock` interface, so a 21-day episode runs in real time and still replays deterministically |
-| No holdout on live traffic | Assign an arm by a stable hash of the customer id on arrival; log both arms |
+| Arms are assigned but both are untreated | Act on the treatment arm only, and read outcomes for both through the join shadow mode already does |
 | No outcome learning | Feed the paid-unaided outcomes shadow mode already joins into the do-nothing posterior |
 | One tenant | `merchant_id` scoping for the contract, costs, templates and posteriors |
 | SQLite | MySQL or Postgres; the schema is already portable and the triggers exist for MySQL |
@@ -47,12 +49,12 @@ Stated plainly, because each one changes what the benchmark number means.
 Cashfree, PayU, Juspay, PhonePe, and NPCI's UPI response codes, each transcribed from its
 published list rather than recalled. See [`PSP_PROFILES.md`](PSP_PROFILES.md).
 
-### 3. A contract check other systems can call
+### 3. Make the contract check stateful
 
-`POST /policy/check`: given a proposed contact or retry and the customer's recent history,
-return allowed or blocked with the rule and the reason, and log it. That turns the policy
-gate into something an existing dunning or collections tool can put in front of its own
-sends.
+`POST /policy/check` exists, and trusts the caller for the customer's contact history. The
+next step is for it to keep that history itself: record each contact the caller confirms
+it made, count the 7-day window and the 24-hour gap from its own table, and refuse to be
+told otherwise. Then per-merchant contracts, and an export an auditor can read.
 
 ### 4. Real execution, last
 

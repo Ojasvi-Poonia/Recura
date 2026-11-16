@@ -505,6 +505,12 @@ benchmark number: `make eval` output must stay byte-identical.
 - **Shadow mode** — `src/shadow.py`. `RECURA_SHADOW_DB` makes the webhook receiver decide
   and log under `arm="shadow"` with `executed=false`. Insert-only. Reading it back needs
   `RECURA_API_KEY`.
+- **Arm assignment** — `src/assignment.py`. A salted hash of the customer id, stored on
+  arrival. Never assign by event, never from random state, and never rewrite a stored arm.
+- **Contract check** — `POST /policy/check` (`src/policy/check.py`) puts another system's
+  proposed action to `evaluate()` and logs it. No model on this path, ever.
+- **Append-only means triggers.** Any table described as insert-only gets
+  `make_append_only()` from `src/ledger/store.py`, and a test that UPDATE and DELETE fail.
 
 `business/` is gitignored and holds private commercial material. The repo is public:
 never commit anything from it, and never put pricing, outreach or plans under `docs/`.

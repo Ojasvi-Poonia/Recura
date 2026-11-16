@@ -299,6 +299,20 @@ its failure has arrived yet, and an episode counts as paid when a stop shares a 
 happened at or after the failure by the payloads' own timestamps. Arrival order is never
 consulted, because Razorpay does not guarantee it.
 
+**The arm is fixed on arrival and cannot be edited.** `src/assignment.py` maps a customer id
+to treatment or holdout with a salted hash: by customer, so one person's failures never
+straddle both arms, and nested, so shrinking the holdout never moves a treated customer
+into it. Shadow mode stores the arm with the decision. Every shadow table carries the same
+UPDATE and DELETE triggers as the ledger, so "assigned before the outcome was known" is
+something the database enforces. With both arms untreated their recovery rates must agree,
+and `make shadow-report` bootstraps the difference over customers to check that they do.
+
+**`POST /policy/check` is the gate with a different caller.** `src/policy/check.py` turns
+another system's proposed action into the same `Decision` and `EpisodeState` the loop
+builds, calls the same `evaluate()`, and writes the question and the answer to an
+append-only table before replying. It holds no history; the caller's is taken as given
+and recorded as given.
+
 ---
 
 ## Operational failure modes

@@ -46,8 +46,8 @@ the half that matters.
 ## Try it on your own failures
 
 The benchmark below is synthetic, and there is a limit to what synthetic data can show.
-So the repo also reads yours. Three steps, each asking for a little more trust than the
-last, and none of them contacts a customer.
+So the repo also reads yours. Each step asks for a little more trust than the last,
+and none of them contacts a customer.
 
 **1. Audit an export.** No integration, no keys.
 
@@ -86,7 +86,34 @@ payment that arrives afterwards arrived under your existing process, so the repo
 **paid unaided** line is your real baseline: the number any recovery claim has to beat,
 measured before a single customer is treated.
 
-**3. A live test against a holdout is not in this repository.** Sending is simulated and a
+Shadow mode also runs an **A/A test on your traffic**. Each failure is assigned, on
+arrival, the arm a live test would put its customer in — a pure function of the customer
+id, stored in a table the database refuses to update. Neither arm is treated, so the two
+must recover at the same rate, and the report gives the difference with a bootstrap
+interval. A split that fails that check would have reported lift it did not cause.
+
+**3. Put the contract in front of a system you already have.** Your dunning tool, a
+collections vendor or a voice bot can ask before it acts:
+
+```bash
+curl -s localhost:8000/policy/check -H "Authorization: Bearer $RECURA_API_KEY" \
+  -H "content-type: application/json" -d '{
+    "event_id": "pay_1", "customer_id": "cust_1", "action": "NUDGE", "channel": "sms",
+    "template_id": "tpl_funds_01", "amount_paise": 249900,
+    "episode_started_at": "2026-11-16T10:00:00+05:30",
+    "failure_reason": "insufficient_funds",
+    "customer": {"consented_channels": ["sms"], "contacts_last_7d": 3}}'
+# {"allowed": false, "blocked_by": [{"rule_id": "contact.max_per_customer_per_7d",
+#   "reason": "Customer already contacted 3 times in 7 days (limit 3)."}], ...}
+```
+
+The answer comes from `policy.yaml` and no model. A contact proposed for 21:30 comes back
+allowed with `send_at` moved to 09:00; an amount above the ceiling comes back with
+`required_action: ESCALATE_HUMAN`. Every question and answer is written to a table that
+cannot be updated or deleted. The endpoint keeps no history of its own, so its answer is
+as true as the history the caller sends ([`src/policy/check.py`](src/policy/check.py)).
+
+**4. A live test against a holdout is not in this repository.** Sending is simulated and a
 live Razorpay key is refused at construction. [`docs/ROADMAP.md`](docs/ROADMAP.md) lists
 what that step needs.
 
@@ -534,10 +561,12 @@ shrink our own model's confidence. Each records what we rejected and why.
 src/
   agent.py            the loop - start here
   shadow.py           shadow mode: decide on live webhooks, execute nothing
+  assignment.py       treatment / holdout arm, a pure function of the customer id
   models.py           domain model; integer paise, frozen, extra="forbid"
   taxonomy/           115 Razorpay reason codes -> failure class + triage
   decide/             EV, Thompson sampling, LLM diagnosis, context multipliers, preview priors
-  policy/             20 deterministic rules; the LLM cannot import this
+  policy/             20 deterministic rules; the LLM cannot import this;
+                      check.py puts another system's action to the same contract
   act/                provider adapters, cost model, DLT messaging, voice
   ledger/             append-only, enforced by DB triggers
   ingest/             webhook HMAC, late-authorisation stop, idempotency,
@@ -561,7 +590,7 @@ demo/                 webhook and shadow-mode scripts, Hinglish voice samples
 | [`docs/PSP_PROFILES.md`](docs/PSP_PROFILES.md) | Reading another gateway's export; adding a profile |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | What is built, what is not, and what a live pilot needs |
 
-**595 tests.** Run `make test`.
+**648 tests.** Run `make test`.
 
 ---
 
