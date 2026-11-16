@@ -23,6 +23,13 @@ Razorpay does not guarantee delivery order. The time test is what stops last mon
 
 Everything here is insert-only. Closing an episode is a join, not an update.
 
+AN A/A TEST ON REAL TRAFFIC
+Each failure is also assigned the arm a live test would put its customer in
+(src/assignment.py), and the assignment is stored with the decision. In shadow mode
+neither arm is treated, so the two must recover at the same rate. The summary reports
+the difference with a bootstrap interval. If that interval excludes zero the split is
+broken, and it is far better to learn that now than after a pilot has reported lift.
+
 WHAT IT DOES NOT DO
 It does not learn: a decision that was never executed has no outcome to learn from. And
 the recovery it reports is right-censored - an episode opened an hour ago has not had its
@@ -38,20 +45,28 @@ from collections import Counter
 from dataclasses import dataclass, field
 from datetime import datetime
 
+import numpy as np
 from sqlalchemy import Column, MetaData, String, Table, select
 from sqlalchemy.exc import IntegrityError
 
 from src.agent import Agent, is_blocked
+from src.assignment import DEFAULT_SALT, HOLDOUT, HOLDOUT_FRACTION, TREATMENT, assign_arm
 from src.clock import Clock, SystemClock
 from src.ingest.audit_report import BLOCKED_LABEL, Bucket, buckets
 from src.ingest.webhook import SUCCESS_EVENTS
-from src.ledger.store import Ledger, ledger_entries, make_entry
+from src.ledger.store import Ledger, ledger_entries, make_append_only, make_entry
 from src.market import get_market
 from src.models import ActionResult, Decision, PolicyVerdict, Recoverability, RiskEvent
 
 SHADOW_ARM = "shadow"
 DEFAULT_DB_URL = "sqlite:///recura_shadow.db"
 MONEY_ARRIVED = frozenset(SUCCESS_EVENTS.values())
+
+# Below this many customers in either arm an interval is too wide to mean anything, and
+# printing one invites reading it anyway.
+MIN_CUSTOMERS_PER_ARM = 30
+BOOTSTRAP_RESAMPLES = 2000
+BOOTSTRAP_SEED = 20261116
 
 metadata = MetaData()
 
@@ -68,11 +83,38 @@ stops = Table(
     Column("occurred_at", String(40), primary_key=True),
 )
 
+assignments = Table(
+    "shadow_assignments", metadata,
+    Column("event_id", String(64), primary_key=True),
+    Column("customer_id", String(128), nullable=False),
+    Column("arm", String(16), nullable=False),
+)
+
 receipts = Table(
     "webhook_receipts", metadata,
     Column("receipt_id", String(128), primary_key=True),
     Column("received_at", String(40), nullable=False),
 )
+
+
+@dataclass(frozen=True)
+class ArmBaseline:
+    """One arm of the split a live test would use. Untreated here, like the other."""
+
+    arm: str
+    customers: int
+    episodes: int
+    paid_unaided: int
+
+
+@dataclass(frozen=True)
+class AACheck:
+    """Treatment minus holdout, in percentage points, with neither arm treated."""
+
+    difference_pp: float
+    ci_low_pp: float
+    ci_high_pp: float
+    consistent_with_zero: bool
 
 
 @dataclass(frozen=True)
@@ -92,6 +134,8 @@ class ShadowSummary:
     merchant_bugs: tuple[Bucket, ...]
     stop_reasons: tuple[tuple[str, int], ...]
     executed: int = 0          # always 0; reported so the claim is checkable
+    arms: tuple[ArmBaseline, ...] = ()
+    aa_check: AACheck | None = None   # None until both arms have enough customers
 
 
 @dataclass
@@ -101,12 +145,16 @@ class ShadowRecorder:
     ledger: Ledger
     clock: Clock = field(default_factory=SystemClock)
     agent: Agent = field(default_factory=Agent.for_preview)
+    holdout_fraction: float = HOLDOUT_FRACTION
+    assignment_salt: str = DEFAULT_SALT
     # The agent and the sequence counter are not safe to interleave, and webhooks are
     # handled on a thread pool.
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def __post_init__(self) -> None:
         metadata.create_all(self.ledger.engine)
+        for table in metadata.tables:
+            make_append_only(self.ledger.engine, table)
 
     # -- idempotency, same interface as ingest.webhook.IdempotencyStore -----------
 
@@ -139,8 +187,15 @@ class ShadowRecorder:
                 action_result=ActionResult(executed=False, action=decision.action),
                 clock_time=now,
             ))
-        for key in dict.fromkeys((event.event_id, *keys)):
-            self._insert(episode_keys, correlation_key=key, event_id=event.event_id)
+        self._insert_new(episode_keys, [
+            {"correlation_key": key, "event_id": event.event_id}
+            for key in dict.fromkeys((event.event_id, *keys))])
+        # Stored now, before any outcome can be known. A second decision for the same
+        # failure keeps the first assignment.
+        self._insert_new(assignments, [{
+            "event_id": event.event_id, "customer_id": event.customer_id,
+            "arm": assign_arm(event.customer_id, self.holdout_fraction,
+                              self.assignment_salt)}])
         return decision, verdict
 
     def stop(self, keys: tuple[str, ...], reason: str,
@@ -152,8 +207,8 @@ class ShadowRecorder:
         simply not have been delivered yet.
         """
         at = (occurred_at or self.clock.now()).isoformat()
-        for key in keys:
-            self._insert(stops, correlation_key=key, stop_reason=reason, occurred_at=at)
+        self._insert_new(stops, [{"correlation_key": key, "stop_reason": reason,
+                                  "occurred_at": at} for key in keys])
 
     def _insert(self, table: Table, **row: str) -> None:
         try:
@@ -161,6 +216,25 @@ class ShadowRecorder:
                 conn.execute(table.insert().values(**row))
         except IntegrityError:
             pass   # a redelivery of something already recorded; the first row stands
+
+    def _insert_new(self, table: Table, rows: list[dict[str, str]]) -> None:
+        """Insert the rows that are not already there, in one transaction.
+
+        One commit per webhook rather than one per row. If another process inserts the
+        same row between the check and the write, fall back to row-at-a-time, where a
+        collision costs only that row.
+        """
+        key_columns = [c.name for c in table.primary_key.columns]
+        try:
+            with self.ledger.engine.begin() as conn:
+                for row in rows:
+                    present = conn.execute(select(table).where(
+                        *(table.c[name] == row[name] for name in key_columns))).first()
+                    if present is None:
+                        conn.execute(table.insert().values(**row))
+        except IntegrityError:
+            for row in rows:
+                self._insert(table, **row)
 
     # -- reading it back ----------------------------------------------------------
 
@@ -172,6 +246,8 @@ class ShadowRecorder:
             ).mappings().all()
             key_rows = conn.execute(select(episode_keys)).all()
             stop_rows = conn.execute(select(stops)).all()
+            assigned = {event_id: (customer_id, arm) for event_id, customer_id, arm
+                        in conn.execute(select(assignments)).all()}
 
         # One episode per event id; a later entry for the same id is the newer decision.
         latest = {row["event_id"]: row for row in entries}
@@ -181,6 +257,7 @@ class ShadowRecorder:
         paid = [e for e in episodes if outcomes.get(e.event_id) in MONEY_ARRIVED]
         ended_unpaid = [e for e in episodes
                         if e.event_id in outcomes and outcomes[e.event_id] not in MONEY_ARRIVED]
+        per_customer = _per_customer(episodes, {e.event_id for e in paid}, assigned)
         return ShadowSummary(
             currency=get_market().currency.code,
             episodes=len(episodes),
@@ -195,6 +272,10 @@ class ShadowRecorder:
                                   for e in episodes if e.merchant_bug),
             stop_reasons=tuple(sorted(Counter(outcomes.values()).items())),
             executed=sum(1 for e in episodes if e.executed),
+            arms=tuple(ArmBaseline(arm, len(rows), sum(n for _, n in rows),
+                                   sum(p for p, _ in rows))
+                       for arm, rows in per_customer.items()),
+            aa_check=_aa_check(per_customer),
         )
 
 
@@ -254,6 +335,74 @@ def _outcomes(episodes: list[_Episode], key_rows, stop_rows) -> dict[str, str]:
     return outcomes
 
 
+def _per_customer(episodes: list[_Episode], paid_ids: set[str],
+                  assigned: dict[str, tuple[str, str]]) -> dict[str, list[tuple[int, int]]]:
+    """arm -> one (paid, episodes) pair per customer. The customer is the unit that was
+    randomised, so it is the unit that gets resampled."""
+    tally: dict[str, dict[str, list[int]]] = {TREATMENT: {}, HOLDOUT: {}}
+    for episode in episodes:
+        if episode.event_id not in assigned:
+            continue
+        customer_id, arm = assigned[episode.event_id]
+        counts = tally[arm].setdefault(customer_id, [0, 0])
+        counts[0] += episode.event_id in paid_ids
+        counts[1] += 1
+    return {arm: [(paid, n) for paid, n in customers.values()]
+            for arm, customers in tally.items()}
+
+
+def _aa_check(per_customer: dict[str, list[tuple[int, int]]]) -> AACheck | None:
+    """Bootstrap the difference in paid-unaided rate, resampling whole customers.
+
+    Seeded, so the same ledger always prints the same interval.
+    """
+    treatment, holdout = per_customer[TREATMENT], per_customer[HOLDOUT]
+    if min(len(treatment), len(holdout)) < MIN_CUSTOMERS_PER_ARM:
+        return None
+
+    rng = np.random.default_rng(BOOTSTRAP_SEED)
+
+    def resampled_rates(rows: list[tuple[int, int]]) -> np.ndarray:
+        paid, n = np.array(rows, dtype=np.int64).T
+        rates = np.empty(BOOTSTRAP_RESAMPLES)
+        # One resample at a time: a (resamples x customers) index matrix is gigabytes
+        # for a merchant with a hundred thousand customers.
+        for i in range(BOOTSTRAP_RESAMPLES):
+            picks = rng.integers(0, len(rows), size=len(rows))
+            rates[i] = paid[picks].sum() / n[picks].sum()
+        return rates
+
+    def rate(rows: list[tuple[int, int]]) -> float:
+        return sum(p for p, _ in rows) / sum(n for _, n in rows)
+
+    spread = 100.0 * (resampled_rates(treatment) - resampled_rates(holdout))
+    low, high = (float(q) for q in np.percentile(spread, [2.5, 97.5]))
+    return AACheck(
+        difference_pp=round(100.0 * (rate(treatment) - rate(holdout)), 2),
+        ci_low_pp=round(low, 2), ci_high_pp=round(high, 2),
+        consistent_with_zero=low <= 0.0 <= high,
+    )
+
+
+def _aa_lines(summary: ShadowSummary) -> list[str]:
+    lines = ["", ("  A/A CHECK  (the split a live test would use; neither arm treated, "
+                  "so they should match)")]
+    for arm in summary.arms:
+        share = 1000 * arm.paid_unaided // arm.episodes if arm.episodes else 0
+        lines.append(f"    {arm.arm:<10} {arm.customers:>7,} customers {arm.episodes:>7,} "
+                     f"failures   paid {share // 10}.{share % 10}%")
+    check = summary.aa_check
+    if check is None:
+        lines.append(f"    no interval yet: needs {MIN_CUSTOMERS_PER_ARM} customers in each arm")
+    else:
+        verdict = ("consistent with zero" if check.consistent_with_zero
+                   else "EXCLUDES ZERO - the split is not behaving as random; "
+                        "do not run a live test on it")
+        lines.append(f"    difference {check.difference_pp:+.2f}pp   95% CI "
+                     f"[{check.ci_low_pp:+.2f}, {check.ci_high_pp:+.2f}]   {verdict}")
+    return lines
+
+
 def render_text(summary: ShadowSummary) -> str:
     market = get_market()
     rule = "─" * 74
@@ -280,6 +429,7 @@ def render_text(summary: ShadowSummary) -> str:
             lines += ["", f"  {heading}"]
             lines += [f"    {b.label:<38}{b.events:>7,}  {market.money(b.amount_minor):>16}"
                       for b in rows]
+    lines += _aa_lines(summary)
     lines += [
         "", rule,
         "  Proposed actions start from priors learned on the synthetic benchmark, not",

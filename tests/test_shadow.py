@@ -13,12 +13,13 @@ import pytest
 from fastapi.testclient import TestClient
 
 import src.api.main as api
+from src.assignment import TREATMENT, assign_arm
 from src.clock import IST, VirtualClock
 from src.ingest.signature import expected_signature
 from src.ingest.webhook import Outcome, normalise
 from src.ledger.store import Ledger
 from src.models import CustomerHistory, ErrorObject, MerchantContext, RiskEvent
-from src.shadow import SHADOW_ARM, ShadowRecorder, render_text
+from src.shadow import MIN_CUSTOMERS_PER_ARM, SHADOW_ARM, ShadowRecorder, render_text
 
 T0 = datetime(2026, 3, 10, 11, 0, tzinfo=IST)
 SECRET = "whsec_shadow_test"
@@ -28,7 +29,8 @@ API_KEY = "key_shadow_test"
 def failure(event_id="pay_A", amount=249900, reason="insufficient_funds",
             source_type="payment", at=T0, **kw) -> RiskEvent:
     return RiskEvent(
-        event_id=event_id, merchant_id="m", customer_id=f"cust_{event_id}",
+        event_id=event_id, merchant_id="m",
+        customer_id=kw.get("customer_id", f"cust_{event_id}"),
         source_type=source_type, amount_paise=amount, observed_at=at,
         razorpay_error=ErrorObject(reason=reason) if reason else None,
         method=kw.get("method", "upi"),
@@ -41,6 +43,13 @@ def failure(event_id="pay_A", amount=249900, reason="insufficient_funds",
 def recorder(tmp_path):
     return ShadowRecorder(Ledger(url=f"sqlite:///{tmp_path / 'shadow.db'}"),
                           clock=VirtualClock(T0))
+
+
+@pytest.fixture
+def bulk_recorder():
+    """In memory, for the tests that record hundreds of failures. The on-disk fixture
+    pays for a commit per write, which is right for production and slow for a test."""
+    return ShadowRecorder(Ledger(url="sqlite://"), clock=VirtualClock(T0))
 
 
 # -- nothing is executed ------------------------------------------------------------
@@ -205,6 +214,86 @@ def test_report_says_nothing_was_sent_and_where_the_priors_come_from(recorder):
 def test_an_empty_ledger_summarises_without_dividing_by_zero(recorder):
     assert recorder.summary().episodes == 0
     assert "failures seen" in render_text(recorder.summary())
+
+
+# -- the split a live test would use, checked while nobody is treated ---------------
+
+
+def arm_counts(summary):
+    return {a.arm: a for a in summary.arms}
+
+
+def test_the_arm_is_stored_on_arrival_and_follows_the_customer(recorder):
+    """Two failures from one customer must land in one arm, or the holdout is contaminated."""
+    recorder.record(failure("pay_1", customer_id="cust_same"))
+    recorder.record(failure("pay_2", customer_id="cust_same"))
+
+    arms = arm_counts(recorder.summary())
+    expected = assign_arm("cust_same")
+
+    assert (arms[expected].customers, arms[expected].episodes) == (1, 2)
+    assert sum(a.episodes for a in arms.values()) == 2
+
+
+def test_an_assignment_once_made_is_not_rewritten_by_a_later_configuration(tmp_path):
+    """Re-randomising after outcomes are visible is how a holdout gets quietly chosen."""
+    url = f"sqlite:///{tmp_path / 'shadow.db'}"
+    ShadowRecorder(Ledger(url=url), clock=VirtualClock(T0)).record(failure("pay_1"))
+    before = arm_counts(ShadowRecorder(Ledger(url=url), clock=VirtualClock(T0)).summary())
+
+    everyone_held_out = ShadowRecorder(Ledger(url=url), clock=VirtualClock(T0),
+                                       holdout_fraction=1.0, assignment_salt="another")
+    everyone_held_out.record(failure("pay_1"))
+
+    after = arm_counts(everyone_held_out.summary())
+    assert {a: c.episodes for a, c in after.items()} == {a: c.episodes
+                                                         for a, c in before.items()}
+
+
+def test_no_interval_is_printed_before_both_arms_have_enough_customers(recorder):
+    for i in range(MIN_CUSTOMERS_PER_ARM):
+        recorder.record(failure(f"pay_{i}"))
+
+    summary = recorder.summary()
+
+    assert summary.aa_check is None
+    assert f"needs {MIN_CUSTOMERS_PER_ARM} customers in each arm" in render_text(summary)
+
+
+def _many(recorder, n, pays):
+    """n failures, one customer each; `pays(event)` says who pays an hour later."""
+    for i in range(n):
+        event = failure(f"pay_{i}")
+        recorder.record(event, keys=(event.event_id,))
+        if pays(event):
+            recorder.stop((event.event_id,), "payment_captured", T0 + timedelta(hours=1))
+
+
+def test_when_payment_is_unrelated_to_the_arm_the_check_is_consistent_with_zero(bulk_recorder):
+    _many(bulk_recorder, 400, pays=lambda e: int(e.event_id.split("_")[1]) % 3 == 0)
+
+    summary = bulk_recorder.summary()
+
+    assert summary.aa_check is not None and summary.aa_check.consistent_with_zero
+    assert summary.aa_check.ci_low_pp <= summary.aa_check.difference_pp <= summary.aa_check.ci_high_pp
+    assert "consistent with zero" in render_text(summary)
+
+
+def test_a_split_that_predicts_payment_is_called_out(bulk_recorder):
+    """If only one arm ever pays, the assignment is not random with respect to outcome.
+    That must be loud: a pilot run on such a split would report lift it did not cause."""
+    _many(bulk_recorder, 400, pays=lambda e: assign_arm(e.customer_id) == TREATMENT)
+
+    summary = bulk_recorder.summary()
+
+    assert summary.aa_check.consistent_with_zero is False
+    assert "EXCLUDES ZERO" in render_text(summary)
+
+
+def test_the_same_ledger_always_prints_the_same_interval(bulk_recorder):
+    _many(bulk_recorder, 300, pays=lambda e: int(e.event_id.split("_")[1]) % 2 == 0)
+
+    assert bulk_recorder.summary().aa_check == bulk_recorder.summary().aa_check
 
 
 # -- idempotency survives a restart -------------------------------------------------

@@ -13,6 +13,7 @@ both are implemented and selected by dialect.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Iterable
@@ -29,6 +30,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import DBAPIError
 
 from src.clock import SystemClock
 from src.models import LedgerEntry
@@ -69,6 +71,44 @@ _MYSQL_TRIGGERS = (
        FOR EACH ROW SIGNAL SQLSTATE '45000'
        SET MESSAGE_TEXT = 'ledger is append-only: DELETE refused';""",
 )
+
+
+_TABLE_NAME = re.compile(r"[a-z][a-z0-9_]*")
+
+
+def make_append_only(engine: Engine, table_name: str) -> None:
+    """Refuse UPDATE and DELETE on a table at the database layer.
+
+    The ledger has always had this. Anything else that is described as insert-only -
+    arm assignments, shadow-mode stops, policy-check records - gets the same triggers,
+    so that "it cannot be edited afterwards" is a property of the database rather than
+    a habit of the code that writes to it.
+    """
+    if not _TABLE_NAME.fullmatch(table_name):
+        raise ValueError(f"not a table name: {table_name!r}")
+    if engine.dialect.name == "sqlite":
+        # IF NOT EXISTS makes a re-run a no-op, so any error here is a real one and
+        # must surface: a table that silently stayed mutable is the failure this exists
+        # to prevent.
+        with engine.begin() as conn:
+            for verb in ("UPDATE", "DELETE"):
+                conn.execute(text(
+                    f"CREATE TRIGGER IF NOT EXISTS {table_name}_no_{verb.lower()} "
+                    f"BEFORE {verb} ON {table_name} BEGIN SELECT RAISE(ABORT, "
+                    f"'{table_name} is append-only: {verb} refused'); END;"))
+        return
+
+    for verb in ("UPDATE", "DELETE"):
+        try:
+            with engine.begin() as conn:
+                conn.execute(text(
+                    f"CREATE TRIGGER {table_name}_no_{verb.lower()} BEFORE {verb} "
+                    f"ON {table_name} FOR EACH ROW SIGNAL SQLSTATE '45000' "
+                    f"SET MESSAGE_TEXT = '{table_name} is append-only: {verb} refused';"))
+        except DBAPIError:
+            # MySQL has no CREATE TRIGGER IF NOT EXISTS, so a second start-up collides
+            # with the trigger the first one made. That is the only error tolerated.
+            continue
 
 
 class LedgerImmutabilityError(Exception):
