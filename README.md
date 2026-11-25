@@ -116,14 +116,16 @@ After sending, the caller confirms the contact (`POST /policy/contacts`, citing 
 `check_id` that allowed it). Later checks count the 7-day cap and the 24-hour gap from
 that record as well as from what the caller reports, and use the stricter of the two, so
 a caller that under-reports is caught and told (`history.caller_under_reported`). One
-allowed check is permission for one contact. A contact made without asking is still
-recorded and counted, and marked unchecked.
+allowed check is permission for one contact, and holds that customer's slot until the
+contact is confirmed or 15 minutes after the time it was cleared for, so a second sender
+asking in the meantime is refused with `check.slot_held` and told which check holds it.
+A contact made without asking is still recorded and counted, and marked unchecked.
 
 `GET /policy/customers/{id}/contacts` returns one customer's contacts, each marked with
 any contact rule it broke (outside hours, over the weekly cap, too soon after the last);
 `make contact-export OUT=contacts.csv` writes every customer's. That is the record of when
-and how often each customer was contacted, with the breaches already found. Details and
-the one known gap — two senders asking at the same instant can both be told yes — are in
+and how often each customer was contacted, with the breaches already found. Details,
+and the limits of the hold (one server process; no early release), are in
 [`src/policy/check.py`](src/policy/check.py).
 
 **4. A live test against a holdout is not in this repository.** Sending is simulated and a

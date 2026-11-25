@@ -15,7 +15,7 @@ Dated 2026-11-16.
 | Shadow mode with a measured unaided baseline | `make serve SHADOW=1` | Single tenant, SQLite |
 | Arm assignment on arrival, and an A/A check on live traffic | `src/assignment.py`, `make shadow-report` | Both arms untreated; no live test yet |
 | Contract check for other systems | `POST /policy/check` | Counts contacts from its own record and the caller's, whichever is stricter |
-| Contact record, judged against the contract | `POST /policy/contacts`, `make contact-export` | Single tenant; checks do not reserve a slot |
+| Contact record, judged against the contract | `POST /policy/contacts`, `make contact-export` | Single tenant; an allowed check holds the slot in one server process |
 | Razorpay test-mode integration | `make tier1` | Verified against the live test API |
 
 ## What is not
@@ -52,12 +52,15 @@ published list rather than recalled. See [`PSP_PROFILES.md`](PSP_PROFILES.md).
 
 ### 3. Harden the contract check for more than one sender
 
-The check now counts from a record of confirmed contacts, and the record exports with
-every breach marked. What is left:
+The check counts from a record of confirmed contacts, an allowed contact holds its slot
+until it is confirmed or lapses, and the record exports with every breach marked. What
+is left:
 
-- **Reservations.** An allowed check should hold its slot for a short time until the
-  contact is confirmed or the hold lapses, so two senders asking about the same customer
-  at the same instant cannot both be told yes.
+- **The hold's lock in the database.** Checks for one customer are serialised by a lock
+  in the server process, which is enough for `make serve`. Several workers need a
+  per-customer row lock instead, which comes with the move off SQLite.
+- **Early release**, so a sender that decides not to send can give the slot back
+  instead of waiting 15 minutes for it to lapse.
 - **Per-merchant contracts.** One `policy.yaml` today.
 - **Consent and template evidence in the record**, so the export can judge those rules
   too, not only timing and frequency.

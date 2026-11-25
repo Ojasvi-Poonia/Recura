@@ -54,8 +54,11 @@ ask() {
        -H "content-type: application/json" -d "$ASK"
 }
 
-echo "7) a customer nobody has contacted - allowed - and the caller confirms it sent the SMS:"
+echo "7) a customer nobody has contacted - allowed, and the slot is now held:"
 CHECK_ID=$(ask | python3 -c "import json,sys; r=json.load(sys.stdin); print(r['check_id']); print('   allowed:', r['allowed'], file=sys.stderr)")
+echo "   before it confirms, a second vendor asks about the same customer:"
+ask | python3 -c "import json,sys; r=json.load(sys.stdin); print('   allowed:', r['allowed']); [print('  ', b['rule_id'], '-', b['reason']) for b in r['blocked_by']]"
+echo "   the first caller confirms it sent the SMS:"
 curl -s "$HOST/policy/contacts" -H "Authorization: Bearer $API_KEY" -H "content-type: application/json" \
   -d "{\"event_id\":\"pay_fresh_$NOW\",\"customer_id\":\"$CUSTOMER\",\"channel\":\"sms\",\"contacted_at\":\"$SENT\",\"check_id\":\"$CHECK_ID\",\"contact_ref\":\"sms_$NOW\"}"; echo
 
