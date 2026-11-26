@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import os
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta
 from typing import Protocol
 
@@ -349,6 +349,10 @@ class Agent:
                 and decision.action is not verdict.required_action):
             decision, dx = self._decide(event, now, attempts, refused, seq,
                                         force=verdict.required_action)
+            # Priced again: the budget and spend-cap rules must see what the mandated
+            # action costs, not what the action it replaced would have.
+            state = replace(state, action_cost_paise=self._cost_of(
+                decision, state.contacts_last_7d))
             verdict = evaluate(decision, state, now, self.policy)
         return decision, dx, verdict
 
