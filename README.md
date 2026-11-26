@@ -628,3 +628,8 @@ which exercises the integration against Razorpay's live test-mode API.
 
 Nothing is ever sent to a real customer, and no real payment is ever made. Test-mode
 keys only — a live Razorpay key is refused at construction.
+
+## Licence
+
+[Apache-2.0](LICENSE). Use it, change it, ship it; keep the notice. See [`NOTICE`](NOTICE)
+for the note on gateway trademarks and transcribed error codes.

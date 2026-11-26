@@ -3,6 +3,8 @@ name = "recura"
 version = "0.1.0"
 description = "Autonomous revenue-recovery agent: EV-driven decisions under a policy contract."
 requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
 # Core: what `make eval`, `make validate`, `make ablate`, `make sweep` and `make replay`
 # need. Deliberately excludes the LLM SDKs - they are imported lazily and are required
 # only to REGENERATE fixtures, never to replay them.
