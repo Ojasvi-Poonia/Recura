@@ -71,6 +71,34 @@ def test_payment_failed_produces_valid_risk_event():
     assert e.method == "upi" and e.source_type == "payment"
 
 
+@pytest.mark.parametrize("event, name", [
+    ("subscription.halted", "subscription"),
+    ("subscription.pending", "subscription"),
+    ("invoice.expired", "invoice"),
+])
+def test_a_mandate_or_invoice_failure_is_placed_when_it_failed_not_when_it_was_set_up(
+        event, name):
+    # A subscription's created_at is when it was set up, here eight months before it
+    # halted. Placing the failure there makes it look 240 days old on arrival.
+    set_up, failed = 1752000000, 1772000000
+    body = json.dumps({
+        "entity": "event", "event": event, "contains": [name], "created_at": failed,
+        "payload": {name: {"entity": {"id": f"{name[:3]}_TEST1", "amount": 49900,
+                                      "created_at": set_up,
+                                      "notes": {"customer_id": "cust_007"}}}},
+    }).encode()
+
+    risk = normalise(body, "evt_sub").risk_event
+
+    assert risk.observed_at.timestamp() == failed
+
+
+def test_a_payment_failure_is_placed_when_the_payment_was_attempted():
+    risk = normalise(_body(created_at=1771999000), "evt_pay").risk_event
+
+    assert risk.observed_at.timestamp() == 1771999000
+
+
 def test_late_authorisation_is_a_stop_condition():
     """section 7: payment.authorized can arrive AFTER an apparent failure."""
     r = normalise(_body(event="payment.authorized"), "evt_B")

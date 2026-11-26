@@ -230,7 +230,15 @@ def normalise(
         return IngestResult(Outcome.IGNORED, razorpay_event_id=razorpay_event_id,
                             note=f"unhandled event {hook.event}")
 
-    observed_at = _epoch_to_ist(entity.get("created_at")) or _epoch_to_ist(hook.created_at)
+    # A payment's own created_at is when it was attempted, which is when it failed. A
+    # subscription's or an invoice's is when it was set up, often months before it halted
+    # or expired; for those the envelope time is the failure.
+    entity_at = _epoch_to_ist(entity.get("created_at"))
+    envelope_at = _epoch_to_ist(hook.created_at)
+    if source_type == "payment":
+        observed_at = entity_at or envelope_at
+    else:
+        observed_at = envelope_at or entity_at
     if observed_at is None:
         # No wall clock fallback here - section 12 forbids datetime.now() outside clock.py.
         return IngestResult(Outcome.IGNORED, razorpay_event_id=razorpay_event_id,
