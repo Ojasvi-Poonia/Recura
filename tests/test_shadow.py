@@ -84,6 +84,53 @@ def test_shadow_does_not_learn_from_decisions_it_never_executed(recorder):
     assert recorder.agent.model.snapshot() == before
 
 
+# -- each decision is made after the ones before it ---------------------------------
+
+
+def test_a_second_contact_for_the_same_customer_is_held_to_the_contact_rules(recorder):
+    # Above the automation ceiling the contract sends each failure to a person, who
+    # reaches the customer. The live loop would refuse the second within 24 hours.
+    for i in range(3):
+        recorder.record(failure(event_id=f"pay_{i}", customer_id="cust_x",
+                                amount=9_000_000, at=T0 + timedelta(minutes=i)))
+
+    blocked = [json.loads(recorder.ledger.for_event(f"pay_{i}")[0]["policy_verdict"])
+               ["rules_blocked"] for i in range(3)]
+
+    assert blocked[0] == []
+    assert all("contact.min_hours_between" in [r["rule_id"] for r in b]
+               for b in blocked[1:])
+
+
+def test_shadow_decisions_count_against_the_merchants_day(recorder):
+    _, verdict = recorder.record(failure())
+
+    day = recorder.agent.merchant_day("m", T0)
+
+    assert verdict.allowed
+    assert day.actions == 1 and day.spend_paise > 0
+
+
+def test_a_refused_decision_spends_nothing(recorder):
+    _, verdict = recorder.record(failure(at=T0 - timedelta(days=30)))
+
+    assert not verdict.allowed
+    assert recorder.agent.merchant_day("m", T0).actions == 0
+
+
+def test_a_restarted_server_remembers_the_contacts_it_would_have_made(tmp_path):
+    url = f"sqlite:///{tmp_path / 'shadow.db'}"
+    first = ShadowRecorder(Ledger(url=url), clock=VirtualClock(T0))
+    first.record(failure(event_id="pay_0", customer_id="cust_x", amount=9_000_000))
+
+    restarted = ShadowRecorder(Ledger(url=url), clock=VirtualClock(T0 + timedelta(hours=1)))
+    _, verdict = restarted.record(failure(event_id="pay_1", customer_id="cust_x",
+                                          amount=9_000_000, at=T0 + timedelta(hours=1)))
+
+    assert "contact.min_hours_between" in [r.rule_id for r in verdict.rules_blocked]
+    assert restarted.agent.merchant_day("m", T0).actions == 1
+
+
 # -- joining a failure to what settled it -------------------------------------------
 
 
@@ -309,6 +356,26 @@ def test_a_receipt_is_remembered_by_a_new_process(tmp_path):
     assert restarted.is_duplicate("evt_1")
     assert not restarted.is_duplicate("evt_2")
     assert not restarted.is_duplicate(None)
+
+
+def test_a_receipt_is_written_with_its_decision_and_only_once(recorder):
+    assert recorder.record(failure(), receipt_id="evt_1") is not None
+
+    assert recorder.record(failure(), receipt_id="evt_1") is None
+    assert len(recorder.ledger.for_event("pay_A")) == 1
+    assert recorder.is_duplicate("evt_1")
+
+
+def test_a_decision_that_fails_to_write_leaves_no_receipt(recorder, monkeypatch):
+    def broken(entry, conn=None):
+        raise RuntimeError("disk full")
+    monkeypatch.setattr(recorder.ledger, "append", broken)
+
+    with pytest.raises(RuntimeError):
+        recorder.record(failure(), receipt_id="evt_1")
+
+    assert not recorder.is_duplicate("evt_1")
+    assert recorder.agent.merchant_day("m", T0).actions == 0
 
 
 def test_remembering_the_same_receipt_twice_is_harmless(recorder):

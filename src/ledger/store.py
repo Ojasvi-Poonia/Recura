@@ -29,7 +29,7 @@ from sqlalchemy import (
     select,
     text,
 )
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.exc import DBAPIError
 
 from src.clock import SystemClock
@@ -155,7 +155,8 @@ class Ledger:
 
     # -- the only write path -------------------------------------------------
 
-    def append(self, entry: LedgerEntry) -> str:
+    def append(self, entry: LedgerEntry, conn: Connection | None = None) -> str:
+        """Insert one entry. Pass `conn` to make it part of a caller's transaction."""
         row = {
             "entry_id": entry.entry_id,
             "event_id": entry.event_id,
@@ -170,8 +171,11 @@ class Ledger:
             "clock_time": entry.clock_time.isoformat(),
             "wall_time": entry.wall_time.isoformat(),
         }
-        with self.engine.begin() as conn:
+        if conn is not None:
             conn.execute(ledger_entries.insert().values(**row))
+            return entry.entry_id
+        with self.engine.begin() as own:
+            own.execute(ledger_entries.insert().values(**row))
         return entry.entry_id
 
     def append_many(self, entries: Iterable[LedgerEntry]) -> int:

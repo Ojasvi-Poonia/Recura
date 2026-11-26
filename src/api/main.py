@@ -149,14 +149,19 @@ async def razorpay_webhook(
     else:
         result = normalise(raw, event_id)
 
-    body: dict = {"outcome": result.outcome.value}
-    if shadow is not None:
-        body.update(await run_in_threadpool(_shadow, shadow, result))
+    shadowed = (await run_in_threadpool(_shadow, shadow, result, event_id)
+                if shadow is not None else {})
+    if shadowed is None:
+        # Another delivery of this event was recorded while this one was being read.
+        result = IngestResult(Outcome.DUPLICATE, razorpay_event_id=event_id,
+                              note="already processed")
+    body: dict = {"outcome": result.outcome.value, **(shadowed or {})}
 
-    # Remember the id LAST, after the shadow write as well as the normalisation. An
-    # idempotency key records work completed: marking it earlier would let a failed
-    # ledger write be answered with "duplicate" on every redelivery and lost for good.
-    if result.outcome is Outcome.RISK_EVENT:
+    # Remember the id LAST, after the normalisation. An idempotency key records work
+    # completed: marking it earlier would let a failed write be answered with
+    # "duplicate" on every redelivery and lost for good. In shadow mode the receipt is
+    # written with the decision, in the same transaction.
+    if result.outcome is Outcome.RISK_EVENT and shadow is None:
         await run_in_threadpool(store.remember, event_id)
 
     _log(
@@ -186,10 +191,15 @@ async def razorpay_webhook(
     return body
 
 
-def _shadow(shadow: ShadowRecorder, result: IngestResult) -> dict:
-    """Record one verified webhook in shadow mode. Returns what to add to the reply."""
+def _shadow(shadow: ShadowRecorder, result: IngestResult,
+            receipt_id: str | None) -> dict | None:
+    """Record one verified webhook in shadow mode. Returns what to add to the reply,
+    or None if this delivery turned out to be a duplicate."""
     if result.outcome is Outcome.RISK_EVENT and result.risk_event is not None:
-        decision, verdict = shadow.record(result.risk_event, result.correlation_keys)
+        recorded = shadow.record(result.risk_event, result.correlation_keys, receipt_id)
+        if recorded is None:
+            return None
+        decision, verdict = recorded
         blocked = is_blocked(decision, verdict)
         return {"shadow": {
             "would_do": decision.action.value,

@@ -387,6 +387,29 @@ class Agent:
                                             0, frozenset(), 0)
         return decision, verdict
 
+    def book(self, event: RiskEvent, decision: Decision, verdict: PolicyVerdict,
+             now: datetime) -> None:
+        """Count a previewed decision against the customer and the merchant, as if taken.
+
+        Shadow mode executes nothing, but its next decision for the same customer or
+        merchant has to be made the way the loop would make it: after this one. Without
+        this, three escalations to one customer inside an hour were all allowed, where
+        the loop would have refused the second and third on the 24-hour gap, and the
+        merchant's daily budget and spend cap never moved. Learns nothing.
+        """
+        if not verdict.allowed or decision.action is ActionType.NO_ACTION:
+            return
+        seen = self._contacts_in_last_7d(event.customer_id, now,
+                                         event.customer_history.contacts_last_7d)
+        budget = self.merchant_day(event.merchant_id, now)
+        budget.actions += 1
+        budget.spend_paise += self._cost_of(decision, seen)
+        if decision.action is ActionType.ESCALATE_HUMAN:
+            budget.escalations += 1
+        if self._is_customer_contact(decision):
+            self._record_contact(event.customer_id,
+                                 self._scheduled_at(decision, verdict, now))
+
     # ---- the loop ---------------------------------------------------------
 
     def run_episode(self, event: RiskEvent, arm: str, observe: Observe) -> EpisodeResult:

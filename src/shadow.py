@@ -46,7 +46,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 import numpy as np
-from sqlalchemy import Column, MetaData, String, Table, select
+from sqlalchemy import Column, MetaData, String, Table, func, select
 from sqlalchemy.exc import IntegrityError
 
 from src.agent import Agent, is_blocked
@@ -155,6 +155,25 @@ class ShadowRecorder:
         metadata.create_all(self.ledger.engine)
         for table in metadata.tables:
             make_append_only(self.ledger.engine, table)
+        self._replay_bookings()
+
+    def _replay_bookings(self) -> None:
+        """Rebuild the contacts and budgets earlier decisions booked, after a restart.
+
+        The agent keeps them in memory. Without this a restarted server would judge the
+        next failure as if no earlier one had been decided.
+        """
+        with self.ledger.engine.begin() as conn:
+            rows = conn.execute(
+                select(ledger_entries.c.observed_state, ledger_entries.c.decision,
+                       ledger_entries.c.policy_verdict, ledger_entries.c.clock_time)
+                .where(ledger_entries.c.arm == SHADOW_ARM)
+                .order_by(ledger_entries.c.clock_time, ledger_entries.c.entry_id)).all()
+        for state, decision, verdict, at in rows:
+            self.agent.book(RiskEvent.model_validate_json(state),
+                            Decision.model_validate_json(decision),
+                            PolicyVerdict.model_validate_json(verdict),
+                            datetime.fromisoformat(at))
 
     # -- idempotency, same interface as ingest.webhook.IdempotencyStore -----------
 
@@ -172,21 +191,41 @@ class ShadowRecorder:
 
     # -- the two things a webhook can mean ----------------------------------------
 
-    def record(self, event: RiskEvent,
-               keys: tuple[str, ...] = ()) -> tuple[Decision, PolicyVerdict]:
-        """Decide on one failure and write the decision down. Nothing is executed."""
+    def record(self, event: RiskEvent, keys: tuple[str, ...] = (),
+               receipt_id: str | None = None) -> tuple[Decision, PolicyVerdict] | None:
+        """Decide on one failure and write the decision down. Nothing is executed.
+
+        With a receipt id, the receipt and the decision are written in one transaction,
+        and None is returned if that receipt is already there. Checking first and
+        remembering afterwards let a redelivery that arrived while the first delivery
+        was in flight, or after a crash between the two writes, record a second
+        decision for the same failure.
+        """
         now = self.clock.now()
         with self._lock:
             decision, verdict = self.agent.preview(event, now)
-            sequence = len(self.ledger.for_event(event.event_id))
-            self.ledger.append(make_entry(
-                entry_id=uuid.uuid5(uuid.NAMESPACE_OID,
-                                    f"{SHADOW_ARM}:{event.event_id}:{sequence}").hex,
-                event_id=event.event_id, arm=SHADOW_ARM, sequence_number=sequence,
-                observed_state=event, decision=decision, policy_verdict=verdict,
-                action_result=ActionResult(executed=False, action=decision.action),
-                clock_time=now,
-            ))
+            try:
+                with self.ledger.engine.begin() as conn:
+                    if receipt_id:
+                        conn.execute(receipts.insert().values(
+                            receipt_id=receipt_id, received_at=now.isoformat()))
+                    sequence = conn.execute(
+                        select(func.count()).select_from(ledger_entries)
+                        .where(ledger_entries.c.event_id == event.event_id)).scalar_one()
+                    self.ledger.append(make_entry(
+                        entry_id=uuid.uuid5(uuid.NAMESPACE_OID,
+                                            f"{SHADOW_ARM}:{event.event_id}:{sequence}").hex,
+                        event_id=event.event_id, arm=SHADOW_ARM, sequence_number=sequence,
+                        observed_state=event, decision=decision, policy_verdict=verdict,
+                        action_result=ActionResult(executed=False, action=decision.action),
+                        clock_time=now,
+                    ), conn)
+            except IntegrityError:
+                if receipt_id and self.is_duplicate(receipt_id):
+                    return None
+                raise
+            # Booked only once the decision is on disk, so the two cannot disagree.
+            self.agent.book(event, decision, verdict, now)
         self._insert_new(episode_keys, [
             {"correlation_key": key, "event_id": event.event_id}
             for key in dict.fromkeys((event.event_id, *keys))])
