@@ -22,9 +22,11 @@ caller. So a caller confirms each contact it actually made, and the check counts
 figure and the record disagree, the stricter one is used and the reply says the caller
 under-reported. A caller can make the answer more cautious; it cannot make it less.
 
-A contact confirmed against an allowed check is "checked". One confirmed without one is
-still recorded and still counted - a contact that skipped the gate is the one an auditor
-most needs to see - and the contact record flags it.
+A contact confirmed against an allowed check is "checked". A check covers only the
+contact it was asked about: the same event and channel, made between the check and the
+end of its hold. A contact confirmed without a check is still recorded and still
+counted - a contact that skipped the gate is the one an auditor most needs to see - and
+the contact record flags it.
 
 AN ALLOWED CONTACT HOLDS ITS SLOT
 Reading the record is not enough on its own: two senders that ask about the same
@@ -487,6 +489,33 @@ class PolicyCheckLog:
                 f"check {contact.check_id} was refused ({row['blocked_rules']}). Record "
                 "the contact without a check_id if it was made anyway; it will be "
                 "flagged as unchecked")
+        # Permission for the contact that was asked about, not for any later one. A
+        # mismatch is still a contact and can still be recorded - without the check_id,
+        # so the record shows it was not the one the gate approved.
+        asked = ProposedAction.model_validate_json(row["request"])
+        unchecked = "; record it without a check_id and it will be flagged as unchecked"
+        if asked.event_id != contact.event_id:
+            raise ContactRejected(
+                f"check {contact.check_id} was for a different event{unchecked}")
+        if asked.channel is not None and asked.channel != contact.channel:
+            raise ContactRejected(
+                f"check {contact.check_id} was for {asked.channel.value}, "
+                f"not {contact.channel.value}{unchecked}")
+        opens, closes = self._window(row)
+        if not opens <= _aware(contact.contacted_at) <= closes:
+            raise ContactRejected(
+                f"check {contact.check_id} covered a contact from {opens.isoformat()} to "
+                f"{closes.isoformat()}; {contact.contacted_at.isoformat()} is outside "
+                f"the window{unchecked}")
+
+    def _window(self, row: dict) -> tuple[datetime, datetime]:
+        """When a contact may be made on an allowed check: from asking until the hold lapses."""
+        with self.engine.begin() as conn:
+            expires = conn.execute(select(policy_holds.c.expires_at).where(
+                policy_holds.c.check_id == row["check_id"])).scalar()
+        asked_at = datetime.fromisoformat(row["checked_at"])
+        closes = datetime.fromisoformat(expires) if expires else asked_at + HOLD_FOR
+        return asked_at - MAX_CLOCK_SKEW, closes + MAX_CLOCK_SKEW
 
     def contacts(self, customer_id: str, policy: dict | None = None) -> list[ContactEntry]:
         """Every contact recorded for one customer, each judged against the contract."""

@@ -115,11 +115,14 @@ cannot be updated or deleted.
 After sending, the caller confirms the contact (`POST /policy/contacts`, citing the
 `check_id` that allowed it). Later checks count the 7-day cap and the 24-hour gap from
 that record as well as from what the caller reports, and use the stricter of the two, so
-a caller that under-reports is caught and told (`history.caller_under_reported`). One
-allowed check is permission for one contact, and holds that customer's slot until the
-contact is confirmed or 15 minutes after the time it was cleared for, so a second sender
-asking in the meantime is refused with `check.slot_held` and told which check holds it.
-A contact made without asking is still recorded and counted, and marked unchecked.
+a caller that under-reports is caught and told (`history.caller_under_reported`).
+
+One allowed check is permission for one contact: the event and channel it asked about,
+sent between the check and the end of its hold. The hold keeps that customer's slot
+until the contact is confirmed or 15 minutes after the time it was cleared for, so a
+second sender asking in the meantime is refused with `check.slot_held` and told which
+check holds it. A contact made without asking, or outside what its check covered, is
+still recorded and counted, and marked unchecked.
 
 `GET /policy/customers/{id}/contacts` returns one customer's contacts, each marked with
 any contact rule it broke (outside hours, over the weekly cap, too soon after the last);

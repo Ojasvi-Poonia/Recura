@@ -19,6 +19,7 @@ from src.policy.check import (
     HOLD_FOR,
     SLOT_HELD_RULE,
     ConfirmedContact,
+    ContactRejected,
     PolicyCheckLog,
     ProposedAction,
     check,
@@ -156,6 +157,43 @@ def test_a_block_the_holds_did_not_cause_keeps_its_own_reason(log):
 
     assert SLOT_HELD_RULE not in rules(refused)
     assert "episode.stop_on_opt_out" in rules(refused)
+
+
+# -- a check is permission for the contact it was asked about -----------------------
+
+
+def test_a_check_cannot_cover_a_contact_made_after_its_hold_lapsed(log):
+    allowed = check(proposal(), NOW, log)
+    later = NOW + timedelta(days=1)
+
+    with pytest.raises(ContactRejected, match="outside the window"):
+        log.confirm(contact(later, check_id=allowed.check_id), later)
+
+
+def test_a_check_cannot_cover_a_contact_made_before_it_was_asked(log):
+    allowed = check(proposal(), NOW, log)
+
+    with pytest.raises(ContactRejected, match="outside the window"):
+        log.confirm(contact(NOW - timedelta(hours=2), check_id=allowed.check_id), NOW)
+
+
+def test_a_contact_moved_to_the_morning_is_covered_when_sent_in_the_morning(log):
+    evening = datetime(2026, 3, 10, 21, 30, tzinfo=IST)
+    allowed = check(proposal(scheduled_at=evening.isoformat()), evening, log)
+    sent = datetime(2026, 3, 11, 9, 5, tzinfo=IST)
+
+    assert log.confirm(contact(sent, check_id=allowed.check_id), sent).checked
+
+
+@pytest.mark.parametrize("change, reason", [
+    ({"channel": "whatsapp"}, "was for sms"),
+    ({"event_id": "pay_other"}, "different event"),
+])
+def test_a_check_covers_only_the_channel_and_event_it_was_asked_about(log, change, reason):
+    allowed = check(proposal(), NOW, log)
+
+    with pytest.raises(ContactRejected, match=reason):
+        log.confirm(contact(NOW, check_id=allowed.check_id, **change), NOW)
 
 
 # -- concurrency and the record -----------------------------------------------------
