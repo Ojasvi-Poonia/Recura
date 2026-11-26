@@ -57,10 +57,10 @@ MUTANTS: list[Mutant] = [
            also=("                opted_out=opted_out or history.opted_out,",
                  "                opted_out=opted_out,")),
     Mutant("policy gate bypassed entirely", "src/agent.py",
-           "            if self.use_policy:\n"
-           "                verdict = evaluate(decision, state, now, self.policy)",
-           "            if False:\n"
-           "                verdict = evaluate(decision, state, now, self.policy)",
+           "        if not self.use_policy:\n"
+           "            # Ablation 3: no gate.",
+           "        if True:\n"
+           "            # Ablation 3: no gate.",
            "the contract stops being enforced at all"),
     Mutant("episode bound tripled", "src/agent.py",
            "for seq in range(MAX_DECISIONS):", "for seq in range(MAX_DECISIONS * 3):",

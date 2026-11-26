@@ -1,0 +1,22 @@
+# Razorpay payment entities, as returned by GET /v1/payments or the dashboard export.
+#
+#   curl -u $KEY_ID:$KEY_SECRET "https://api.razorpay.com/v1/payments?count=100" > payments.json
+#   make audit FILE=payments.json PSP=razorpay
+#
+# Field names are the ones the webhook receiver (src/ingest/webhook.py) and Tier 1
+# (eval/tier1.py) already read from the live test-mode API: `id`, `amount` in paise,
+# `created_at` in epoch seconds, `status`, and the flattened `error_*` fields.
+# No reason translation: the taxonomy is written against Razorpay's own reasons.
+
+name: Razorpay
+amount_unit: minor
+
+columns:
+  event_id: [id]
+  failed_at: [created_at]
+
+# A payments dump lists every payment. Only failed ones open a recovery episode.
+keep_where:
+  status: [failed]
+
+reasons: {}

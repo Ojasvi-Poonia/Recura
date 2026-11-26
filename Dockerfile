@@ -5,7 +5,7 @@
 #   docker run --rm recura make validate   # the negative controls behind it
 #   docker run --rm recura make ablate     # what each component contributes
 #
-# No API key is needed for any of that. `fixtures/` ships 870 cached model responses
+# No API key is needed for any of that. `fixtures/` ships 872 cached model responses
 # keyed by SHA-256 of (model, prompt, payload), so the LLM path replays exactly rather
 # than being re-queried. The Anthropic and Google SDKs are imported lazily and are
 # therefore NOT installed here - they are needed only to regenerate fixtures.

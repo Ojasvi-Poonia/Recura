@@ -9,3 +9,6 @@ pay_007,98000,2026-03-01T00:00:00,,,,cust_g,invoice,1,0,3,email,en
 pay_008,2200,2026-03-11T18:45:00,transaction_daily_limit_exceeded,card,HDFC,cust_h,payment,1,1,1,sms,hi
 pay_009,650,2026-03-11T19:10:00,incorrect_otp,card,YES,cust_i,payment,1,0,0,"sms,email",hi
 pay_010,3300,2026-03-12T10:00:00,some_code_we_do_not_know,upi,IDFC,cust_j,payment,1,2,0,email,en
+pay_011,899,2026-03-12T10:30:00,invalid_order_id,card,HDFC,cust_k,payment,1,0,0,email,en
+pay_012,1499,2026-03-12T11:00:00,invalid_order_id,upi,SBI,cust_l,payment,1,0,0,sms,hi
+pay_013,999,2026-03-12T12:00:00,bank_technical_error,emandate,ICICI,cust_m,mandate,1,0,1,"sms,email",en

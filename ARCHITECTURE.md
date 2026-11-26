@@ -158,7 +158,7 @@ anywhere, which is what lets a stochastic algorithm produce byte-identical eval 
 | `market/` | Currency, timezone, rails, lawful contact window | Be hardcoded in the core |
 
 `src/agent.py` is the orchestrator and the only module allowed to know about both
-`decide/` and `policy/`. It is 776 lines, 543 of them code, and reads top to bottom.
+`decide/` and `policy/`. It is about 860 lines, roughly 525 of them code, and reads top to bottom.
 
 ---
 
@@ -257,6 +257,66 @@ Currency, minor units, timezone, lawful contact window, payment rails and langua
 in `config/markets.yaml`. An invariant test fails the build if a currency symbol appears
 in the decision core. Scope is India; the structure exists so a second market is a config
 file rather than a rewrite, and we ship only profiles verified against primary regulation.
+
+---
+
+## Outside the benchmark: previews and shadow mode
+
+Two paths run the same decide and govern steps on data that is not the cohort. Neither
+executes anything, and neither can change a benchmark number.
+
+```
+  merchant export ──► ingest/psp.py ──► ingest/import_file.py ──► RiskEvent ─┐
+  (CSV / JSON, any gateway profile)                                          │
+                                                                             ▼
+  live webhook ──► HMAC ──► ingest/webhook.py ──► RiskEvent ──────► Agent.preview()
+                                    │                               decide + govern,
+                                    │ stop events                   posterior means,
+                                    ▼                               no exploration
+                             shadow_stops                                    │
+                                                          ┌──────────────────┴─────────┐
+                                                          ▼                            ▼
+                                               ingest/audit_report.py           shadow.py
+                                               one HTML report                  ledger row, arm="shadow",
+                                                                                executed=false
+```
+
+**`Agent.preview()` is not a second implementation.** It calls the same `_decide` and the
+same `_govern` that `run_episode` calls, so a contract mandate or a refusal reads the same
+in a report as it does in the loop.
+
+**Previews do not explore and do not start flat.** A Thompson draw from Beta(1, 1) made the
+same export print different actions when its rows were reordered, and the posterior mean of
+Beta(1, 1) proposes nothing at all. Previews therefore use posterior means over priors
+learned on the synthetic cohort (`config/benchmark_priors.json`), capped at twenty
+pseudo-observations, with any cell the benchmark barely tried set to its class's do-nothing
+rate. `make eval` never loads that file; a test asserts it.
+
+**Shadow mode closes episodes with a join, not an update.** A failure and the payment that
+settles it are different payments, linked by the order, invoice or subscription they share.
+Every id on a payload is stored as a correlation key, every stop is stored whether or not
+its failure has arrived yet, and an episode counts as paid when a stop shares a key and
+happened at or after the failure by the payloads' own timestamps. Arrival order is never
+consulted, because Razorpay does not guarantee it.
+
+**The arm is fixed on arrival and cannot be edited.** `src/assignment.py` maps a customer id
+to treatment or holdout with a salted hash: by customer, so one person's failures never
+straddle both arms, and nested, so shrinking the holdout never moves a treated customer
+into it. Shadow mode stores the arm with the decision. Every shadow table carries the same
+UPDATE and DELETE triggers as the ledger, so "assigned before the outcome was known" is
+something the database enforces. With both arms untreated their recovery rates must agree,
+and `make shadow-report` bootstraps the difference over customers to check that they do.
+
+**`POST /policy/check` is the gate with a different caller.** `src/policy/check.py` turns
+another system's proposed action into the same `Decision` and `EpisodeState` the loop
+builds, calls the same `evaluate()`, and writes the question and the answer to an
+append-only table before replying. Contact history comes from two places, the caller's
+report and a record of contacts the caller has confirmed (`POST /policy/contacts`), and
+the contract is given whichever is stricter. A caller can make an answer more cautious and
+never less. A confirmation that cites a check must cite an allowed contact check for the
+same customer, once; one that cites none is recorded anyway and marked unchecked.
+`breaches_in()` replays a customer's recorded contacts against the timing rules, which is
+what the contact export and the per-customer endpoint report.
 
 ---
 

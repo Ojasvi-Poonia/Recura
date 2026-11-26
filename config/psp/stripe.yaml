@@ -1,0 +1,110 @@
+# Stripe Charge objects, as returned by GET /v1/charges (or `stripe charges list`).
+#
+#   stripe charges list --limit 100 > charges.json
+#   make audit FILE=charges.json PSP=stripe
+#
+# SOURCES, both checked 2026-11-16:
+#   https://docs.stripe.com/declines/codes        the 50 card decline codes, transcribed
+#                                                 into data/stripe_decline_codes.csv
+#   https://docs.stripe.com/api/charges/object    field names, units and enums
+#
+# The decline-code LIST is Stripe's. The translation below is OUR judgment, exactly as
+# src/taxonomy/mapping.py is our judgment over Razorpay's list. Each target is a reason
+# that table already maps; a test fails if one is not.
+#
+# LIMITS, stated rather than discovered:
+#   - This deployment ships one verified market, India (config/markets.yaml). A charge
+#     in any other currency is rejected row by row with a message saying so.
+#   - Stripe's reference does not say which Charge field carries the issuer decline
+#     code. `columns.error_reason` therefore tries each plausible field in order, and
+#     anything it cannot translate is counted as unrecognised, never guessed.
+#   - Card declines only. Stripe's separate table of local-payment-method decline codes
+#     is not mapped.
+
+name: Stripe
+amount_unit: minor     # "smallest currency unit" per the Charge reference
+
+columns:
+  event_id: [id]
+  failed_at: [created]                       # seconds since the Unix epoch
+  customer_id: [customer]
+  method: [payment_method_details.type]
+  error_reason: [decline_code, outcome.reason, failure_code]
+  error_description: [failure_message]
+
+# `status` is one of succeeded, pending, failed.
+keep_where:
+  status: [failed]
+
+reasons:
+  # -- the money is not there ---------------------------------------------------
+  insufficient_funds: insufficient_funds
+  card_velocity_exceeded: credit_limit_exceeded          # "balance, credit limit, or transaction amount limit"
+  withdrawal_count_limit_exceeded: credit_limit_exceeded # Stripe describes it as balance or credit limit
+  invalid_amount: transaction_limit_exceeded             # "invalid, or exceeds the amount that's allowed" - AMBIGUOUS
+
+  # -- the customer was present and mistyped or did not authenticate --------------
+  authentication_required: authentication_failed
+  authentication_not_handled: authentication_failed
+  mobile_device_authentication_required: authentication_failed
+  offline_pin_required: authentication_failed
+  online_or_offline_pin_required: authentication_failed
+  incorrect_cvc: incorrect_cvv
+  invalid_cvc: incorrect_cvv
+  incorrect_number: card_number_invalid
+  invalid_number: card_number_invalid
+  invalid_expiry_month: incorrect_card_expiry_date
+  invalid_expiry_year: incorrect_card_expiry_date
+  incorrect_address: incorrect_card_details
+  incorrect_zip: incorrect_card_details
+  incorrect_pin: incorrect_pin
+  invalid_pin: incorrect_pin
+  pin_try_exceeded: pin_attempts_exceeded
+
+  # -- this card is dead; retrying it is waste ------------------------------------
+  expired_card: card_expired
+  card_not_supported: card_type_invalid
+  currency_not_supported: international_transaction_not_allowed
+  invalid_account: bank_account_invalid
+  new_account_information_available: debit_instrument_inactive
+  restricted_card: debit_instrument_blocked
+  # Stripe describes these three only as "declined for an unknown reason". Their names
+  # are the card networks' recurring-payment stop codes: the cardholder withdrew
+  # authorisation. Read as a revoked mandate, because a silent retry is the one wrong
+  # answer if that reading is right.
+  revocation_of_authorization: mandate_not_active
+  revocation_of_all_authorizations: mandate_not_active
+  stop_payment_order: mandate_not_active
+
+  # -- risk: do not retry, do not tell the customer why ---------------------------
+  fraudulent: payment_risk_check_failed
+  lost_card: payment_risk_check_failed
+  stolen_card: payment_risk_check_failed
+  pickup_card: payment_risk_check_failed
+  merchant_blacklist: payment_risk_check_failed
+  security_violation: payment_risk_check_failed
+  do_not_try_again: payment_risk_check_failed            # deprecated; the name is the instruction
+  highest_risk_level: payment_risk_check_failed          # outcome.reason: Radar default block rule
+  rule: payment_risk_check_failed                        # outcome.reason: the merchant's own Radar rule
+
+  # -- the rail hiccupped; the card is fine ---------------------------------------
+  issuer_not_available: issuer_technical_error
+  processing_error: gateway_technical_error
+  reenter_transaction: issuer_technical_error
+  try_again_later: issuer_technical_error                # deprecated
+  approve_with_id: issuer_technical_error                # Stripe's next step is "retry the payment"
+  duplicate_transaction: duplicate_request               # carries the 30-minute cooldown
+
+  # -- genuinely opaque: honest UNKNOWN, not a guess --------------------------------
+  generic_decline: payment_declined
+  do_not_honor: payment_declined
+  call_issuer: payment_declined
+  no_action_taken: payment_declined
+  not_permitted: payment_declined
+  service_not_allowed: payment_declined
+  transaction_not_allowed: payment_declined
+  low_probability_of_authorization: payment_declined     # outcome.reason: blocked before the issuer saw it
+  card_declined: payment_declined                        # failure_code with no decline code attached
+
+  # -- not a customer failure at all ------------------------------------------------
+  testmode_decline: invalid_request                      # a test card in the export is the merchant's own traffic

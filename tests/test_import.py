@@ -32,7 +32,7 @@ def row(**kw):
 def test_shipped_sample_imports_cleanly():
     rows = read_rows(__import__("pathlib").Path(SAMPLE))
     events = [to_risk_event(r, "m", True) for r in rows]
-    assert len(events) == 10
+    assert len(events) == 13
 
 
 def test_required_columns_are_enforced_with_a_usable_message():
@@ -63,6 +63,20 @@ def test_unknown_reason_codes_do_not_crash_the_import():
     report = coverage_report([event])
     assert report["unrecognised_codes"] == 1
     assert report["classes"]["UNKNOWN"] == 1
+
+
+def test_an_error_code_column_beside_the_reason_is_kept_as_the_code():
+    event = to_risk_event(row(error_code="BAD_REQUEST_ERROR"), "m", True)
+
+    assert event.razorpay_error.code == "BAD_REQUEST_ERROR"
+    assert event.razorpay_error.reason == "insufficient_funds"
+
+
+def test_an_error_code_column_alone_is_read_as_the_reason_not_as_both():
+    event = to_risk_event(row(error_reason="", error_code="insufficient_funds"), "m", True)
+
+    assert event.razorpay_error.reason == "insufficient_funds"
+    assert event.razorpay_error.code is None
 
 
 def test_rows_without_an_error_object_are_allowed():

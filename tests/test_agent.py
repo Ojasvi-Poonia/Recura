@@ -17,6 +17,7 @@ from src.models import (
     FailureClass,
     RiskEvent,
 )
+from src.policy.engine import load_policy
 
 NOW = datetime(2026, 3, 10, 11, 0, tzinfo=IST)
 
@@ -491,3 +492,16 @@ def test_the_rationale_names_a_genuinely_different_action():
     assert checked, "no rationale named a runner-up; test proves nothing"
     assert tautologies == 0, (
         f"{tautologies}/{checked} rationales named the chosen action as its own runner-up")
+
+
+def test_a_mandated_escalation_is_held_to_the_spend_cap_at_its_own_cost():
+    # Room left for a retry (Rs 0.50) but not for a human touch (Rs 120). The escalation
+    # the contract forces must be judged at what it costs, not at the retry's price.
+    agent = mk_agent()
+    cap = load_policy()["merchant"]["daily_spend_cap_paise"]
+    agent.merchant_day("m", NOW).spend_paise = cap - 1_000
+
+    decision, verdict = agent.preview(mk_event(reason="payment_timeout", amount=9_000_000), NOW)
+
+    assert decision.action is ActionType.ESCALATE_HUMAN
+    assert "merchant.daily_spend_cap_paise" in [r.rule_id for r in verdict.rules_blocked]

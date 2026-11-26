@@ -62,6 +62,13 @@ TERMINAL_EVENTS = {
 }
 
 
+# Fields on one Razorpay entity that name another. A failed payment and the retry that
+# later succeeds are different payments; what joins them is the order (or invoice, or
+# subscription) they both belong to.
+LINK_FIELDS = ("order_id", "invoice_id", "subscription_id", "payment_id")
+MAX_KEY_LENGTH = 64
+
+
 class Outcome(StrEnum):
     RISK_EVENT = "risk_event"
     STOP = "stop"
@@ -93,6 +100,12 @@ class IngestResult:
     stop_reason: str | None = None
     razorpay_event_id: str | None = None
     note: str = ""
+    # Every Razorpay id this payload carries, its own and the ones it links to. Shadow
+    # mode joins a failure to the payment that later settles it on these.
+    correlation_keys: tuple[str, ...] = ()
+    # When the event HAPPENED, from the payload - not when it was delivered. Delivery
+    # order is not guaranteed, so anything that compares two events must use this.
+    occurred_at: datetime | None = None
 
 
 @dataclass
@@ -119,6 +132,19 @@ def _first_entity(hook: RazorpayWebhook) -> dict[str, Any]:
         if found:
             return found
     return {}
+
+
+def _correlation_keys(hook: RazorpayWebhook) -> tuple[str, ...]:
+    keys: list[str] = []
+    for wrapper in hook.payload.values():
+        entity = wrapper.get("entity") if isinstance(wrapper, dict) else None
+        if not isinstance(entity, dict):
+            continue
+        for name in ("id", *LINK_FIELDS):
+            value = entity.get(name)
+            if isinstance(value, str) and 0 < len(value) <= MAX_KEY_LENGTH:
+                keys.append(value)
+    return tuple(dict.fromkeys(keys))
 
 
 def _attempt_number(entity: dict) -> int:
@@ -176,6 +202,10 @@ def normalise(
 
     hook = RazorpayWebhook.model_validate(json.loads(raw_body))
     entity = _first_entity(hook)
+    keys = _correlation_keys(hook)
+    # For a stop, the envelope time is when the money (or the cancellation) happened.
+    # The entity's own created_at is when that payment was first attempted.
+    happened_at = _epoch_to_ist(hook.created_at) or _epoch_to_ist(entity.get("created_at"))
 
     if hook.event in SUCCESS_EVENTS:
         return IngestResult(
@@ -183,6 +213,7 @@ def normalise(
             stop_reason=SUCCESS_EVENTS[hook.event],
             razorpay_event_id=razorpay_event_id,
             note=f"money received via {hook.event}; episode must stop",
+            correlation_keys=keys, occurred_at=happened_at,
         )
 
     if hook.event in TERMINAL_EVENTS:
@@ -191,6 +222,7 @@ def normalise(
             stop_reason=TERMINAL_EVENTS[hook.event],
             razorpay_event_id=razorpay_event_id,
             note=f"episode terminated by {hook.event}",
+            correlation_keys=keys, occurred_at=happened_at,
         )
 
     source_type = RISK_EVENTS.get(hook.event)
@@ -198,7 +230,15 @@ def normalise(
         return IngestResult(Outcome.IGNORED, razorpay_event_id=razorpay_event_id,
                             note=f"unhandled event {hook.event}")
 
-    observed_at = _epoch_to_ist(entity.get("created_at")) or _epoch_to_ist(hook.created_at)
+    # A payment's own created_at is when it was attempted, which is when it failed. A
+    # subscription's or an invoice's is when it was set up, often months before it halted
+    # or expired; for those the envelope time is the failure.
+    entity_at = _epoch_to_ist(entity.get("created_at"))
+    envelope_at = _epoch_to_ist(hook.created_at)
+    if source_type == "payment":
+        observed_at = entity_at or envelope_at
+    else:
+        observed_at = envelope_at or entity_at
     if observed_at is None:
         # No wall clock fallback here - section 12 forbids datetime.now() outside clock.py.
         return IngestResult(Outcome.IGNORED, razorpay_event_id=razorpay_event_id,
@@ -236,4 +276,5 @@ def normalise(
     if store is not None:
         store.remember(razorpay_event_id)
     return IngestResult(Outcome.RISK_EVENT, risk_event=risk,
-                        razorpay_event_id=razorpay_event_id)
+                        razorpay_event_id=razorpay_event_id,
+                        correlation_keys=keys, occurred_at=observed_at)

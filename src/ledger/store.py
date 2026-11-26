@@ -13,6 +13,7 @@ both are implemented and selected by dialect.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Iterable
@@ -28,7 +29,8 @@ from sqlalchemy import (
     select,
     text,
 )
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Connection, Engine
+from sqlalchemy.exc import DBAPIError
 
 from src.clock import SystemClock
 from src.models import LedgerEntry
@@ -71,6 +73,50 @@ _MYSQL_TRIGGERS = (
 )
 
 
+_TABLE_NAME = re.compile(r"[a-z][a-z0-9_]*")
+
+
+# MySQL's ER_TRG_ALREADY_EXISTS.
+MYSQL_TRIGGER_EXISTS = 1359
+
+
+def make_append_only(engine: Engine, table_name: str) -> None:
+    """Refuse UPDATE and DELETE on a table at the database layer.
+
+    The ledger has always had this. Anything else that is described as insert-only -
+    arm assignments, shadow-mode stops, policy-check records - gets the same triggers,
+    so that "it cannot be edited afterwards" is a property of the database rather than
+    a habit of the code that writes to it.
+    """
+    if not _TABLE_NAME.fullmatch(table_name):
+        raise ValueError(f"not a table name: {table_name!r}")
+    if engine.dialect.name == "sqlite":
+        # IF NOT EXISTS makes a re-run a no-op, so any error here is a real one and
+        # must surface: a table that silently stayed mutable is the failure this exists
+        # to prevent.
+        with engine.begin() as conn:
+            for verb in ("UPDATE", "DELETE"):
+                conn.execute(text(
+                    f"CREATE TRIGGER IF NOT EXISTS {table_name}_no_{verb.lower()} "
+                    f"BEFORE {verb} ON {table_name} BEGIN SELECT RAISE(ABORT, "
+                    f"'{table_name} is append-only: {verb} refused'); END;"))
+        return
+
+    for verb in ("UPDATE", "DELETE"):
+        try:
+            with engine.begin() as conn:
+                conn.execute(text(
+                    f"CREATE TRIGGER {table_name}_no_{verb.lower()} BEFORE {verb} "
+                    f"ON {table_name} FOR EACH ROW SIGNAL SQLSTATE '45000' "
+                    f"SET MESSAGE_TEXT = '{table_name} is append-only: {verb} refused';"))
+        except DBAPIError as exc:
+            # MySQL has no CREATE TRIGGER IF NOT EXISTS, so a second start-up collides
+            # with the trigger the first one made. That is the only error tolerated: a
+            # missing privilege must surface, or the table silently stays mutable.
+            if getattr(exc.orig, "args", (None,))[:1] != (MYSQL_TRIGGER_EXISTS,):
+                raise
+
+
 class LedgerImmutabilityError(Exception):
     """Raised when anything attempts to rewrite history."""
 
@@ -109,7 +155,8 @@ class Ledger:
 
     # -- the only write path -------------------------------------------------
 
-    def append(self, entry: LedgerEntry) -> str:
+    def append(self, entry: LedgerEntry, conn: Connection | None = None) -> str:
+        """Insert one entry. Pass `conn` to make it part of a caller's transaction."""
         row = {
             "entry_id": entry.entry_id,
             "event_id": entry.event_id,
@@ -124,8 +171,11 @@ class Ledger:
             "clock_time": entry.clock_time.isoformat(),
             "wall_time": entry.wall_time.isoformat(),
         }
-        with self.engine.begin() as conn:
+        if conn is not None:
             conn.execute(ledger_entries.insert().values(**row))
+            return entry.entry_id
+        with self.engine.begin() as own:
+            own.execute(ledger_entries.insert().values(**row))
         return entry.entry_id
 
     def append_many(self, entries: Iterable[LedgerEntry]) -> int:

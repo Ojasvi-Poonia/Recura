@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.11", "3.13"]
+    env:
+      # Determinism is the point of the benchmark; pin what Python would randomise.
+      PYTHONHASHSEED: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: make install PYTHON=python
+      - name: Generate the frozen cohort
+        run: make seed
+      - name: Tests
+        run: make test
+      - name: The headline must reproduce, twice, identically, with no API key
+        run: |
+          make eval > first.txt
+          make eval > second.txt
+          diff first.txt second.txt
+          grep -F "LIFT (percentage points)" first.txt
+      - name: Audit the shipped samples
+        run: |
+          make audit FILE=data/samples/example_failures.csv MAJOR=1 OUT=/tmp/audit.html
+          make audit FILE=data/samples/stripe_charges.json PSP=stripe OUT=/tmp/stripe.html

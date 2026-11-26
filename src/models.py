@@ -68,7 +68,8 @@ class Channel(StrEnum):
     VOICE = "voice"
 
 
-Arm = Literal["treatment", "holdout"]
+# "shadow" is live traffic that was decided on and logged, with nothing executed.
+Arm = Literal["treatment", "holdout", "shadow"]
 SourceType = Literal["payment", "checkout", "mandate", "invoice"]
 
 

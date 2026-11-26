@@ -21,7 +21,7 @@ Recura has three requirements that pull against them:
 
 ## Decision
 
-Hand-roll the loop. `src/agent.py` is 776 lines, 543 of them code, with `run_episode`
+Hand-roll the loop. `src/agent.py` is about 860 lines, roughly 525 of them code, with `run_episode`
 being 307 lines of explicit control flow — every branch walkable in an interview.
 
 An AST-parsing test fails the build if `langchain`, `langgraph`, `crewai`, `autogen` or

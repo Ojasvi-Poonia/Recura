@@ -1,9 +1,11 @@
 """Append-only ledger tests (the design spec sections 4, 10, 13)."""
 
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 
 import pytest
 from sqlalchemy import text
+from sqlalchemy.exc import DBAPIError
 
 from src.clock import IST
 from src.models import (
@@ -16,7 +18,7 @@ from src.models import (
     Recoverability,
     RiskEvent,
 )
-from src.ledger.store import Ledger, make_entry
+from src.ledger.store import MYSQL_TRIGGER_EXISTS, Ledger, make_append_only, make_entry
 
 NOW = datetime(2026, 3, 2, 12, 0, tzinfo=IST)
 
@@ -133,3 +135,33 @@ def test_action_result_is_persisted(ledger):
         executed=True, action=ActionType.NUDGE, provider_ref="sim_k1",
         cost_paise=25, simulated=True)))
     assert "simulated" in ledger.all_entries()[0]["action_result"]
+
+
+# -- MySQL trigger installation ------------------------------------------------------
+
+
+class _FakeMySQL:
+    """Just enough of an engine to see what make_append_only does with an error."""
+
+    class dialect:
+        name = "mysql"
+
+    def __init__(self, errno: int):
+        self.errno = errno
+
+    @contextmanager
+    def begin(self):
+        yield self
+
+    def execute(self, statement):
+        raise DBAPIError("CREATE TRIGGER", {}, Exception(self.errno, "refused"))
+
+
+def test_a_trigger_that_already_exists_is_the_one_error_tolerated():
+    make_append_only(_FakeMySQL(MYSQL_TRIGGER_EXISTS), "policy_holds")
+
+
+def test_a_trigger_that_could_not_be_created_is_not_swallowed():
+    # 1419: binary logging is on and the user lacks SUPER. The table would stay mutable.
+    with pytest.raises(DBAPIError):
+        make_append_only(_FakeMySQL(1419), "policy_holds")
