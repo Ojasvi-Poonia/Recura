@@ -334,3 +334,16 @@ def test_api_contact_endpoints_say_so_when_no_record_is_kept(client, monkeypatch
     assert post_contact(client).status_code == 503
     assert client.get("/policy/customers/cust_1/contacts",
                       headers=AUTH).status_code == 503
+
+
+def test_the_contract_check_needs_no_model_and_no_priors(client, monkeypatch):
+    # Building the shadow recorder builds an agent: priors, and an LLM provider.
+    def no_agent(url):
+        raise AssertionError("an agent was built to answer a contract check")
+    no_agent.cache_clear = lambda: None
+    monkeypatch.setattr(api, "_recorder_for", no_agent)
+
+    r = client.post("/policy/check", headers=AUTH, json=proposal().model_dump(mode="json"))
+
+    assert r.status_code == 200 and r.json()["logged"] is True
+    assert post_contact(client, check_id=r.json()["check_id"]).status_code == 200

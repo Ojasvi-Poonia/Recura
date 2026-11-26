@@ -26,6 +26,8 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, Header, HTTPException, Path, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 
 from src.agent import is_blocked
 from src.clock import SystemClock
@@ -76,8 +78,14 @@ _clock = SystemClock()   # the process edge: the one place real time is allowed 
 
 
 @lru_cache(maxsize=4)
+def _engine_for(url: str) -> Engine:
+    """One engine per database URL, shared by shadow mode and the contract check."""
+    return create_engine(url, future=True)
+
+
+@lru_cache(maxsize=4)
 def _recorder_for(url: str) -> ShadowRecorder:
-    return ShadowRecorder(Ledger(url=url))
+    return ShadowRecorder(Ledger(url=url, engine=_engine_for(url)))
 
 
 def shadow_recorder() -> ShadowRecorder | None:
@@ -88,7 +96,9 @@ def shadow_recorder() -> ShadowRecorder | None:
 
 @lru_cache(maxsize=4)
 def _check_log_for(url: str) -> PolicyCheckLog:
-    return PolicyCheckLog(_recorder_for(url).ledger.engine)
+    # Not through the shadow recorder: that builds an agent, with its priors and LLM
+    # provider, and the contract check must answer without either.
+    return PolicyCheckLog(_engine_for(url))
 
 
 def require_api_key(authorization: str = Header(default="")) -> None:
