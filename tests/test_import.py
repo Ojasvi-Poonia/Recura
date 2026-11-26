@@ -65,6 +65,20 @@ def test_unknown_reason_codes_do_not_crash_the_import():
     assert report["classes"]["UNKNOWN"] == 1
 
 
+def test_an_error_code_column_beside_the_reason_is_kept_as_the_code():
+    event = to_risk_event(row(error_code="BAD_REQUEST_ERROR"), "m", True)
+
+    assert event.razorpay_error.code == "BAD_REQUEST_ERROR"
+    assert event.razorpay_error.reason == "insufficient_funds"
+
+
+def test_an_error_code_column_alone_is_read_as_the_reason_not_as_both():
+    event = to_risk_event(row(error_reason="", error_code="insufficient_funds"), "m", True)
+
+    assert event.razorpay_error.reason == "insufficient_funds"
+    assert event.razorpay_error.code is None
+
+
 def test_rows_without_an_error_object_are_allowed():
     """Checkout drops and receivables legitimately have no error code."""
     event = to_risk_event(row(error_reason="", source_type="checkout"), "m", True)

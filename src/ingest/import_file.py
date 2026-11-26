@@ -121,6 +121,22 @@ def read_rows(path: Path) -> list[dict]:
     return list(csv.DictReader(text.splitlines()))
 
 
+def _error_code(row: dict, reason: str | None) -> str | None:
+    """The gateway's error code, never the reason a second time.
+
+    Razorpay's own code (`BAD_REQUEST_ERROR`) when the file has an error_code column
+    beside the reason. Otherwise the code a PSP profile translated from, such as
+    Stripe's `expired_card`, which is only kept when it differs from what it became.
+    """
+    def text(key: str) -> str | None:
+        return str(row.get(key) or "").strip() or None
+
+    if text("error_reason") and text("error_code"):
+        return text("error_code")
+    translated_from = text("psp_code")
+    return translated_from if translated_from != reason else None
+
+
 def to_risk_event(row: dict, merchant_id: str, amounts_are_major: bool) -> RiskEvent:
     missing = [c for c in REQUIRED if not str(row.get(c) or "").strip()]
     if missing:
@@ -148,6 +164,7 @@ def to_risk_event(row: dict, merchant_id: str, amounts_are_major: bool) -> RiskE
         if amounts_are_major else int(amount.to_integral_value(ROUND_HALF_UP))
 
     reason = (row.get("error_reason") or row.get("error_code") or "").strip() or None
+    code = _error_code(row, reason)
     source = (row.get("source_type") or "payment").strip().lower()
     if source not in SOURCE_TYPES:
         source = "payment"
@@ -163,7 +180,7 @@ def to_risk_event(row: dict, merchant_id: str, amounts_are_major: bool) -> RiskE
         due_at=_parse_time(row["due_at"]) if str(row.get("due_at") or "").strip() else None,
         razorpay_error=ErrorObject(
             reason=reason,
-            code=(str(row.get("psp_code") or "").strip() or None),
+            code=code,
             source=(row.get("error_source") or None),
             step=(row.get("error_step") or None),
             description=(row.get("error_description") or None),

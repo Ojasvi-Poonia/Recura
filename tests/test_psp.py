@@ -170,6 +170,18 @@ def test_razorpay_collection_reads_as_exported(tmp_path):
     assert (skipped, rejected) == (1, ())
 
 
+def test_a_razorpay_export_keeps_razorpays_error_code_not_the_reason_twice(tmp_path):
+    rows = [{"id": "pay_1", "amount": 150000, "currency": "INR", "status": "failed",
+             "created_at": 1773130920, "error_code": "BAD_REQUEST_ERROR",
+             "error_reason": "insufficient_funds"}]
+
+    events, _, _ = load_events(write_json(tmp_path, rows, "items"), "m", False,
+                               psp="razorpay")
+
+    assert events[0].razorpay_error.code == "BAD_REQUEST_ERROR"
+    assert events[0].razorpay_error.reason == "insufficient_funds"
+
+
 def test_translate_does_not_modify_the_row_it_was_given():
     original = charge()
     snapshot = json.dumps(original, sort_keys=True)
