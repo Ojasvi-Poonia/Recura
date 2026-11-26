@@ -76,6 +76,10 @@ _MYSQL_TRIGGERS = (
 _TABLE_NAME = re.compile(r"[a-z][a-z0-9_]*")
 
 
+# MySQL's ER_TRG_ALREADY_EXISTS.
+MYSQL_TRIGGER_EXISTS = 1359
+
+
 def make_append_only(engine: Engine, table_name: str) -> None:
     """Refuse UPDATE and DELETE on a table at the database layer.
 
@@ -105,10 +109,12 @@ def make_append_only(engine: Engine, table_name: str) -> None:
                     f"CREATE TRIGGER {table_name}_no_{verb.lower()} BEFORE {verb} "
                     f"ON {table_name} FOR EACH ROW SIGNAL SQLSTATE '45000' "
                     f"SET MESSAGE_TEXT = '{table_name} is append-only: {verb} refused';"))
-        except DBAPIError:
+        except DBAPIError as exc:
             # MySQL has no CREATE TRIGGER IF NOT EXISTS, so a second start-up collides
-            # with the trigger the first one made. That is the only error tolerated.
-            continue
+            # with the trigger the first one made. That is the only error tolerated: a
+            # missing privilege must surface, or the table silently stays mutable.
+            if getattr(exc.orig, "args", (None,))[:1] != (MYSQL_TRIGGER_EXISTS,):
+                raise
 
 
 class LedgerImmutabilityError(Exception):
