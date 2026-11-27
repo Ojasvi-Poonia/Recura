@@ -1,0 +1,153 @@
+code,category,reason,description
+U07,Gateway Error,Invalid Format,Gateway infrastructure error detected.
+U10,Gateway Error,Invalid Format,Gateway infrastructure error detected.
+U12,Gateway Error,Currency Mismatch,Gateway infrastructure error detected.
+U15,Gateway Error,Encryption Error,Gateway infrastructure error detected.
+U18,Transaction Declined,Authorisation Not Acknowledged,Customer could not be authenticated for the transaction.
+U36,Gateway Error,Response Error,Gateway infrastructure error detected.
+SP,Transaction Declined,Invalid ATM PIN,Issuer bank or payment service provider declined the transaction.
+U02,Transaction Declined,Transaction Amount Limit,Customer has exceeded the withdrawal amount limit.
+U04,Gateway Error,Invalid Transaction,Transaction was invalid.
+U06,Gateway Error,Invalid Transaction,Transaction was invalid.
+U08,Network Error,Bank Offline,The request session timed out. Retry after some time.
+U24,Transaction Declined,Auth Timeout,Issuer bank or payment service provider declined the transaction.
+OC,Transaction Declined,Credit Failed,Issuer bank or payment service provider declined the transaction.
+RB,Network Error,Credit Reversal Timeout,A network infrastructure error occurred.
+RN,Payment Instrument Blocked,Attempts Exceeded,The network blocked the customer's payment instrument.
+RR,Network Error,Debit Reversal Timeout,A network infrastructure error occurred.
+U01,Gateway Error,Duplicate Transaction,Gateway infrastructure error detected.
+U20,Transaction Declined,Auth Timeout,Issuer bank or payment service provider declined the transaction.
+NC,Transaction Declined,Credit Failed,Issuer bank or payment service provider declined the transaction.
+U29,Transaction Declined,Debit Failed,Issuer bank or payment service provider declined the transaction.
+AJ,Transaction Declined,Inactive Card,Issuer bank or payment service provider declined the transaction.
+BT,Network Error,Acquirer Bank Offline,A network infrastructure error occurred.
+U05,Gateway Error,Invalid Format,Gateway infrastructure error detected.
+U32,Transaction Declined,Credit Failed,Issuer bank or payment service provider declined the transaction.
+U34,Transaction Declined,Transaction Reverted,Issuer bank or payment service provider declined the transaction.
+U38,Gateway Error,Response Error,Gateway infrastructure error detected.
+LD,Transaction Declined,Debit Failed,Issuer bank or payment service provider declined the transaction.
+ZX,Transaction Declined,Account Inactive Customer,Issuer bank or payment service provider declined the transaction.
+XJ,Transaction Declined,Unknown Error,Issuer bank or payment service provider declined the transaction.
+U88,Network Error,Network Timeout,A network infrastructure error occurred.
+S0,Transaction Declined,PSP Decline Spam,Payment service provider declined the transaction.
+XN,Transaction Declined,No Card Customer,Issuer bank or payment service provider declined the transaction.
+XT,Transaction Declined,Cutoff Time,Issuer bank or payment service provider declined the transaction.
+XY,Network Error,Bank Offline,The request session timed out. Retry after some time.
+YE,Transaction Declined,Account Blocked or Frozen,Issuer bank or payment service provider declined the transaction.
+Z6,Transaction Declined,PIN Try Exceeded,Allowed number of PIN retries exceeded.
+M5,Payment Instrument Blocked,Account Closed,The network blocked the customer's payment instrument.
+400,Transaction Declined,Invalid Phone Number,The phone number entered for this transaction is invalid.
+403,Transaction Declined,Unauthorised User,The customer is not authorised to perform this action. Reach out to the issuer bank.
+L05,Network Error,Unknown Network Error,A network infrastructure error occurred.
+NA,Transaction Declined,Unknown Error,Issuer bank or payment service provider declined the transaction.
+U48,Transaction Cancelled,Customer Inactive,The customer cancelled the transaction or didn't attempt it.
+VK,Transaction Declined,Transaction Amount Limit,Customer has exceeded the withdrawal amount limit.
+R02,Validation Failure,Invalid VPA,Customer's payment instrument was not set up properly.
+U78,Technical Failure,Credit Failed,Beneficiary bank is not available.
+U85,Network Error,Network Timeout,A network infrastructure error occurred.
+51,Transaction Declined,Insufficient Funds,The customer's account doesn't have sufficient balance.
+XL,Transaction Declined,Expired Card,"The card has expired, or the customer entered an incorrect expiry date."
+XR,Transaction Declined,Restricted by Bank,Issuer bank or payment service provider declined the transaction.
+YD,Transaction Declined,Payment Not Allowed,Payment to this beneficiary is declined.
+57,Transaction Declined,Account Holder Restricted,The customer's bank has restricted the customer's account for this transaction.
+S1,Transaction Declined,Fraud Detected,Issuer bank or payment service provider declined the transaction.
+500,Network Error,Bank Offline,The request session timed out. Retry after some time.
+404,Validation Failure,Invalid Google Pay User,The customer is not a valid Google Pay user. Register with the correct phone number.
+CF22,Network Error,Bank Offline,The request session timed out. Retry after some time.
+U53,Transaction Declined,Remitter Bank Unavailable,The transaction failed because the PSP did not receive confirmation of the debit. Ask the customer to retry.
+T03,Validation Failure,Invalid Parameter,The transaction note must be alphanumeric and 1 to 50 characters long.
+U22,Transaction Declined,Auth Declined,Issuer bank or payment service provider declined the transaction.
+U26,Transaction Declined,PSP Declined,Issuer bank or payment service provider declined the transaction.
+U31,Transaction Declined,Transaction Not Permitted,TPV payment was made using a non-registered bank account. Remitter bank declined the transaction.
+U14,Gateway Error,Encryption Error,Encryption error at NPCI.
+TM,Merchant Blocked,Merchant Blocked,The customer has blocked the merchant.
+L04,Transaction Not Initiated,Invalid Format,Transaction was not initiated with the service provider.
+94,Gateway Error,Duplicate Transaction,This is a duplicate transaction.
+ZG,Transaction Declined,VPA Resolution Failed,Issuer bank or payment service provider declined the transaction.
+CF07,Transaction Declined,Bad Request,"The request the client made is incorrect or corrupt, and the server can't understand it."
+XQ,Transaction Declined,Payment Not Allowed,Payment to this beneficiary is declined.
+YF,Transaction Declined,Account Blocked Merchant,Issuer bank or payment service provider declined the transaction.
+XI,Validation Failure,Invalid Account,Customer's payment instrument was not set up properly.
+91,Network Error,Network Timeout,Transaction failed due to host timeout.
+FL,Transaction Declined,Transaction Amount Limit,Customer has exceeded the withdrawal amount limit.
+HS,Network Error,Bank Offline,The request session timed out. Retry after some time.
+IR,Network Error,Bank Offline,The request session timed out. Retry after some time.
+U69,Customer Cancelled,Request Expired,Collect request expired.
+5009,Transaction Failed,Technical Error,"Transaction failed because of a technical error. Retry, or contact your bank."
+1,Transaction Declined,PSP Decline Throttle,Payment service provider declined the transaction.
+U28,Transaction Declined,Remitter Bank Unavailable,The remitter bank or TPAP is currently unavailable. Ask the customer to retry after some time.
+CF29,Technical Failure,Credentials Error,Transaction failed due to issues with bank credentials.
+SA,Transaction Declined,Payment Not Allowed,The customer's account type is not eligible to make this payment.
+ZA,Customer Auth Failure,Customer Decline,The customer declined or cancelled this transaction.
+ZM,Transaction Declined,Invalid PIN,The customer entered an invalid PIN. Ask the customer to try again with the correct PIN.
+B3,Transaction Declined,Restricted Account,"TPV payment was made using a non-registered bank account. Payment was made using a restricted account as per bank policy (for example, a minor account or a proprietor account)."
+CF23,Technical Failure,Remitter Bank Unavailable,Resource that you are trying to reach is currently unavailable. Retry after some time.
+ZH,Transaction Declined,Invalid VPA,The customer entered an incorrect UPI ID.
+U81,Network Error,Bank Offline,The request session timed out. Retry after some time.
+FAILURE,Transaction Declined,Unknown Error,Issuer bank or payment service provider declined the transaction.
+U30,Transaction Declined,Debit Failed,The remitter (customer's) bank declined the transaction. Ask the customer to try again or check with their bank.
+U16,Transaction Declined,Risk Threshold Exceeded,Issuer bank or payment service provider declined the transaction.
+U67,Transaction Declined,Customer's Bank Unavailable (Debit Timeout),The remitter bank took too long to respond.
+Z9,Transaction Declined,Insufficient Funds,Insufficient funds in the customer's account. Ask the customer to retry after adding sufficient funds.
+Z8,Transaction Declined,Per Transaction Limit Exceeded,The transaction amount exceeded the limit set by the customer's bank. Ask the customer to verify this with their bank.
+U90,Transaction Declined,Customer's Bank Unavailable (Slow Response),The remitter bank responded too slowly. Ask the customer to retry after some time.
+U91,Transaction Declined,Beneficiary Bank Unavailable (Slow Response),The beneficiary bank responded too slowly. Ask the customer to retry after some time.
+UT,Transaction Declined,Customer's Bank Unavailable (Timeout),Remitter bank is not available.
+U19,Transaction Declined,Authorisation Declined,Issuer bank or payment service provider declined the transaction.
+HS3,Transaction Declined,Debit Failed,Issuer bank or payment service provider declined the transaction.
+CF02,Technical Failure,API Timeout,The bank API timed out.
+M16,Transaction Declined,Risk Decline,The NPCI risk model declined the transaction.
+XV,Transaction Declined,Compliance Violation,TPV payment was made using a non-registered bank account. Remitter bank declined the transaction due to a compliance violation.
+ZU,Transaction Declined,Transaction Limit Exceeded,The transaction failed because it exceeded a limit set by the customer's bank. Ask the customer to check with their bank.
+DT,Transaction Declined,Bank Decline,"The account number is invalid, or the beneficiary bank has no record of it."
+ZI,Transaction Declined,Debit Failed,The beneficiary risk score indicates suspected fraud.
+U21,Transaction Declined,Authorisation Not Found,Customer could not be authenticated for the transaction.
+U23,Transaction Declined,Auth Timeout,Issuer bank or payment service provider declined the transaction.
+U25,Transaction Declined,UPI Service Layer Error,Issuer bank or payment service provider declined the transaction.
+U27,Transaction Declined,PSP Unresponsive,Issuer bank or payment service provider declined the transaction.
+U37,Gateway Error,Response Error,Gateway infrastructure error detected.
+U11,Gateway Error,Credentials Missing,Gateway infrastructure error detected.
+U13,Network Error,External Error,A network infrastructure error occurred.
+ND,Transaction Declined,Debit Failed,Issuer bank or payment service provider declined the transaction.
+OD,Transaction Declined,Debit Failed,Issuer bank or payment service provider declined the transaction.
+RM,Transaction Declined,Invalid MPIN,Issuer bank or payment service provider declined the transaction.
+RP,Network Error,Debit Reversal Timeout,A network infrastructure error occurred.
+U68,Transaction Declined,Credit Failed,Issuer bank or payment service provider declined the transaction.
+ZE,Transaction Declined,PSP Declined,Transaction not permitted to the customer's UPI ID (VPA) by the PSP.
+ZD,Transaction Declined,Debit Failed,The remitter (customer's) bank declined the transaction. Ask the customer to check with their bank before retrying.
+XU,Transaction Declined,Cutoff Time,Issuer bank or payment service provider declined the transaction.
+U89,Transaction Declined,Bank Decline Throttle,Issuer bank or payment service provider declined the transaction.
+FP,Transaction Declined,Transaction Amount Limit,Customer has exceeded the withdrawal amount limit.
+54,Validation Failure,Card Expired,The UPI ID associated with the debit card has expired.
+Z7,Transaction Declined,Debit Limit Exceeded,The transaction exceeds the frequency limit set by the remitting bank.
+UP,Transaction Declined,PSP Timeout,Received timeout response from payment service provider.
+Null Error Code,Transaction Declined,Debit Failed,The payment failed without an error code.
+U35,Gateway Error,Response Error,Gateway infrastructure error detected.
+B2,Payment Instrument Inactive,Multiple Names Linked,Customer's payment instrument is inactive.
+YC,Transaction Declined,Debit Failed,Issuer bank or payment service provider declined the transaction.
+XP,Transaction Declined,Debit Failed,The issuer bank or payment service provider declined the transaction because it isn't permitted for the customer.
+5007,Network Error,Invalid VPA,The customer entered an incorrect VPA.
+5008,Payment Instrument Blocked,PSP Not Registered,Customer's payment instrument was blocked by the network.
+5010,Technical Failure,Technical Decline,"Transaction failed because of a technical error. Retry, or contact your bank."
+CF11,Transaction Failed,Technical Error,An error occurred while decrypting the payment information. Try again.
+5087,Technical Failure,Account Number Missing,Payer account number and payer IFSC are missing. Enter these details.
+CF15,Technical Failure,Invalid Credentials,Credential error between Cashfree and the bank.
+XX,Transaction Declined,Invalid Details,The transaction failed because of invalid details in the payment. Verify the details and retry.
+UM1,Transaction Declined,Customer Decline,The customer's UPI app declined the mandate request.
+UN8,Transaction Declined,Customer Decline,The customer's UPI app is not registered for this payment.
+UM9,Transaction Declined,Debit Failed,The bank or UPI app declined the mandate setup request. Retry or use a different UPI app.
+UM0,Transaction Declined,Debit Failed,The bank or UPI app declined the mandate setup request. Retry or use a different UPI app.
+NO,Transaction Declined,Debit Failed,The remitter (customer's) bank declined the transaction. Ask the customer to check with their bank before retrying.
+K1,Transaction Declined,Suspected Fraud,The remitter bank declined the transaction because of a high risk score or suspected fraud.
+U92,Transaction Declined,Remitter Bank Unavailable,The remitter bank or TPAP is currently unavailable. Retry after some time.
+UX,Transaction Declined,Invalid VPA,The UPI virtual payment address (VPA) has expired or is no longer valid. Ask the customer to retry with a valid VPA.
+V,Transaction Declined,Transaction Details Missing,Some of the details related to the transaction are missing in the request.
+409,Validation Failure,Duplicate Transaction,Duplicate transaction ID found.
+S99,Transaction Declined,Debit Failed,The remitter (customer's) bank declined the transaction. Ask the customer to try again or check with their bank.
+8010,Network Error,Bank Offline,The request session timed out. Retry after some time.
+86,Transaction Declined,Debit Failed,The transaction failed due to an internal error at the remitter's bank or server.
+V03,Transaction Declined,Invalid Credentials,Transaction failed due to invalid or missing UPI credentials. Check the UPI credentials and try again.
+92,Customer Auth Failure,Collect Request Expired,The collect request expired. The customer did not approve or complete the payment within the permitted time frame.
+503,Network Error,Bank Offline,The request session timed out. Retry after some time.
+M2,Validation Failure,Limit Exceeded,The customer has exceeded the amount limit.
+S3,Transaction Declined,Fraud Detected,Issuer bank or payment service provider declined the transaction.

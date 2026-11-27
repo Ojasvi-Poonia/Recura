@@ -1,0 +1,100 @@
+# Cashfree Payments, as returned by "Get Payments for an Order" (API v2023-08-01) or
+# forwarded through the neutral webhook format with "gateway": "cashfree".
+#
+#   make audit FILE=cashfree_payments.json PSP=cashfree
+#
+# SOURCES, read 2026-11-26:
+#   https://www.cashfree.com/docs/payments/manage/payment-methods/upi-error-codes.md
+#       all 152 UPI error codes, transcribed into data/psp_codes/cashfree_upi.csv
+#   https://www.cashfree.com/docs/api-reference/payments/previous/v2023-08-01/payments/get-payments-for-order.md
+#       field names: cf_payment_id, payment_amount, payment_currency, payment_status,
+#       payment_time, payment_group, error_details.{error_code_raw, error_subcode_raw, ...}
+#
+# The code list is Cashfree's. The translation is OUR judgment, as src/taxonomy/mapping.py
+# is ours over Razorpay's list; every target is a reason that table maps.
+#
+# LIMITS, stated rather than discovered:
+#   - UPI only. Cashfree publishes no card or netbanking failure-code table we could read;
+#     those payments still import, and their codes are counted as unrecognised.
+#   - Cashfree: "when error_code_raw is generic such as U30, the specific reason is in
+#     error_subcode_raw", and codes 0 and 2 carry no reason of their own. So the subcode
+#     is read first.
+#   - The Get Payments object carries no customer id; rows fall back to an anonymous one.
+
+name: Cashfree
+amount_unit: major     # payment_amount is a number in rupees
+published_codes: data/psp_codes/cashfree_upi.csv
+
+columns:
+  event_id: [cf_payment_id]
+  amount: [payment_amount]
+  currency: [payment_currency]
+  failed_at: [payment_completion_time, payment_time]
+  method: [payment_group]
+  error_reason: [error_details.error_subcode_raw, error_details.error_code_raw]
+  error_description: [error_details.error_description_raw, error_details.error_description]
+  error_source: [error_details.error_source]
+
+# A customer who walked away (USER_DROPPED) is as recoverable as one who was declined.
+keep_where:
+  payment_status: [failed, user_dropped]
+
+translate:
+  # -- the money is not there --------------------------------------------------------
+  insufficient_funds: ["51", Z9]
+  transaction_limit_exceeded: [U02, VK, FL, FP, Z8, ZU, M2]
+  transaction_frequency_limit_exceeded: [Z7]
+
+  # -- the customer mistyped, abandoned or did not authenticate --------------------
+  incorrect_pin: [ZM, RM, V03]
+  incorrect_atm_pin: [SP]
+  pin_attempts_exceeded: [Z6, RN]
+  authentication_failed: [U18, U21]
+  payment_cancelled: [ZA, U48]
+  payment_collect_request_expired: [U69, "92"]
+  invalid_vpa: [R02, ZH, UX, "5007"]
+  vpa_resolution_failed: [ZG]
+
+  # -- the instrument cannot be used as it is ----------------------------------------
+  card_expired: [XL, "54"]
+  debit_instrument_blocked: [YE]
+  debit_instrument_inactive: [AJ, ZX, B2]
+  bank_account_invalid: [M5, XI]
+  psp_not_registered: ["404", "5008"]
+  transaction_on_vpa_restricted: [ZE, "57", XR, SA]
+  # TPV: the merchant only accepts the customer's registered account. The customer can
+  # pay from that account, so this is theirs to fix, not the merchant's.
+  bank_account_validation_failed: [U31, B3, XV]
+  mandate_creation_declined: [UM1, UM9, UM0]
+  upi_autopay_not_supported_on_psp: [UN8]
+  debit_declined: [U29, LD, U30, HS3, ND, OD, ZD, "NO", S99, "86", YC, XP, U19, U22,
+                   XN, "403"]
+
+  # -- the issuer's or the network's risk model said no --------------------------------
+  payment_risk_check_failed: [U16, M16, S1, S3, ZI, K1]
+
+  # -- something between the customer and the money was down --------------------------
+  bank_not_available: [U08, XY, "500", CF22, HS, IR, U81, "8010", "503", U28, U92, U53,
+                       U67, U90, UT, U78, U91, BT, CF23]
+  request_timed_out: [U88, U85, "91", RB, RR, RP, L05, U13, CF02, U24, U20, U23]
+  psp_not_available: [UP, U27]
+  upi_app_technical_error: [U25]
+  authorisation_declined_by_psp: [U26]
+  bank_cutoff_in_progress: [XT, XU]
+  payment_declined_due_to_high_traffic: ["1", U89, S0]
+  duplicate_request: [U01, "94", "409"]
+  gateway_technical_error: [U07, U10, U12, U15, U36, U04, U06, U05, U38, U14, U37, U11,
+                            U35, L04, "5009", "5010", CF11, CF29, CF15]
+
+  # -- the payment to this merchant is not allowed -------------------------------------
+  payment_declined: [YD, XQ, YF, TM]
+  beneficiary_account_does_not_exist: [DT]
+
+  # -- the merchant's request was malformed --------------------------------------------
+  invalid_mobile_number: ["400"]
+  input_validation_failed: [T03, XX, V, "5087"]
+  invalid_request: [CF07]
+
+  # -- the gateway did not say ---------------------------------------------------------
+  credit_failed: [OC, NC, U32, U68]
+  payment_failed: [XJ, NA, FAILURE, U34, "Null Error Code"]
