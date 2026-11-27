@@ -52,6 +52,31 @@ def test_every_profile_translates_only_to_reasons_the_taxonomy_maps(key):
     assert not invented, f"{key}.yaml maps to reasons that do not exist: {invented}"
 
 
+PUBLISHED = [k for k in known_profiles() if load_profile(k).published_codes]
+
+
+@pytest.mark.parametrize("key", PUBLISHED)
+def test_every_code_a_gateway_publishes_has_a_translation(key):
+    profile = load_profile(key)
+    with profile.published_codes.open(encoding="utf-8") as f:
+        published = [row[0] for row in csv.reader(f)][1:]
+
+    untranslated = sorted(set(published) - set(profile.reasons))
+    unpublished = sorted(set(profile.reasons) - set(published))
+
+    assert published and not untranslated, f"{key}: no translation for {untranslated}"
+    assert not unpublished, f"{key}: translates codes it never published: {unpublished}"
+
+
+def test_a_code_translated_twice_is_refused(tmp_path, monkeypatch):
+    (tmp_path / "twice.yaml").write_text(
+        "name: Twice\ntranslate:\n  insufficient_funds: [X1]\n  card_expired: [X1]\n")
+    monkeypatch.setattr("src.ingest.psp.PROFILE_DIR", tmp_path)
+
+    with pytest.raises(ProfileError, match="twice"):
+        load_profile("twice")
+
+
 def test_every_published_stripe_decline_code_has_a_translation():
     with STRIPE_CODES.open(encoding="utf-8") as f:
         published = {r["decline_code"] for r in csv.DictReader(f)}

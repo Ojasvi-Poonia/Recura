@@ -8,7 +8,12 @@ in config/psp/ saying three things about a gateway:
   columns     where each of our columns lives in their export, in the order to look
   keep_where  which rows are failures at all (an API dump also lists successes)
   reasons     how their failure codes translate to the Razorpay reasons the taxonomy
-              is written against (src/taxonomy/mapping.py)
+              is written against (src/taxonomy/mapping.py). `translate` says the same
+              thing grouped by target - {reason: [codes]} - which reads better when a
+              gateway publishes hundreds of codes; a code may appear only once across both.
+
+A profile may also name its gateway's published code list (`published_codes`), a CSV
+transcribed from the gateway's docs. A test then proves every published code translates.
 
     make audit FILE=charges.json PSP=stripe
 
@@ -59,6 +64,7 @@ class PspProfile:
     reasons: Mapping[str, str]
     keep_where: Mapping[str, frozenset[str]]
     amount_unit: str | None = None   # None = the caller says (--major)
+    published_codes: Path | None = None
 
 
 def known_profiles() -> tuple[str, ...]:
@@ -84,17 +90,30 @@ def load_profile(key: str) -> PspProfile:
         unknown = sorted(set(columns) - set(CANONICAL_COLUMNS))
         if unknown:
             raise ValueError(f"columns the importer does not read: {unknown}")
+        published = raw.get("published_codes")
         return PspProfile(
             key=name,
             name=str(raw.get("name") or name),
             columns=columns,
-            reasons={str(k): str(v) for k, v in (raw.get("reasons") or {}).items()},
+            reasons=_reasons(raw),
             keep_where={str(field): frozenset(str(v).lower() for v in accepted)
                         for field, accepted in (raw.get("keep_where") or {}).items()},
             amount_unit=unit,
+            published_codes=PROFILE_DIR.parents[1] / published if published else None,
         )
     except (yaml.YAMLError, ValueError, TypeError, AttributeError) as exc:
         raise ProfileError(f"PSP profile {path.name} is malformed: {exc}") from exc
+
+
+def _reasons(raw: Mapping[str, Any]) -> dict[str, str]:
+    """`reasons` and `translate` merged into one code -> reason table."""
+    out = {str(k): str(v) for k, v in (raw.get("reasons") or {}).items()}
+    for target, codes in (raw.get("translate") or {}).items():
+        for code in codes or ():
+            if str(code) in out:
+                raise ValueError(f"code {code!r} is translated twice")
+            out[str(code)] = str(target)
+    return out
 
 
 def _lookup(row: Mapping[str, Any], path: str) -> Any:

@@ -31,8 +31,8 @@ from sqlalchemy.engine import Engine
 
 from src.agent import is_blocked
 from src.clock import SystemClock
-from src.ingest.signature import verify
-from src.ingest.webhook import IdempotencyStore, IngestResult, Outcome, normalise
+from src.ingest.gateways import gateways, get_gateway, secret_env, secret_for
+from src.ingest.webhook import IdempotencyStore, IngestResult, Outcome
 from src.ledger.store import Ledger
 from src.policy.check import (
     MAX_ID_LENGTH,
@@ -117,37 +117,50 @@ def health() -> dict:
         "status": "ok",
         "service": "recura",
         "webhook_secret_configured": bool(os.getenv(WEBHOOK_SECRET_ENV)),
+        "gateways_configured": sorted(name for name, g in gateways().items()
+                                      if secret_for(g)),
         "shadow_mode": bool(os.getenv(SHADOW_DB_ENV)),
     }
 
 
-@app.post("/webhooks/razorpay")
-async def razorpay_webhook(
-    request: Request,
-    x_razorpay_signature: str = Header(default=""),
-    x_razorpay_event_id: str = Header(default=""),
-) -> dict:
-    secret = os.getenv(WEBHOOK_SECRET_ENV)
+@app.post("/webhooks/{gateway_name}")
+async def gateway_webhook(gateway_name: str, request: Request) -> dict:
+    """One receiver for every gateway: razorpay, stripe, or the neutral `recura` format.
+
+    Each gateway's own signature scheme is checked over the raw bytes before anything
+    is parsed (src/ingest/gateways/). An unknown gateway is a 404, and a known one with
+    no secret configured is a 503: an unverifiable webhook is never processed.
+    """
+    gateway = get_gateway(gateway_name)
+    if gateway is None:
+        raise HTTPException(status_code=404,
+                            detail=f"no gateway named {gateway_name!r}; known: "
+                                   f"{', '.join(sorted(gateways()))}")
+    secret = secret_for(gateway)
     if not secret:
-        # Fail closed. An unverifiable webhook is never processed.
-        raise HTTPException(status_code=503, detail=f"{WEBHOOK_SECRET_ENV} not configured")
+        env = WEBHOOK_SECRET_ENV if gateway.name == "razorpay" else secret_env(gateway.name)
+        raise HTTPException(status_code=503, detail=f"{env} not configured")
 
     raw = await request.body()  # RAW bytes, before any parsing (section 7)
-    if not verify(raw, x_razorpay_signature, secret):
-        _log("webhook.signature_rejected", event_id=x_razorpay_event_id or None)
+    headers = {k.lower(): v for k, v in request.headers.items()}
+    if not gateway.verify(raw, headers, secret, _clock.now()):
+        _log("webhook.signature_rejected", gateway=gateway.name)
         raise HTTPException(status_code=401, detail="signature mismatch")
 
-    event_id = x_razorpay_event_id or None
+    # Namespaced, so two gateways that happen to use the same id never collide.
+    own_id = gateway.delivery_id(raw, headers)
+    event_id = (own_id if gateway.name == "razorpay" or own_id is None
+                else f"{gateway.name}:{own_id}")
     shadow = shadow_recorder()
     # In shadow mode the dedupe record lives in the database, so a restart does not
-    # turn Razorpay's redelivery into a second decision for the same failure.
+    # turn a redelivery into a second decision for the same failure.
     store = shadow if shadow is not None else _store
 
     if await run_in_threadpool(store.is_duplicate, event_id):
         result = IngestResult(Outcome.DUPLICATE, razorpay_event_id=event_id,
                               note="already processed")
     else:
-        result = normalise(raw, event_id)
+        result = gateway.normalise(raw, event_id)
 
     shadowed = (await run_in_threadpool(_shadow, shadow, result, event_id)
                 if shadow is not None else {})
