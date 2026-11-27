@@ -1,0 +1,42 @@
+refusal_reason_code,refusal_reason,description
+2,Refused,The transaction was refused.
+3,Referral,Referrals.
+4,Acquirer Error,The transaction did not go through due to an error that occurred on the acquirer's end.
+5,Blocked Card,"The card used for the transaction is blocked, therefore unusable."
+6,Expired Card,The card used for the transaction has expired. Therefore it is unusable.
+7,Invalid Amount,An amount mismatch occurred during the transaction process.
+8,Invalid Card Number,The specified card number is incorrect or invalid.
+9,Issuer Unavailable,It is not possible to contact the shopper's bank to authorize the transaction.
+10,Not supported,The shopper's bank does not support or does not allow this type of transaction.
+11,3D Not Authenticated,"3D Secure authentication was not executed, or it did not execute successfully."
+12,Not enough balance,The card does not have enough money to cover the payable amount.
+14,Acquirer Fraud,Possible fraud.
+15,Cancelled,The transaction was cancelled.
+16,Shopper Cancelled,The shopper cancelled the transaction before completing it.
+17,Invalid Pin,The specified PIN is incorrect or invalid.
+18,Pin tries exceeded,The shopper specified an incorrect PIN more that three times in a row.
+19,Pin validation not possible,It is not possible to validate the specified PIN number.
+20,FRAUD,"The pre-authorization risk checks resulted in a fraud score of 100 or more. Therefore, the transaction was flagged as fraudulent, and was refused. [...]"
+21,Not Submitted,The transaction was not submitted correctly for processing.
+22,FRAUD-CANCELLED,"The sum of pre-authorization and post-authorization risk checks resulted in a fraud score of 100 or more. Therefore, the transaction was flagged as fraudulent, and was refused. [...]"
+23,Transaction Not Permitted,"The following declined codes are mapped to this refusal reason: ""57: Transaction not permitted to issuer/cardholder""; ""57: Transaction not allowed for this merchant""; ""58: Transaction not permitted to acquirer/terminal"""
+24,CVC Declined,The specified CVC (card security code) is invalid.
+25,Restricted Card,"The following decline codes are mapped to this refusal reason: ""62: Restricted Card""; ""62: Invalid card in this country"""
+26,Revocation Of Auth,"Indicates that the shopper requested to stop a subscription. Decline codes mapped: ""R1: Revocation of Authorization Order""; ""R3: Revocation of All Authorizations Order""; ""R0: Stop Payment Order"""
+27,Declined Non Generic,This response maps all those response codes that cannot be reliably mapped. This makes it easier to tell generic declines [...]
+28,Withdrawal amount exceeded,The transaction amount was higher than the withdrawal amount permitted for the shopper's card.
+29,Withdrawal count exceeded,The shopper exceeded the number of withdrawals that is permitted for the shopper's card.
+31,Issuer Suspected Fraud,Issuer reported the transaction as suspected fraud.
+32,AVS Declined,The address data the shopper entered is incorrect.
+33,Card requires online pin,The shopper's bank requires the shopper to enter the PIN.
+34,No checking account available on Card,The shopper's bank requires a checking account to complete the purchase.
+35,No savings account available on Card,The shopper's bank requires a savings account to complete the purchase.
+36,Mobile pin required,The shopper's bank requires the shopper to enter a mobile PIN.
+37,Contactless fallback,The shopper abandoned the transaction after they attempted a contactless payment and were prompted to try a different card entry method (PIN or swipe).
+38,Authentication required,The issuer declined the authentication exemption request and requires authentication for the transaction. Retry with 3D Secure.
+39,RReq not received from DS,The issuer or the scheme wasn't able to communicate the outcome via RReq.
+40,Current AID is in Penalty Box,The payment network cannot be reached. Retry the transaction with a different payment method.
+41,CVM Required Restart Payment,A PIN or signature is required. Retry the transaction.
+42,3DS Authentication Error,The 3D Secure authentication failed due to an issue at the card network or issuer. [...]
+46,Transaction blocked by Adyen to prevent excessive retry fees,Adyen's excessive retry prevention service blocked the transaction to make sure that you are not charged penalty fees.
+50,Token Revoked,The token granted to the merchant for recurring charges was disabled by the shopper.

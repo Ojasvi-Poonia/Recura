@@ -280,3 +280,27 @@ def test_a_stripe_body_signed_with_the_wrong_secret_is_refused(client):
                     headers={"stripe-signature": sign(body, "whsec_wrong", T)})
 
     assert r.status_code == 401
+
+
+# -- one failure, every gateway -----------------------------------------------------
+
+
+@pytest.mark.parametrize("gateway, code", [
+    ("cashfree", "Z9"), ("phonepe", "INSUFFICIENT_BALANCE"), ("adyen", "12"),
+    ("braintree", "2001"), ("checkout", "20051"), ("stripe", "insufficient_funds"),
+])
+def test_insufficient_funds_is_the_same_diagnosis_from_every_gateway(gateway, code):
+    risk = recura.normalise(delivery(gateway=gateway, payment={"code": code}), None).risk_event
+
+    assert classify(risk.razorpay_error).failure_class is FailureClass.FUNDS
+    assert risk.razorpay_error.code == code
+
+
+@pytest.mark.parametrize("gateway, code", [
+    ("cashfree", "U16"), ("phonepe", "TXN_BLOCKED"), ("adyen", "20"),
+    ("braintree", "2043"), ("checkout", "41301"), ("stripe", "fraudulent"),
+])
+def test_a_fraud_decline_is_never_retried_whichever_gateway_sent_it(gateway, code):
+    risk = recura.normalise(delivery(gateway=gateway, payment={"code": code}), None).risk_event
+
+    assert classify(risk.razorpay_error).failure_class is FailureClass.RISK_DECLINE

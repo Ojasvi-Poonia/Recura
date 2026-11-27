@@ -1,0 +1,97 @@
+# Checkout.com API response codes, forwarded through the neutral webhook format with
+# "gateway": "checkout", or read from an export that carries the code.
+#
+# SOURCE, read 2026-11-26:
+#   https://www.checkout.com/docs/resources/codes/api-response-codes
+#       every soft decline (20xxx), hard decline (30xxx) and risk response (4xxxx),
+#       transcribed into data/psp_codes/checkout_response_codes.csv. Where the page
+#       prints a second line with no code, it is joined onto the code above with " / ".
+#
+# LIMITS, stated rather than discovered:
+#   - 10xxx are approvals and 50xxx are payout and refund declines: neither is a failed
+#     attempt to take the customer's money, so neither is transcribed.
+#   - Checkout.com's payment export field names were NOT checked against its docs, so
+#     `columns` names only the code field. The neutral format needs no column mapping.
+#   - A few 20xxx codes are not failures (20009 request in progress, 20118 pending,
+#     20110 authorization completed). They are translated to pending, and to paid, so
+#     that an export which includes them never opens an episode on a payment that
+#     succeeded.
+
+name: Checkout.com
+amount_unit: minor
+published_codes: data/psp_codes/checkout_response_codes.csv
+
+columns:
+  error_reason: [response_code]
+  error_description: [response_summary]
+
+translate:
+  insufficient_funds: ["20051"]
+  transaction_limit_exceeded: ["20061", 200P9, "30021"]
+  transaction_daily_limit_exceeded: [200P1]
+  transaction_frequency_limit_exceeded: ["20065"]
+  transaction_daily_count_exceeded: ["30022"]
+
+  incorrect_pin: ["20055"]
+  pin_attempts_exceeded: ["20038", "20075"]
+  authentication_failed: ["20070", "20151", "20154", "43401", 2006P]
+  payment_session_expired: ["20152"]
+  incorrect_cvv: [200N7]
+  incorrect_card_details: ["20087", "20082"]
+  incorrect_card_expiry_date: ["20100"]
+  card_number_invalid: ["20014", "20056", "30015"]
+  payment_cancelled: ["20017"]
+
+  card_expired: ["20054", "30033"]
+  card_type_invalid: ["20103", 200T3, "20045", "20015", "20039", "20052", "20053", "20044",
+                      "20083"]
+  card_not_enrolled: ["20150"]
+  international_transaction_not_allowed: ["20081"]
+  debit_instrument_blocked: ["20062", 2009G, "20078"]
+  debit_instrument_inactive: ["20072", "20016", "20108"]
+  bank_account_invalid: ["30046"]
+  mandate_not_active: [200R1, 200R3]
+
+  # Fraud, pick-up, security, disputes, AML, and every 4xxxx risk response except the
+  # one asking for 3DS.
+  payment_risk_check_failed: ["20059", "20063", "20004", "20067", "20066", "20183", "20105",
+                              "20093", "20018", "30004", "30007", "30034", "30035", "30036",
+                              "30037", "30038", "30041", "30043", "30044",
+                              "41101", "41201", "41202", "41203", "41204", "41205", "41206",
+                              "41301", "42101", "42201", "42202", "42203", "42204", "42205",
+                              "42206", "42301", "43101", "43102", "43201", "43202", "43203",
+                              "43204", "43205", "43206", "43301"]
+
+  issuer_technical_error: ["20091", "20019", "20022", "20096", "20028", "20179", "20159",
+                           "20153", "20155", "20086", "20088", 200N0]
+  request_timed_out: ["20068", 200A6]
+  payment_declined_due_to_high_traffic: [200E3]
+  invalid_response_from_gateway: ["20020"]
+  bank_cutoff_in_progress: ["20090"]
+  duplicate_request: ["20094", "20026"]
+  gateway_technical_error: ["20092", "20098", 200E2, "20084", "20085", 200S4, 200T5, "20095",
+                            "20097", "20024", "20027", "20029", "20089", "20116"]
+  payment_pending: ["20009", "20118", "20199"]
+  order_already_paid: ["20110"]
+
+  payment_declined: ["20001", "20002", "20005", "20012", "20021", "20046", "20057", "20058",
+                     "20099", 2005C, 200A4, 200A5, "20060", "20182", "20104"]
+  payment_failed: ["20032"]
+
+  # -- the merchant's account or request ------------------------------------------------
+  merchant_not_activated: ["20003", "20102", "20157", 200E0, "20197"]
+  card_network_not_enabled: ["20112"]
+  payment_method_not_enabled: ["20040", "20156", "30016", "30017", "30018", "30019", "30045"]
+  emi_plan_unavailable: ["20122"]
+  bank_not_enabled: ["20031"]
+  invalid_request: ["20023", "20006", "20030", "20113", "20115", "20117", "20119", "20033",
+                    "20111"]
+  input_validation_failed: ["20123", "20124", "20107", "20193", 200T2, "30404", "30405"]
+  invalid_amount: ["20013", "20042", "30020"]
+  order_amount_mismatch: ["20064"]
+  invalid_currency: ["20106"]
+  record_not_found: ["20101", "20114", "20025"]
+  invalid_user_details: ["20120"]
+  mcc_amount_limit_exceeded: ["20121"]
+  capture_failed: ["20109", "30401", "30402", "30403"]
+  refund_limit_crossed: ["20158"]

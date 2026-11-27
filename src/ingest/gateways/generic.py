@@ -151,7 +151,7 @@ def _failure(delivery: Delivery, keys: tuple[str, ...],
 def _translate(gateway: str | None, code: str | None) -> str | None:
     if code is None or gateway is None:
         return code
-    return load_profile(gateway).reasons.get(code, code)
+    return load_profile(gateway).reason_for(code)
 
 
 def _first_error(exc: ValidationError) -> str:

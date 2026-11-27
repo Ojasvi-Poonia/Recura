@@ -47,7 +47,8 @@ def test_every_profile_translates_only_to_reasons_the_taxonomy_maps(key):
     """A profile may not invent a category. Every target must be a real mapped reason."""
     profile = load_profile(key)
 
-    invented = sorted(set(profile.reasons.values()) - set(MAPPING))
+    targets = set(profile.reasons.values()) | {reason for _, _, reason in profile.ranges}
+    invented = sorted(targets - set(MAPPING))
 
     assert not invented, f"{key}.yaml maps to reasons that do not exist: {invented}"
 
@@ -61,11 +62,20 @@ def test_every_code_a_gateway_publishes_has_a_translation(key):
     with profile.published_codes.open(encoding="utf-8") as f:
         published = [row[0] for row in csv.reader(f)][1:]
 
-    untranslated = sorted(set(published) - set(profile.reasons))
+    ranges = {f"{low}-{high}" for low, high, _ in profile.ranges}
+    untranslated = sorted(set(published) - set(profile.reasons) - ranges)
     unpublished = sorted(set(profile.reasons) - set(published))
 
     assert published and not untranslated, f"{key}: no translation for {untranslated}"
     assert not unpublished, f"{key}: translates codes it never published: {unpublished}"
+
+
+def test_a_code_inside_a_published_range_takes_the_ranges_reason():
+    braintree = load_profile("braintree")
+
+    assert braintree.reason_for("2500") == "payment_declined"
+    assert braintree.reason_for("2001") == "insufficient_funds"
+    assert braintree.reason_for("9999") == "9999"
 
 
 def test_a_code_translated_twice_is_refused(tmp_path, monkeypatch):

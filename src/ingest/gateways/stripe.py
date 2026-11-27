@@ -145,7 +145,7 @@ def _error(kind: str, obj: dict[str, Any]) -> ErrorObject | None:
         # An invoice that failed for want of a stored payment method has no code.
         return None
     code = str(code)
-    return ErrorObject(code=code, reason=load_profile("stripe").reasons.get(code, code),
+    return ErrorObject(code=code, reason=load_profile("stripe").reason_for(code),
                        description=message)
 
 

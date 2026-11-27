@@ -65,6 +65,19 @@ class PspProfile:
     keep_where: Mapping[str, frozenset[str]]
     amount_unit: str | None = None   # None = the caller says (--major)
     published_codes: Path | None = None
+    # (low, high, reason): a numeric code inside [low, high] that `reasons` does not
+    # list. For gateways that publish a range as one row ("2109-2999 Processor Declined").
+    ranges: tuple[tuple[int, int, str], ...] = ()
+
+    def reason_for(self, code: str) -> str:
+        """The taxonomy reason for one of this gateway's codes; the code itself if none."""
+        if code in self.reasons:
+            return self.reasons[code]
+        if code.isdigit():
+            for low, high, reason in self.ranges:
+                if low <= int(code) <= high:
+                    return reason
+        return code
 
 
 def known_profiles() -> tuple[str, ...]:
@@ -100,6 +113,8 @@ def load_profile(key: str) -> PspProfile:
                         for field, accepted in (raw.get("keep_where") or {}).items()},
             amount_unit=unit,
             published_codes=PROFILE_DIR.parents[1] / published if published else None,
+            ranges=tuple((int(r["from"]), int(r["to"]), str(r["reason"]))
+                         for r in raw.get("ranges") or ()),
         )
     except (yaml.YAMLError, ValueError, TypeError, AttributeError) as exc:
         raise ProfileError(f"PSP profile {path.name} is malformed: {exc}") from exc
@@ -164,5 +179,5 @@ def translate(row: Mapping[str, Any], profile: PspProfile) -> dict[str, Any]:
     if code:
         # Keep what the gateway actually said next to what we read it as.
         out["psp_code"] = code
-        out["error_reason"] = profile.reasons.get(code, code)
+        out["error_reason"] = profile.reason_for(code)
     return out
