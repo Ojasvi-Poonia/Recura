@@ -15,6 +15,7 @@ make import FILE=payments.json PSP=razorpay DECIDE=1
 |---|---|---|---|
 | `razorpay` | Payment entities: the `items` of `GET /v1/payments`, or a list of them | Native. 115 reasons in `data/razorpay_error_reasons.csv` | Razorpay error docs, 2026-08-26 |
 | `stripe` | Charge objects: the `data` of `GET /v1/charges`, or a list of them | 50 card decline codes in `data/stripe_decline_codes.csv`, plus the four documented Radar `outcome.reason` values | docs.stripe.com/declines/codes and /api/charges/object, 2026-11-16 |
+| `cashfree`, `phonepe`, `juspay`, `adyen`, `braintree`, `checkout` | each gateway's own objects; see the comment at the top of its YAML | transcribed into `data/psp_codes/`; coverage and limits per gateway in [`GATEWAYS.md`](GATEWAYS.md) | each gateway's docs, 2026-11-26 |
 
 Limits of the Stripe profile, all of which the output reports rather than hides:
 
