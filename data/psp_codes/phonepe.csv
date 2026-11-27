@@ -1,0 +1,97 @@
+error_code,detailed_error_code,stage,source,description
+TXN_NOT_COMPLETED,TXN_AUTO_FAILED,PRE_AUTHENTICATION,CUSTOMER,Payment couldn't be completed due to issues related to customer or their bank.
+INSUFFICIENT_BALANCE,Z9,AUTHORIZATION,CUSTOMER,Payment failed due to insufficient balance in customer's account.
+INVALID_MPIN,ZM,AUTHENTICATION,CUSTOMER,Customer entered the wrong UPI PIN.
+BANK_TECHNICAL_ISSUE,U90,AUTHORIZATION,ISSUING_BANK,Bank is taking longer than usual to process this payment.
+BANK_TECHNICAL_ISSUE,UT,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+BANK_TECHNICAL_ISSUE,U28,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+TXN_FREQ_LIMIT_BREACHED,Z7,AUTHORIZATION,CUSTOMER,Customer exceeded their daily payment limit.
+MPIN_LIMIT_BREACHED,Z6,AUTHENTICATION,CUSTOMER,Customer entered wrong PIN too many times.
+ACCOUNT_NOT_ELIGIBLE,B3,AUTHORIZATION,CUSTOMER,Customer's account type is not supported for this payment.
+TXN_LIMIT_BREACHED,Z8,AUTHORIZATION,CUSTOMER,Customer exceeded their daily payment limit.
+BANK_TECHNICAL_ISSUE,XB,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+TXN_LIMIT_BREACHED,U03,AUTHORIZATION,CUSTOMER,Customer exceeded the per-transaction limit.
+BANK_TECHNICAL_ISSUE,XY,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+TXN_BLOCKED,K1,AUTHORIZATION,ISSUING_BANK,Customer's bank declined the payment for security reasons.
+BANK_TECHNICAL_ISSUE,S96,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+ACCOUNT_BLOCKED,YE,AUTHORIZATION,ISSUING_BANK,Customer's bank account is blocked or frozen.
+ACCOUNT_DOES_NOT_EXIST,XH,AUTHORIZATION,CUSTOMER,Customer's bank account is invalid or unregistered.
+BANK_NOT_ABLE_TO_PROCESS,XT,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+BANK_NOT_ABLE_TO_PROCESS,IR,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+TXN_BLOCKED,XP,AUTHORIZATION,ISSUING_BANK,Customer's bank blocked the payment.
+REQUEST_NOT_FOUND,NO,AUTHORIZATION,BUSINESS,Original payment request not found.
+INVALID_REQUEST,T14,AUTHORIZATION,BUSINESS,You provided invalid payment details. Please check and try again.
+TXN_LIMIT_BREACHED,ZU,AUTHORIZATION,ISSUING_BANK,Amount exceeds the limit set by the customer's bank.
+INSUFFICIENT_BALANCE,IE,AUTHORIZATION,CUSTOMER,Insufficient balance in customer's account.
+TXN_BLOCKED,XV,AUTHORIZATION,ISSUING_BANK,Customer's bank blocked the payment.
+DEVICE_FINGERPRINT_MISMATCH,U66,AUTHENTICATION,BUSINESS,Temporary technical issue.
+MPIN_NOT_SET,AM,AUTHORIZATION,CUSTOMER,Customer hasn't set a UPI PIN.
+TXN_NOT_ALLOWED,B1,AUTHORIZATION,CUSTOMER,Customer's number registered with the bank is different.
+TXN_BLOCKED,XQ,AUTHORIZATION,BENEFICIARY_BANK,Your bank blocked the payment. Contact your bank for help.
+TXN_NOT_ALLOWED,YC,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+ACCOUNT_INACTIVE,ZX,AUTHORIZATION,CUSTOMER,Customer's bank account is inactive.
+TXN_BLOCKED,FP,AUTHORIZATION,ISSUING_BANK,Customer's bank account is frozen.
+TECHNICAL_ISSUE,U80,AUTHORIZATION,PAYER_PSP,Technical issue at the customer's bank.
+TXN_NOT_ALLOWED,U54,AUTHORIZATION,BUSINESS,Transaction ID or amount mismatch.
+TXN_NOT_ALLOWED,SA,AUTHORIZATION,ISSUING_BANK,Customer's bank blocked the payment.
+ACCOUNT_INACTIVE,SD,AUTHORIZATION,CUSTOMER,Customer's bank account is inactive.
+TECHNICAL_ISSUE,U86,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+TXN_NOT_ALLOWED,ZG,AUTHORIZATION,CUSTOMER,Customer's UPI ID is restricted for this payment.
+TXN_NOT_COMPLETED,U69,PRE_AUTHENTICATION,CUSTOMER,Payment request expired.
+TXN_CANCELLED,ZA,PRE_AUTHENTICATION,CUSTOMER,Customer cancelled the payment.
+INVALID_VPA,ZH,AUTHORIZATION,CUSTOMER,Customer entered an invalid UPI ID.
+TXN_BLOCKED,U16_NPCI_TXNRISK_00924;U16_NPCI_TXNRISK_0;U16_NPCI_TXNRISK_00976;U16_NPCI_TXNRISK_01026;U16_NPCI_TXNRISK_01002;U16_NPCI_TXNRISK_00970;U16_NPCI_TXNRISK_00966;U16_NPCI_TXNRISK_01022;U16_NPCI_TXNRISK_00965;U16_NPCI_TXNRISK_01242;U16_NPCI_TXNRISK_00901;U16_NPCI_TXNRISK_01232;U16_NPCI_TXNRISK_01054;U16_NPCI_TXNRISK_01028;U16_NPCI_TXNRISK_00030;U16_NPCI_TXNRISK_01018;U16_NPCI_TXNRISK_01206;U16_NPCI_TXNRISK_00941;U16_NPCI_TXNRISK_01083;U16_NPCI_TXNRISK_00963;U16_NPCI_TXNRISK_00987;U16_NPCI_TXNRISK_00980;U16_NPCI_TXNRISK_01078,AUTHENTICATION,NPCI,Customer's payment blocked due to security reasons.
+TXN_NOT_COMPLETED,REQUEST_TIME_OUT,PRE_AUTHENTICATION,CUSTOMER,Payment request timed-out.
+TXN_CANCELLED,REQUEST_CANCEL_BY_REQUESTER,PRE_AUTHENTICATION,BUSINESS,You cancelled the payment request. Please send a new request to the customer.
+TXN_CANCELLED,REQUEST_DECLINE_BY_REQUESTEE,PRE_AUTHENTICATION,CUSTOMER,Customer cancelled the payment.
+TXN_NOT_FOUND,TXN_NOT_FOUND,PRE_AUTHENTICATION,BUSINESS,Payment failed due to temporary technical issue.
+TXN_BLOCKED,INTERNAL_SECURITY_BLOCK,PRE_AUTHENTICATION,PAYMENT_GATEWAY,Payment blocked due to security reasons.
+TXN_BLOCKED,INTERNAL_SECURITY_BLOCK_1,PRE_AUTHENTICATION,PAYMENT_GATEWAY,Payment blocked as the payment URL doesn't match the one you shared during onboarding.
+TXN_BLOCKED,INTERNAL_SECURITY_BLOCK_2,PRE_AUTHENTICATION,PAYMENT_GATEWAY,Payment blocked as the IP address doesn't match the one you shared during onboarding.
+TXN_BLOCKED,INTERNAL_SECURITY_BLOCK_4,PRE_AUTHENTICATION,PAYMENT_GATEWAY,Payment blocked as the package name doesn't match the one you shared during onboarding.
+TXN_BLOCKED,INTERNAL_SECURITY_BLOCK_5,PRE_AUTHENTICATION,PAYMENT_GATEWAY,Payment blocked as the business policies are missing or outdated on your website/app.
+TXN_BLOCKED,INTERNAL_SECURITY_BLOCK_6,PRE_AUTHENTICATION,PAYMENT_GATEWAY,Payment blocked as you have not completed your video KYC verification.
+TXN_BLOCKED,BF_110;BF_025;BF_028;BF_049;BL_076,PRE_AUTHENTICATION,PAYMENT_GATEWAY,Payment blocked due to security reasons.
+TXN_BLOCKED,BL_077,PRE_AUTHENTICATION,PAYMENT_GATEWAY,Payment blocked as you have not completed your video KYC verification.
+REFUND_BREACHED,BF_034,PRE_AUTHENTICATION,PAYMENT_GATEWAY,There was not enough forward transaction balance for the concerned MID to process the refund. You can then reinitiate the refund when you have enough forward transactions balance.
+TXN_NOT_COMPLETED,ORDER_EXPIRED,PRE_AUTHENTICATION,CUSTOMER,Customer did not complete the payment.
+TXN_CANCELLED,ORDER_CANCELLED_BY_USER,PRE_AUTHENTICATION,CUSTOMER,Customer cancelled the payment.
+AUTHENTICATION_FAILED,AUTHENTICATION_FAILED,AUTHENTICATION,ISSUING_BANK,Technical issue at the customer's bank.
+INVALID_CARD_NUMBER,INVALID_CARD_NUMBER,PRE_AUTHENTICATION,CUSTOMER,Customer didn't enter the card details or entered incorrect ones.
+BANK_ERROR,BANK_ERROR,UNKNOWN,ISSUING_BANK,Technical issue at the customer's bank.
+TRANSACTION_DECLINED,TRANSACTION_DECLINED,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+TECHNICAL_ISSUE_BANK,TECHNICAL_ISSUE_BANK,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+INVALID_DETAILS,INVALID_DETAILS,AUTHENTICATION,PAYMENT_GATEWAY,Customer entered invalid details.
+BANK_MERCHANT_CONFIG,BANK_MERCHANT_CONFIG,AUTHENTICATION,PAYMENT_GATEWAY,Temporary technical issue.
+CONNECTION_TIMEOUT,CONNECTION_TIMEOUT,UNKNOWN,UNKNOWN,Payment request timed out.
+ADDRESS_MISMATCH,ADDRESS_MISMATCH,AUTHENTICATION,CUSTOMER,Address provided for the order doesn't match the customer's bank records.
+TRANSACTION_DECLINED_PG,TRANSACTION_DECLINED_PG,AUTHORIZATION,PAYMENT_GATEWAY,Payment failed due to temporary technical issue.
+BUSINESS_RISK_RULES,BUSINESS_RISK_RULES,AUTHORIZATION,ISSUING_BANK,Customer's bank doesn't allow payments with this card.
+CARD_BLOCKED,CARD_BLOCKED,AUTHORIZATION,ISSUING_BANK,Customer's card is blocked by their bank.
+CARD_EXPIRED,CARD_EXPIRED,AUTHORIZATION,CUSTOMER,Customer's card is expired.
+INVALID_CVV_EXPIRY,INVALID_CVV_EXPIRY,AUTHENTICATION,CUSTOMER,Customer entered an invalid CVV.
+INVALID_DETAILS_MERCHANT,INVALID_DETAILS_MERCHANT,AUTHENTICATION,BUSINESS,You have entered invalid details. Please check and send the request to the customer again.
+PROCESSOR_ERROR,PROCESSOR_ERROR,AUTHORIZATION,PAYMENT_GATEWAY,Payment failed due to temporary technical issue.
+INVALID_CARD_TYPE,INVALID_CARD_TYPE,AUTHENTICATION,ISSUING_BANK,Customer's card is not supported for this payment.
+INVALID_FIELDS,INVALID_FIELDS,AUTHENTICATION,CUSTOMER,Customer didn't provide all the details for this payment.
+INSUFFICIENT_BALANCE,INSUFFICIENT_BALANCE,AUTHORIZATION,CUSTOMER,Insufficient balance in customer's account.
+TRANSACTION_TIME_OUT,TRANSACTION_TIME_OUT,AUTHENTICATION,PAYMENT_GATEWAY,Payment request timed out.
+CANCELLED_BY_USER,CANCELLED_BY_USER,AUTHENTICATION,CUSTOMER,Customer didn't complete the authentication process in time.
+DUPLICATE_TRANSACTION,DUPLICATE_TRANSACTION,AUTHENTICATION,PAYMENT_GATEWAY,A payment with the same Order ID is already in progress.
+HASH_MISMATCH,HASH_MISMATCH,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+TXN_AMOUNT_MISMATCH,TXN_AMOUNT_MISMATCH,AUTHORIZATION,ISSUING_BANK,Product amount is different from the the amount recorded by the bank.
+INVALID_TXN_ID,INVALID_TXN_ID,UNKNOWN,PAYMENT_GATEWAY,Payment failed due to temporary technical issue.
+ONLINE_TRANSACTIONS_DISABLED,ONLINE_TRANSACTIONS_DISABLED,AUTHORIZATION,CUSTOMER,Customer cannot use this card for online payments.
+MAX_AUTH_EXCEEDED,MAX_AUTH_EXCEEDED,AUTHENTICATION,CUSTOMER,Customer has exceeded the maximum PIN attempts.
+INVALID_CARD_NAME,INVALID_CARD_NAME,AUTHENTICATION,CUSTOMER,Customer entered an invalid card name.
+WRONG_PIN,WRONG_PIN,AUTHENTICATION,CUSTOMER,Customer didn't enter the OTP or entered an incorrect one.
+INVALID_AMOUNT,INVALID_AMOUNT,AUTHORIZATION,CUSTOMER,Customer entered the wrong amount.
+INVALID_CARD,INVALID_CARD,AUTHENTICATION,CUSTOMER,Customer entered an incorrect account number.
+TRANSACTION_LIMIT_EXCEEDED,TRANSACTION_LIMIT_EXCEEDED,AUTHORIZATION,CUSTOMER,Customer exceeded their transaction limit.
+MERCHANT_ERROR,MERCHANT_ERROR,AUTHORIZATION,BUSINESS,Technical issue at your end.
+INTERNATIONAL_TXN_NOT_ALLOWED,INTERNATIONAL_TXN_NOT_ALLOWED,AUTHORIZATION,CUSTOMER,Customer's card does not support international payments.
+UNSUPPORTED_PAYMENT_MODE,UNSUPPORTED_PAYMENT_MODE,AUTHORIZATION,ISSUING_BANK,Customer's bank doesn't allow payments with this instrument.
+AUTHORIZATION_FAILED,AUTHORIZATION_FAILED,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+AUTH_TIMEOUT,AUTH_TIMEOUT,AUTHENTICATION,CUSTOMER,Customer didn't complete authentication process in time.
+CARD_BIN_NOT_SUPPORTED,CARD_BIN_NOT_SUPPORTED,AUTHORIZATION,ISSUING_BANK,Customer's card is not supported for this payment.
+TXN_FAILED,TXN_FAILED,AUTHENTICATION,PAYMENT_GATEWAY,Payment failed due to temporary technical issue.

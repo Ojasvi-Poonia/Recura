@@ -122,6 +122,10 @@ def _lookup(row: Mapping[str, Any], path: str) -> Any:
         return row[path]
     value: Any = row
     for part in path.split("."):
+        # A number reaches into a list: `paymentDetails.0.timestamp`.
+        if isinstance(value, list) and part.isdigit():
+            value = value[int(part)] if int(part) < len(value) else None
+            continue
         if not isinstance(value, Mapping) or part not in value:
             return None
         value = value[part]

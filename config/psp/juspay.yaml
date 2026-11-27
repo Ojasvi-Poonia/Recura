@@ -1,0 +1,46 @@
+# Juspay (Express Checkout / HyperCheckout), as returned by the Order Status API
+# (GET /orders/{order_id}), or forwarded through the neutral webhook format with
+# "gateway": "juspay".
+#
+#   make audit FILE=juspay_orders.json PSP=juspay
+#
+# SOURCES, read 2026-11-26:
+#   https://juspay.io/in/docs/resources/docs/common-resources/transaction-status
+#       the order status table; its three failure statuses are transcribed into
+#       data/psp_codes/juspay_failure_statuses.csv
+#   https://juspay.io/in/docs/api-reference/docs/express-checkout/order-status-api
+#       field names: order_id, amount, currency, status, customer_id,
+#       payment_method_type, bank_error_code, bank_error_message, date_created
+#
+# LIMITS, stated rather than discovered:
+#   - Juspay routes to many gateways and publishes no table of the bank error codes it
+#     passes through. So this profile reads the STATUS, which Juspay defines, and keeps
+#     bank_error_code beside it untranslated. A status is coarser than a reason: an
+#     AUTHORIZATION_FAILED is "the bank refused", without saying why.
+#   - date_created is when the order was created; the order status response we read
+#     carries no separate failure time.
+#   - The SDK's JP_* codes are client-side errors, not payment failures, and are not mapped.
+
+name: Juspay
+amount_unit: major     # "The order amount", a Double in rupees
+published_codes: data/psp_codes/juspay_failure_statuses.csv
+
+columns:
+  event_id: [order_id]
+  amount: [amount]
+  currency: [currency]
+  failed_at: [date_created]
+  customer_id: [customer_id]
+  method: [payment_method_type]
+  error_reason: [status]
+  error_code: [bank_error_code, txn_detail.error_code]
+  error_description: [bank_error_message, txn_detail.error_message]
+
+keep_where:
+  status: [authentication_failed, authorization_failed, juspay_declined]
+
+translate:
+  authentication_failed: [AUTHENTICATION_FAILED]
+  payment_declined: [AUTHORIZATION_FAILED]
+  # "User input is not accepted": the customer's details, so theirs to correct.
+  incorrect_card_details: [JUSPAY_DECLINED]
