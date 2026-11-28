@@ -67,7 +67,7 @@ taxonomy understood. It says on the page that it is a triage and not a forecast.
 | Razorpay | `PSP=razorpay` | all 115 published reasons; payment entities as `GET /v1/payments` returns them |
 | Stripe | `PSP=stripe` | all 50 card decline codes; Charge objects as exported |
 | Cashfree | `PSP=cashfree` | all 152 UPI codes; Get Payments objects |
-| PhonePe | `PSP=phonepe` | 61 error codes; v2 order status objects |
+| PhonePe | `PSP=phonepe` | 127 error codes; v2 order status objects |
 | Juspay | `PSP=juspay` | its 3 failure statuses; order status objects |
 | Adyen | `PSP=adyen` | all 41 refusal reasons |
 | Braintree | `PSP=braintree` | all 110 decline codes and the 2109–2999 range |

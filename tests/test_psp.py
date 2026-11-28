@@ -78,6 +78,20 @@ def test_a_code_inside_a_published_range_takes_the_ranges_reason():
     assert braintree.reason_for("9999") == "9999"
 
 
+def test_phonepe_rows_that_read_as_technical_are_not_all_treated_as_retryable():
+    """PhonePe describes tampering, its own checksum errors and a completed payment
+    with the same words: "temporary technical issue". None of them may be retried."""
+    phonepe = load_profile("phonepe")
+
+    def mapped(code):
+        return MAPPING[phonepe.reason_for(code)]
+
+    assert mapped("TXN_DATA_TAMPERED").failure_class is FailureClass.RISK_DECLINE
+    assert mapped("CHECKSUM_MISMATCH").recoverability is Recoverability.MERCHANT_CONFIG
+    assert mapped("SUCCESS").recoverability is Recoverability.TERMINAL
+    assert mapped("TXN_ALREADY_PROCESSED").recoverability is Recoverability.TERMINAL
+
+
 def test_a_code_translated_twice_is_refused(tmp_path, monkeypatch):
     (tmp_path / "twice.yaml").write_text(
         "name: Twice\ntranslate:\n  insufficient_funds: [X1]\n  card_expired: [X1]\n")

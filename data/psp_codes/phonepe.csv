@@ -95,3 +95,79 @@ AUTHORIZATION_FAILED,AUTHORIZATION_FAILED,AUTHORIZATION,ISSUING_BANK,Technical i
 AUTH_TIMEOUT,AUTH_TIMEOUT,AUTHENTICATION,CUSTOMER,Customer didn't complete authentication process in time.
 CARD_BIN_NOT_SUPPORTED,CARD_BIN_NOT_SUPPORTED,AUTHORIZATION,ISSUING_BANK,Customer's card is not supported for this payment.
 TXN_FAILED,TXN_FAILED,AUTHENTICATION,PAYMENT_GATEWAY,Payment failed due to temporary technical issue.
+MERCHANT_CONFIG_NOT_FOUND,MERCHANT_CONFIG_NOT_FOUND,AUTHENTICATION,PAYMENT_GATEWAY,Merchant validation failed as your configuration details are missing or incorrect at PhonePe PG.
+PENDING,PENDING,AUTHORIZATION,ISSUING_BANK,Payment is being processed. Please check after 15 minutes.
+INVALID_REQUEST,INVALID_REQUEST,AUTHENTICATION,PAYMENT_GATEWAY,Payment failed due to temporary technical issue.
+GENERIC_NPCI_ERROR,GENERIC_NPCI_ERROR,AUTHORIZATION,PAYMENT_GATEWAY,Payment failed due to temporary technical issue.
+GENERIC_ERROR,GENERIC_ERROR,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+INVALID_CURRENCY,INVALID_CURRENCY,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+INVALID_TXN,INVALID_TXN,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+INVALID_DATE,INVALID_DATE,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+ENCRYPTION_ERROR,ENCRYPTION_ERROR,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+DECRYPTION_ERROR,DECRYPTION_ERROR,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+INVALID_BANK_CODE,INVALID_BANK_CODE,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+CHECKSUM_MISMATCH,CHECKSUM_MISMATCH,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+INVALID_KEY,INVALID_KEY,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+INVALID_PARAMETERS,INVALID_PARAMETERS,UNKNOWN,UNKNOWN,You passed invalid parameters. Please verify the details and try again.
+INVALID_CARD_DETAILS,INVALID_CARD_DETAILS,AUTHENTICATION,Customer,Customer entered incorrect card details.
+INVALID_CUSTOMER_ID,INVALID_CUSTOMER_ID,UNKNOWN,UNKNOWN,Payment failed due to invalid customer ID.
+INCORRECT_DETAILS,INCORRECT_DETAILS,AUTHORIZATION,Customer,Customer entered incorrect card details.
+MERCHANT_CONFIG_ERROR,MERCHANT_CONFIG_ERROR,AUTHENTICATION,PAYMENT_GATEWAY,Payment failed due to temporary technical issue.
+CARD_NOT_ALLOWED,CARD_NOT_ALLOWED,AUTHENTICATION,Customer,Customer cannot make the payment using this card.
+CHECKSUM_GENERATION_FAILED,CHECKSUM_GENERATION_FAILED,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+MISSING_FIELDS,MISSING_FIELDS,UNKNOWN,UNKNOWN,A required field is missing. Please fill in all mandatory parameters and try again.
+INVALID_CHECKSUM_PARAMETERS,INVALID_CHECKSUM_PARAMETERS,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+MESSAGE_FORMAT_ERROR,MESSAGE_FORMAT_ERROR,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+INVALID_CHECKSUM_KEY,INVALID_CHECKSUM_KEY,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+INVALID_MERCHANT_CODE,INVALID_MERCHANT_CODE,UNKNOWN,UNKNOWN,You have not passed a valid merchant code. Please check and try again.
+INVALID_CUSTOMER_RELATED_FIELDS,INVALID_CUSTOMER_RELATED_FIELDS,UNKNOWN,UNKNOWN,"Customer details like name, email, or address are missing."
+MISSING_CHECKSUM_VALUE,MISSING_CHECKSUM_VALUE,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+CAPTURE_ERROR,CAPTURE_ERROR,CAPTURE,BUSINESS,Payment failed due to temporary technical issue.
+DECLINED_BY_ACQUIRER,DECLINED_BY_ACQUIRER,AUTHORIZATION,PAYMENT_GATEWAY,Your bank has declined this payment. Please contact your bank for more details.
+TXN_NOT_ALLOWED,TXN_NOT_ALLOWED,UNKNOWN,UNKNOWN,Payment not allowed.
+TXN_DATA_TAMPERED,TXN_DATA_TAMPERED,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+DUPLICATE_TXN_REQUEST,DUPLICATE_TXN_REQUEST,UNKNOWN,ISSUING_BANK,A transaction with the same details has already been processed.
+TXN_ALREADY_PROCESSED,TXN_ALREADY_PROCESSED,AUTHORIZATION,ISSUING_BANK,A transaction with the same details has already been processed.
+INVALID_ACCOUNT_NUMBER,INVALID_ACCOUNT_NUMBER,AUTHENTICATION,BUSINESS,You have passed an invalid account number. Please check and try again.
+UNSUPPORTED_BY_MERCHANT,UNSUPPORTED_BY_MERCHANT,UNKNOWN,BUSINESS,Payment failed as you do not support this payment type.
+TXN_NOT_FOUND,TXN_NOT_FOUND,AUTHORIZATION,BUSINESS,Payment not found.
+SUCCESS,SUCCESS,UNKNOWN,UNKNOWN,This payment is successful.
+TXN_STATUS_AWAITED,TXN_STATUS_AWAITED,UNKNOWN,UNKNOWN,Payment is being processed. Please check after 15 minutes.
+WITHDRAWAL_LIMIT_EXCEEDED,WITHDRAWAL_LIMIT_EXCEEDED,AUTHORIZATION,Customer,Customer's bank declined the payment as they exceeded the withdrawal limit.
+CARD_VALIDATION_FAILURE,CARD_VALIDATION_FAILURE,UNKNOWN,UNKNOWN,Payment failed due to temporary technical issue.
+UNSUPPORTED_TXN_TYPE,UNSUPPORTED_TXN_TYPE,UNKNOWN,ISSUING_BANK,Customer's bank does not support this payment.
+ACQUIRER_UNAVAILABLE,ACQUIRER_UNAVAILABLE,UNKNOWN,PAYMENT_GATEWAY,Payment failed due to temporary technical issue.
+MERCHANT_RESTRICTION,MERCHANT_RESTRICTION,AUTHORIZATION,ISSUING_BANK,Customer cannot make this payment using this card.
+CARD_NOT_EXIST,CARD_NOT_EXIST,AUTHORIZATION,ISSUING_BANK,The customer's bank declined the payment as the card number is invalid.
+CARD_NOT_ACTIVE,CARD_NOT_ACTIVE,AUTHORIZATION,ISSUING_BANK,Customer's card is inactive.
+ACCOUNT_NO_LONGER_ACTIVE,ACCOUNT_NO_LONGER_ACTIVE,AUTHENTICATION,Customer,Customer's bank account is inactive.
+NETWORK_ERROR,NETWORK_ERROR,AUTHENTICATION,NETWORK,Payment failed due to temporary technical issue.
+MERCHANT_CANCELLED,MERCHANT_CANCELLED,CAPTURE,BUSINESS,Payment failed due to temporary technical issue.
+PG_TECHNICAL_FAILURE,PG_TECHNICAL_FAILURE,AUTHENTICATION,PAYMENT_GATEWAY,Payment failed due to temporary technical issue.
+TECHNICAL_ISSUE_NETWORK,TECHNICAL_ISSUE_NETWORK,UNKNOWN,NETWORK,Payment failed due to temporary technical issue.
+OTP_EXPIRED,OTP_EXPIRED,AUTHENTICATION,Customer,Customer entered an expired OTP.
+AUTH_PROCESS_FAILED,AUTH_PROCESS_FAILED,AUTHENTICATION,Customer,Customer didn't complete or failed the card authentication process.
+SERVER_UNAVAILABLE,SERVER_UNAVAILABLE,AUTHENTICATION,ISSUING_BANK,Technical issue at the customer's bank.
+WRONG_MCC,WRONG_MCC,AUTHORIZATION,PAYMENT_GATEWAY,Customer cannot make this payment using a card.
+CUSTOMER_CARD_BLOCKED,CUSTOMER_CARD_BLOCKED,AUTHORIZATION,ISSUING_BANK,Customer's bank has blocked this card.
+PREVIOUS_ORDER_IN_PROGRESS,PREVIOUS_ORDER_IN_PROGRESS,PRE_AUTHENTICATION,PAYMENT_GATEWAY,A payment with the same order ID is already in progress.
+DUPLICATE_TRANSACTIONS,DUPLICATE_TRANSACTIONS,AUTHORIZATION,ISSUING_BANK,The customer's bank declined the payment as a duplicate request was received within 15 seconds.
+NETWORK_TRACE_FAILURE,NETWORK_TRACE_FAILURE,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+UNSUPPORTED_TRANSACTION,UNSUPPORTED_TRANSACTION,AUTHORIZATION,ISSUING_BANK,Customer's bank does not support this payment.
+RESTRICTED_USAGE,RESTRICTED_USAGE,AUTHORIZATION,ISSUING_BANK,Customer cannot make this payment using a card.
+DATA_ERROR,DATA_ERROR,AUTHORIZATION,PAYMENT_GATEWAY,"Payment failed due to incorrect network name, CVV, or cryptogram. Please check and try again."
+AMOUNT_READ_FAILURE,AMOUNT_READ_FAILURE,AUTHORIZATION,ISSUING_BANK,Customer's bank couldn't read the transaction amount.
+PAN_MAPPING_FAILURE,PAN_MAPPING_FAILURE,AUTHORIZATION,NETWORK,Technical issue at the customer's bank.
+CARD_DEACTIVATED,CARD_DEACTIVATED,AUTHORIZATION,Customer,Customer's card is deactivated.
+OTP_VALIDATION_FAILURE,OTP_VALIDATION_FAILURE,AUTHENTICATION,PAYMENT_GATEWAY,Technical issue at the customer's bank.
+TXN_AUTO_FAILED,TIMED_OUT,PRE_AUTHENTICATION,CUSTOMER,Payment couldn't be completed due to issues related to customer or their bank.
+TXN_BLOCKED,U16_NPCI_TXNRISK_01069,AUTHENTICATION,NPCI,Customer's payment blocked due to security reasons.
+TXN_BLOCKED,BL_086,PRE_AUTHENTICATION,PAYMENT_GATEWAY,Payment blocked due to security reasons.
+VALIDATION_ERROR,ZD,AUTHORIZATION,BUSINESS,Technical issue at the customer's bank.
+TXN_BLOCKED,BL_088,PRE_AUTHENTICATION,PAYMENT_GATEWAY,Payment blocked due to security reasons.
+SERVER_ERROR,NPCI_SERVER_ERROR,OTHERS,NPCI,Payment failed due to technical issue
+INSUFFICIENT_BALANCE,INSUFFICIENT_FUNDS,AUTHORIZATION,CUSTOMER,Payment failed due to insufficient balance in customer's account.
+OTHERS,PG_ERROR,OTHERS,OTHERS,Transaction could not be processed
+TXN_BLOCKED,DECLINED_BY_ISSUER,AUTHORIZATION,ISSUING_BANK,Technical issue at the customer's bank.
+TXN_BLOCKED,BF_108,PRE_AUTHENTICATION,PAYMENT_GATEWAY,Transaction has been blocked due to security reasons
+TXN_BLOCKED,CR_016,PRE_AUTHENTICATION,PAYMENT_GATEWAY,Transaction has been blocked due to security reasons
