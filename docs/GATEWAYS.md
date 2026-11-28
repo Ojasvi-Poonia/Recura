@@ -21,7 +21,7 @@ taxonomy maps, and a test enforces it.
 | Razorpay | `/webhooks/razorpay` | all 115 published reasons (the pivot itself) | razorpay.com/docs, 2026-08-26 | |
 | Stripe | `/webhooks/stripe` | 50 card decline codes + 4 Radar outcomes | docs.stripe.com, 2026-11-16 and 2026-11-26 | local-payment-method decline codes |
 | Cashfree | via `/webhooks/recura` | 152 UPI codes | cashfree.com/docs upi-error-codes, 2026-11-26 | no card or netbanking table could be read |
-| PhonePe | via `/webhooks/recura` | 61 error codes (96 rows) | developer.phonepe.com common-errors, 2026-11-26 | about the last third of the table was readable only as a summary and is not transcribed |
+| PhonePe | via `/webhooks/recura` | 127 error codes (172 rows) | developer.phonepe.com common-errors, 2026-11-26 and 2026-11-28 | refund-stage rows (not customer failures) |
 | Juspay | via `/webhooks/recura` | 3 failure statuses | juspay.io transaction-status, 2026-11-26 | Juspay publishes no table of the bank codes it passes through; those are kept, not translated |
 | Adyen | via `/webhooks/recura` | 41 refusal reasons | docs.adyen.com refusal-reasons, 2026-11-26 | raw acquirer responses |
 | Braintree | via `/webhooks/recura` | 110 decline codes + the 2109–2999 range | developer.paypal.com/braintree declines, 2026-11-26 | settlement declines (not customer failures); export field names unchecked |

@@ -4,7 +4,7 @@
 #
 #   make audit FILE=phonepe_orders.json PSP=phonepe
 #
-# SOURCES, read 2026-11-26:
+# SOURCES, read 2026-11-26 (rows up to TXN_FAILED) and 2026-11-28 (the rest):
 #   https://developer.phonepe.com/payment-gateway/error-codes/common-errors
 #       the error table, transcribed into data/psp_codes/phonepe.csv
 #   https://developer.phonepe.com/payment-gateway/website-integration/standard-checkout/api-integration/api-reference/order-status
@@ -16,9 +16,17 @@
 # defines for every row; the detailed codes are kept in the CSV for reference.
 #
 # LIMITS, stated rather than discovered:
-#   - About the last third of PhonePe's table (from MERCHANT_CONFIG_NOT_FOUND onwards)
-#     could only be read as a summary, not verbatim, so it is NOT transcribed. Those
-#     codes pass through as unrecognised and are handled as UNKNOWN.
+#   - The seven rows at PhonePe's REFUND stage are not transcribed: a failed refund is
+#     not a failed attempt to take the customer's money (as for Checkout.com's 50xxx).
+#   - The page prints the detailed code first in its last rows (TIMED_OUT before
+#     TXN_AUTO_FAILED, ZD before VALIDATION_ERROR). The CSV keeps the normalised code
+#     first throughout, which is how those rows read against the rest of the table.
+#   - Many UNKNOWN-stage rows (checksum, encryption, key and merchant-code errors) say
+#     "temporary technical issue". They are read by their names, as the merchant's own
+#     request failing, so the customer is never contacted for them.
+#   - SUCCESS, PENDING and "already processed" rows are translated to paid and pending,
+#     so an export that includes them never opens an episode on a payment that went
+#     through.
 #   - TXN_BLOCKED covers both NPCI risk declines and merchant onboarding blocks
 #     (URL, IP, KYC). It is read as a risk decline: never retried, which is the safe
 #     side for both. TXN_NOT_ALLOWED is similarly broad.
@@ -48,28 +56,31 @@ translate:
   incorrect_otp: [WRONG_PIN]            # PhonePe: "didn't enter the OTP or entered an incorrect one"
   pin_attempts_exceeded: [MPIN_LIMIT_BREACHED, MAX_AUTH_EXCEEDED]
   pin_not_set: [MPIN_NOT_SET]
-  authentication_failed: [AUTHENTICATION_FAILED]
+  authentication_failed: [AUTHENTICATION_FAILED, AUTH_PROCESS_FAILED]
   payment_cancelled: [TXN_CANCELLED]
-  payment_session_expired: [TXN_NOT_COMPLETED]
+  payment_session_expired: [TXN_NOT_COMPLETED, TXN_AUTO_FAILED]
   payment_timed_out: [CANCELLED_BY_USER, AUTH_TIMEOUT]
   invalid_vpa: [INVALID_VPA]
-  card_number_invalid: [INVALID_CARD_NUMBER, INVALID_CARD]
+  card_number_invalid: [INVALID_CARD_NUMBER, INVALID_CARD, CARD_NOT_EXIST]
   incorrect_cvv: [INVALID_CVV_EXPIRY]
-  incorrect_card_details: [INVALID_DETAILS, ADDRESS_MISMATCH, INVALID_FIELDS]
+  incorrect_card_details: [INVALID_DETAILS, ADDRESS_MISMATCH, INVALID_FIELDS,
+                           INVALID_CARD_DETAILS, INCORRECT_DETAILS, DATA_ERROR]
   incorrect_cardholder_name: [INVALID_CARD_NAME]
 
   card_expired: [CARD_EXPIRED]
-  card_declined: [BUSINESS_RISK_RULES]
+  card_declined: [BUSINESS_RISK_RULES, CARD_NOT_ALLOWED, MERCHANT_RESTRICTION,
+                  RESTRICTED_USAGE, WRONG_MCC]
   card_type_invalid: [INVALID_CARD_TYPE, CARD_BIN_NOT_SUPPORTED]
   card_not_enrolled: [ONLINE_TRANSACTIONS_DISABLED]
   international_transaction_not_allowed: [INTERNATIONAL_TXN_NOT_ALLOWED]
-  debit_instrument_blocked: [ACCOUNT_BLOCKED, CARD_BLOCKED]
-  debit_instrument_inactive: [ACCOUNT_INACTIVE]
+  debit_instrument_blocked: [ACCOUNT_BLOCKED, CARD_BLOCKED, CUSTOMER_CARD_BLOCKED]
+  debit_instrument_inactive: [ACCOUNT_INACTIVE, CARD_NOT_ACTIVE, CARD_DEACTIVATED,
+                              ACCOUNT_NO_LONGER_ACTIVE]
   bank_account_invalid: [ACCOUNT_DOES_NOT_EXIST]
   transaction_on_vpa_restricted: [ACCOUNT_NOT_ELIGIBLE, TXN_NOT_ALLOWED]
   invalid_device: [DEVICE_FINGERPRINT_MISMATCH]
-  debit_declined: [UNSUPPORTED_PAYMENT_MODE]
-  payment_declined: [TRANSACTION_DECLINED]
+  debit_declined: [UNSUPPORTED_PAYMENT_MODE, UNSUPPORTED_TXN_TYPE, UNSUPPORTED_TRANSACTION]
+  payment_declined: [TRANSACTION_DECLINED, DECLINED_BY_ACQUIRER]
 
   payment_risk_check_failed: [TXN_BLOCKED]
 
@@ -77,14 +88,39 @@ translate:
                          BANK_ERROR, TECHNICAL_ISSUE_BANK, HASH_MISMATCH,
                          AUTHORIZATION_FAILED]
   request_timed_out: [CONNECTION_TIMEOUT, TRANSACTION_TIME_OUT]
-  duplicate_request: [DUPLICATE_TRANSACTION]
+  duplicate_request: [DUPLICATE_TRANSACTION, DUPLICATE_TRANSACTIONS]
   gateway_technical_error: [TXN_NOT_FOUND, TRANSACTION_DECLINED_PG, PROCESSOR_ERROR,
-                            INVALID_TXN_ID, TXN_FAILED, BANK_MERCHANT_CONFIG]
+                            INVALID_TXN_ID, TXN_FAILED, BANK_MERCHANT_CONFIG,
+                            GENERIC_NPCI_ERROR, CARD_VALIDATION_FAILURE, ACQUIRER_UNAVAILABLE,
+                            PG_TECHNICAL_FAILURE, NETWORK_ERROR, TECHNICAL_ISSUE_NETWORK]
 
   # -- the merchant's request or account ----------------------------------------------
   record_not_found: [REQUEST_NOT_FOUND]
-  invalid_request: [INVALID_REQUEST, MERCHANT_ERROR]
-  invalid_user_details: [INVALID_DETAILS_MERCHANT]
+  invalid_request: [INVALID_REQUEST, MERCHANT_ERROR, MERCHANT_CONFIG_NOT_FOUND,
+                    MERCHANT_CONFIG_ERROR, INVALID_TXN, INVALID_DATE, INVALID_BANK_CODE,
+                    INVALID_MERCHANT_CODE, INVALID_KEY, MESSAGE_FORMAT_ERROR,
+                    ENCRYPTION_ERROR, DECRYPTION_ERROR, CHECKSUM_MISMATCH,
+                    CHECKSUM_GENERATION_FAILED, INVALID_CHECKSUM_PARAMETERS,
+                    INVALID_CHECKSUM_KEY, MISSING_CHECKSUM_VALUE]
+  invalid_user_details: [INVALID_DETAILS_MERCHANT, INVALID_CUSTOMER_ID,
+                         INVALID_CUSTOMER_RELATED_FIELDS, INVALID_ACCOUNT_NUMBER]
   order_amount_mismatch: [TXN_AMOUNT_MISMATCH]
   invalid_amount: [INVALID_AMOUNT]
   refund_limit_crossed: [REFUND_BREACHED]
+
+  # -- from the rest of the table, read 2026-11-28 ------------------------------------
+  issuer_technical_error: [SERVER_UNAVAILABLE, NETWORK_TRACE_FAILURE, PAN_MAPPING_FAILURE,
+                           AMOUNT_READ_FAILURE, OTP_VALIDATION_FAILURE]
+  server_error: [SERVER_ERROR]
+  otp_expired: [OTP_EXPIRED]
+  transaction_daily_limit_exceeded: [WITHDRAWAL_LIMIT_EXCEEDED]
+  payment_amount_tampered: [TXN_DATA_TAMPERED]   # "temporary technical issue", but tampering is never retried
+  payment_failed: [GENERIC_ERROR, OTHERS]
+  input_validation_failed: [INVALID_PARAMETERS, MISSING_FIELDS, VALIDATION_ERROR]
+  invalid_currency: [INVALID_CURRENCY]
+  payment_method_not_enabled: [UNSUPPORTED_BY_MERCHANT]
+  capture_failed: [CAPTURE_ERROR, MERCHANT_CANCELLED]
+
+  # -- not failures: never open an episode on these -----------------------------------
+  payment_pending: [PENDING, TXN_STATUS_AWAITED, PREVIOUS_ORDER_IN_PROGRESS]
+  order_already_paid: [SUCCESS, TXN_ALREADY_PROCESSED, DUPLICATE_TXN_REQUEST]
