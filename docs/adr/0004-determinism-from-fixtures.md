@@ -35,7 +35,7 @@ sees exact paise, because the money does.
 
 ## Consequences
 
-**`make eval` needs no API key at all.** This is the important one. A reviewer with no
+**`make eval` needs no API key at all.** This is the important one. Anyone with no
 Anthropic or Google account reproduces the headline number offline. Without it, the
 ten-minute benchmark is unachievable for most readers.
 

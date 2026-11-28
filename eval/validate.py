@@ -1,7 +1,7 @@
 """Benchmark validity suite — negative controls and randomisation checks.
 
 Every number this project reports comes from comparing two arms of a synthetic cohort.
-A judge's first question should be: *is that comparison sound, or does the harness
+The first question to ask should be: *is that comparison sound, or does the harness
 manufacture lift?* Asserting "it's fine" is not an answer. These are the checks that
 would FAIL if it were not fine.
 

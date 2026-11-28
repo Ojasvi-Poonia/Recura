@@ -169,7 +169,7 @@ Each of these has a full [ADR](docs/adr/) with the alternatives we rejected.
 ### No agent framework
 
 Hand-rolled loop. We need three things a framework makes harder: deterministic replay,
-a policy gate outside the model's reach, and a control flow an interviewer can walk line
+a policy gate outside the model's reach, and a control flow a reader can walk line
 by line. The loop is ~307 lines of actual control flow; the rest is the five steps and
 their logging.
 
@@ -245,7 +245,7 @@ schema ports.
 never a real guarantee anyway — server-side batching makes identical requests diverge.
 Instead every model response is content-addressed by SHA-256 of (model, prompt, payload)
 and committed to `fixtures/`. That makes `make eval` byte-identical **and removes the API
-key requirement entirely**, which is what makes clone-and-reproduce achievable.
+key requirement entirely**, which is what lets anyone clone the repo and reproduce the numbers.
 
 The provider is an adapter boundary (Anthropic, Gemini, or none) for the same reason the
 payment provider is: the decision core should not know or care which model produced a

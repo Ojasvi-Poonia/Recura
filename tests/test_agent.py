@@ -356,7 +356,7 @@ def test_blocked_steps_still_give_the_customer_a_chance():
 
 
 def test_checkout_abandonment_routes_to_re_engagement():
-    """Track 03 names checkout drop-off explicitly."""
+    """Checkout drop-off is a recovery surface of its own."""
     event = mk_event().model_copy(update={"source_type": "checkout",
                                           "razorpay_error": None})
     agent = mk_agent()

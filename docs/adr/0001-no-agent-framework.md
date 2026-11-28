@@ -16,13 +16,13 @@ Recura has three requirements that pull against them:
 2. **A control plane the model cannot reach.** The policy engine must be provably outside
    the model's context. A framework that manages the loop also manages what the model
    sees, and "provably" becomes hard to assert.
-3. **A loop someone can read in an interview.** The decision procedure *is* the
-   submission. If a reviewer cannot follow it top to bottom, the argument does not land.
+3. **A loop someone can read in one sitting.** The decision procedure *is* the
+   product. If a reader cannot follow it top to bottom, they cannot trust what it does.
 
 ## Decision
 
 Hand-roll the loop. `src/agent.py` is about 860 lines, roughly 525 of them code, with `run_episode`
-being 307 lines of explicit control flow — every branch walkable in an interview.
+being 307 lines of explicit control flow — every branch walkable in a single read.
 
 An AST-parsing test fails the build if `langchain`, `langgraph`, `crewai`, `autogen` or
 `llama_index` is imported anywhere under `src/` or `eval/`.

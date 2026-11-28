@@ -2,7 +2,7 @@
 
 Hand-rolled on purpose. No LangChain, no CrewAI, no LangGraph - because we need
 deterministic replay and a policy gate the model cannot reach. This file is meant to be
-read top to bottom in an interview.
+read top to bottom in one sitting.
 
 Five steps per decision, exactly as section 1 describes:
 
@@ -190,14 +190,14 @@ class Agent:
     _customer_contacts: dict = field(default_factory=dict)
     # How often each policy.yaml rule actually blocked something. A rule that never
     # fires across 10,000 events is either dead code or an untested clause, and both
-    # are worth knowing before a panel finds out for us.
+    # are worth knowing before a merchant relies on it.
     rule_blocks: dict = field(default_factory=dict)
 
     # Promise-to-pay window, in hours, opened when a nudge lands without immediate
     # payment. The customer has effectively said "I will pay" by engaging; if the
     # window closes unpaid that is a BROKEN promise, which policy.yaml treats as
-    # grounds for escalation. This is a named Track 03 direction and the policy rule
-    # for it existed from day one with nothing to trigger it.
+    # grounds for escalation. Promise-to-pay tracking is a recovery surface, and the
+    # policy rule for it existed from day one with nothing to trigger it.
     promise_window_hours: float = 48.0
 
     @classmethod
@@ -307,7 +307,7 @@ class Agent:
         # nothing. RETRY_SCHEDULED and NUDGE each produce several candidates that differ
         # only in timing or channel, so a plain second-best was the same action type 22%
         # of the time and read "EV 27 paise beats RETRY_SCHEDULED at 27". The ledger is
-        # the audit trail this project is judged on; a fifth of it was tautology.
+        # the audit trail everything else rests on; a fifth of it was tautology.
         runner_up = max((c for c in considered if c.action is not best.action),
                         key=lambda c: c.expected_value_paise, default=None)
         if runner_up is None:  # only one action type was available at all
@@ -466,8 +466,8 @@ class Agent:
         # Terminal facts the CONTRACT closes the episode on. The loop used to break on
         # these itself, which meant episode.stop_on_payment / stop_on_opt_out /
         # stop_on_late_authorisation / max_days were declared in policy.yaml and could
-        # never fire - the agent had always already stopped. The judging bar asks for
-        # stopping rules; a rule the agent pre-empts is not one.
+        # never fire - the agent had always already stopped. A stopping rule the agent
+        # pre-empts is not a stopping rule.
         paid = late_authorised = False
         # Did the money arrive WITHOUT us acting? The contract closes both cases with
         # the same rule (episode.stop_on_payment) - which is correct, the rule is about

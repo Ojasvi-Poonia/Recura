@@ -97,7 +97,7 @@ sending any messages.
 
 ## 3. Stopping rules, as measured
 
-The judging bar asks for stopping rules. A rule that never fires is not a rule, so every
+Stopping rules are only real if they fire. A rule that never fires is not a rule, so every
 treated episode records exactly one terminating reason and `make eval` prints the census:
 
 | Why the episode ended | Episodes | Share |
@@ -479,7 +479,7 @@ the model changing at all. Every move came from fixing a defect somewhere else.
 
 We keep the component because the architecture around it is the defensible part — the model
 is isolated behind a learned trust weight, so a better-calibrated model earns more influence
-with no code change. But on today's evidence it does not earn its place, and a submission
+with no code change. But on today's evidence it does not earn its place, and a project
 that implied otherwise would be claiming something its own ablation refutes.
 
 ### 5. Per-merchant margin is implemented but untested

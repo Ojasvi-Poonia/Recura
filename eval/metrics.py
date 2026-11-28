@@ -44,8 +44,8 @@ class ArmMetrics:
     # identical to a healthy one in every other number here - see BUILD_NOTES section R.
     messages_sent: int = 0
     template_failures: int = 0
-    # Promise-to-pay is a named Track 03 direction. Reported because the counter read 0
-    # across the whole cohort while the escalation rule for it was firing - the two used
+    # Promise-to-pay tracking is a recovery surface of its own. Reported because the
+    # counter read 0 across the whole cohort while the escalation rule for it was firing - the two used
     # different definitions of "broken".
     broken_promises: int = 0
 
@@ -173,7 +173,7 @@ def compare_segments(treatment: list, holdout: list, segment_of) -> dict:
 def stop_reasons(results: list) -> dict:
     """Why every episode ended.
 
-    The judging bar asks for "stopping rules". This is the evidence that they exist, fire,
+    Stopping rules only count if they fire. This is the evidence that they exist, fire,
     and which ones actually bind - an agent that only ever stops on `exhausted` has no
     stopping rules worth the name, however many are written in the policy file.
     """

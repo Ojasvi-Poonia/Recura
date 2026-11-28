@@ -50,7 +50,7 @@ def test_the_sweep_varies_the_load_bearing_constant_on_its_own():
     """ESCALATE_EFFICACY carries 60% of net incremental value.
 
     Scaling it only as part of the efficacy group could never answer "how much of this
-    result is that one number?", which is the first thing a reviewer should ask about a
+    result is that one number?", which is the first thing anyone should ask about a
     grade-C constant that large.
     """
     baseline = lat.ESCALATE_EFFICACY

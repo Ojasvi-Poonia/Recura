@@ -6,7 +6,7 @@
 ## How to read this
 
 Every parameter is graded by source quality. This matters more than the numbers:
-a panel should be able to see instantly which figures are load-bearing regulation
+a reader should be able to see instantly which figures are load-bearing regulation
 and which are industry folklore.
 
 | Grade | Meaning |
@@ -101,8 +101,8 @@ well-grounded. **The interior split is swept across ten parameterisations in Tie
 ### Scope of this mix (added 2026-08-26)
 
 NPCI's TD/BD statistics describe **declines** — transactions that reached a gateway and
-were refused. That is not the whole population of revenue-at-risk. Two of Track 03's
-named sources never reach a gateway at all:
+were refused. That is not the whole population of revenue-at-risk. Two of the
+sources of revenue-at-risk never reach a gateway at all:
 
 - a **dropped checkout** is abandoned before any charge is attempted
 - an **overdue invoice** was never charged; it simply passed its terms

@@ -1,6 +1,6 @@
 """Bring-your-own-data importer tests.
 
-The synthetic cohort establishes internal validity. This path exists so a reviewer can
+The synthetic cohort establishes internal validity. This path exists so a merchant can
 point Recura at their OWN export instead of arguing about our data.
 """
 
@@ -189,7 +189,7 @@ def test_money_does_not_pass_through_a_float(tmp_path):
 def test_dotenv_is_actually_loaded_and_never_clobbers_the_shell(tmp_path, monkeypatch):
     """The README says `cp .env.example .env`. Nothing read that file.
 
-    So a reviewer followed the documented setup, got a .env on disk, and `make tier1`
+    So a user followed the documented setup, got a .env on disk, and `make tier1`
     still told them the key was missing. A documented step that silently does nothing is
     worse than no step.
     """
@@ -212,7 +212,7 @@ def test_dotenv_is_actually_loaded_and_never_clobbers_the_shell(tmp_path, monkey
 
 
 def test_a_missing_dotenv_is_not_an_error(tmp_path):
-    """Most reviewers never create one - `make eval` needs no key at all."""
+    """Most users never create one - `make eval` needs no key at all."""
     from src.env import load_env
 
     assert load_env(tmp_path / "nope.env") == 0

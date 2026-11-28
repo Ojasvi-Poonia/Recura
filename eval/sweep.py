@@ -2,7 +2,7 @@
 
 Every grade-C parameter in eval/CALIBRATION.md is an assumption, not a measurement.
 Reporting a headline that rests on a point estimate of an assumption is exactly the kind
-of claim a panel should distrust. So we re-run the whole evaluation across five
+of claim anyone should distrust. So we re-run the whole evaluation across five
 generator parameterisations and report the ENVELOPE.
 
 The frozen generator is not modified. Each parameterisation temporarily overrides the

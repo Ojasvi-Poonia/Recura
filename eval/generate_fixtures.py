@@ -127,7 +127,7 @@ def main() -> None:
         return
 
     # Stamp the set so replay keys against the model that produced it, not against
-    # whatever provider a reviewer happens to have configured (usually none).
+    # whatever provider a user happens to have configured (usually none).
     llm.write_manifest(model_id, fixtures_dir)
 
     todo = pending[: args.limit] if args.limit else pending

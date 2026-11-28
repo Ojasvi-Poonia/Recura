@@ -11,13 +11,13 @@ htmlcov/
 data/cohort.json
 data/latents.json
 
-# Internal spec / strategy doc - not part of the public submission
+# Internal spec / strategy doc - not part of the public repo
 the design spec
 data/results.json
 recura.db
 data/ablations.json
 
-# Private submission notes - not part of the public repo
+# Private notes - not part of the public repo
 BUILD_NOTES.md
 VIDEO.md
 VIDEO_SCRIPT.md

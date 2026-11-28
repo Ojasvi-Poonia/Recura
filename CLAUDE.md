@@ -1,25 +1,26 @@
 # CLAUDE.md — Recura
 
-> Autonomous revenue-recovery agent. Submission for the Razorpay AI Buildathon, Track 03 (AI Revenue Recovery).
+> Autonomous revenue-recovery agent for failed payments, abandoned checkouts, failed mandates and overdue invoices.
 > This file is the single source of truth. Read it fully before writing code. If a decision here conflicts with your instinct, follow this file or raise the conflict explicitly.
 
 ---
 
-## 0. Mission and stakes
+## 0. Mission
 
-This is a **hiring submission**, not a product launch. Razorpay is recruiting AI Builder Interns purely on what candidates build and can defend in front of a panel. Deliverables are a public GitHub repo, a 5-minute video, and an architecture doc. **Deadline: 5 September 2026.**
+Recura is open-source software (Apache-2.0) that merchants and payment teams can run on
+their own failures. The bar it holds itself to:
 
-The judging bar, in Razorpay's own words for this track:
+> Show measured money recovered across a batch, with compliant escalation, stopping rules, and an audit trail.
 
-> "Don't just identify the problem. Show measured money recovered across a batch, with compliant escalation, stopping rules, and an audit trail."
-
-Everything in this repo exists to satisfy that sentence literally. **The differentiator is not the idea — it is the evidence.** Roughly 90% of submissions will be an unmeasured demo. We ship a measured system.
+**The differentiator is not the idea — it is the evidence.** Most recovery tools report
+what they touched. Recura reports what it recovered against a randomised control group,
+and says where it breaks.
 
 ### The one benchmark that matters
 
-> A Razorpay engineer clones this repo and reproduces the headline number in under 10 minutes.
+> Anyone clones this repo and reproduces the headline number in under 10 minutes, with no API key.
 
-If a change does not serve that, deprioritise it.
+If a change does not serve that, or the merchant pilot in `docs/ROADMAP.md`, deprioritise it.
 
 ---
 
@@ -179,7 +180,7 @@ merchant sent a malformed request would be indefensible, so triage (§1 step 1) 
 separately from diagnosis. `order_already_paid` is the sole `TERMINAL` reason — it is how late
 authorisation surfaces on a retry.
 
-`considered` is not optional. Logging the runner-up EVs is how a panel verifies the decision was reasoned rather than hardcoded.
+`considered` is not optional. Logging the runner-up EVs is how anyone can verify the decision was reasoned rather than hardcoded.
 
 ---
 
@@ -202,7 +203,7 @@ if max(EV) < 0 → NO_ACTION
 
 `p_recover` comes from a Beta posterior per `(failure_class × action_type)` cell, updated from observed outcomes, sampled via **Thompson sampling** to balance exploration and exploitation. Context adjusts the sampled value through a small set of documented multipliers (attempt number, hour-of-day match to customer's historical success window, active downtime signal, recent contact fatigue).
 
-Keep the multipliers in one file with a comment justifying each. A panel will ask.
+Keep the multipliers in one file with a comment justifying each. Every one of them will be questioned.
 
 ### Action space is `(type, time, channel)`
 
@@ -355,17 +356,17 @@ Deliberately cripple the agent and show metrics degrade. Run all four:
 3. No policy gate → more actions, worse cost-per-recovery
 4. **LLM removed, rules only** → shows what the LLM actually contributes
 
-**Publish result 4 honestly even if unflattering.** If the LLM only adds 12% over rules, say 12%. Everyone else will imply the LLM does all the work. Being the one person who measured it and reported an uncomfortable number is what makes the *other* numbers believable.
+**Publish result 4 honestly even if unflattering.** If the LLM only adds 12% over rules, say 12%. Most AI tools imply the LLM does all the work. Measuring it and reporting an uncomfortable number is what makes the *other* numbers believable.
 
 ### Determinism requirement
 
-`make eval` run twice must produce byte-identical metrics. Seeded generator, pinned model, and **every LLM response cached to `fixtures/`** under a content-addressed key. Temperature 0 is not available (and was never a real guarantee — server-side batching makes identical requests diverge). The committed fixture set is the guarantee, and it also means `make eval` needs **no API key at all**, which is what makes the 10-minute clone-and-reproduce benchmark achievable. This alone puts the repo in the top ~2% of submissions.
+`make eval` run twice must produce byte-identical metrics. Seeded generator, pinned model, and **every LLM response cached to `fixtures/`** under a content-addressed key. Temperature 0 is not available (and was never a real guarantee — server-side batching makes identical requests diverge). The committed fixture set is the guarantee, and it also means `make eval` needs **no API key at all**, which is what makes the 10-minute clone-and-reproduce benchmark achievable.
 
 ---
 
 ## 9. Credibility invariants — never violate
 
-The single biggest risk to this project is **fooling ourselves with our own synthetic data.** A panel will spot circularity in thirty seconds. These rules are non-negotiable:
+The single biggest risk to this project is **fooling ourselves with our own synthetic data.** Anyone evaluating the numbers will look for circularity first. These rules are non-negotiable:
 
 1. **Hidden latents.** Each synthetic event carries a latent recovery propensity. The agent sees only observables: error object, amount, customer's *past outcome history*, hour, bank, method. It must never read a latent field.
 2. **Non-zero baseline.** Some customers recover with no intervention. Without this the holdout is 0% and the comparison is meaningless.
@@ -417,22 +418,13 @@ Storage: SQLAlchemy over SQLite locally. **No Postgres-specific SQL** — Razorp
 
 ---
 
-## 11. Build order
+## 11. How work proceeds
 
-Ship in tiers. Every tier is a complete, defensible submission on its own.
-
-| Days | Tier | Deliverable |
-|---|---|---|
-| 1–2 | Foundation | Cohort generator + calibration + taxonomy mapping. **Freeze generator day 2.** |
-| 3–4 | Plumbing | Test-mode wiring, webhook receipt + signature verification, provider adapters |
-| 5–6 | Governance | Policy engine + append-only ledger |
-| 7–8 | **Core** | Decide layer: LLM root cause, EV computation, deterministic fallback. Holdout eval running end-to-end. |
-| 9–11 | Advanced | Thompson sampling, downtime-aware timing, virtual clock, replay/policy-diff |
-| 12–13 | Stretch | Ablation study, sensitivity sweep, Hinglish message generation |
-| 13 | Console | One day. Ledger + metrics. Resist. |
-| 14 | Ship | Docs, ADRs, video, submit. **Do not submit on the 5th.** |
-
-If behind on day 11, cut stretch and ship. **One exception: if only one stretch item fits, make it the ablation study.**
+The plan lives in `docs/ROADMAP.md`, in order: make shadow mode a pilot, more gateways,
+harden the contract check, real execution last, then learn from real outcomes. Each step
+ships as its own branch and PR, with tests, and leaves `make eval` byte-identical. A
+change that would move a benchmark number is a separate, stated decision, never a side
+effect.
 
 ---
 
@@ -440,14 +432,14 @@ If behind on day 11, cut stretch and ship. **One exception: if only one stretch 
 
 Things that feel like progress and are not:
 
-- ❌ **Any agent framework** (LangChain, CrewAI, LangGraph). We need deterministic replay and a policy gate the model cannot reach. Hand-rolled loop, ~200 lines, walkable line by line in an interview.
-- ❌ **A beautiful dashboard.** The classic product-person failure mode: a polished UI on an unmeasured system is exactly what this buildathon filters out. Ugly and instrumented beats polished and unproven.
-- ❌ **Breadth over depth.** One failure class done rigorously beats seven done shallowly. Do not attempt all seven of Razorpay's example directions.
+- ❌ **Any agent framework** (LangChain, CrewAI, LangGraph). We need deterministic replay and a policy gate the model cannot reach. Hand-rolled loop, ~200 lines, walkable line by line.
+- ❌ **A beautiful dashboard.** A polished UI on an unmeasured system is the failure mode this project exists to avoid. Ugly and instrumented beats polished and unproven.
+- ❌ **Breadth over depth.** One failure class done rigorously beats seven done shallowly. Do not add a use case without a measured number for it.
 - ❌ **A retry bot.** Razorpay already ships smart retries and dunning. We are the decision layer *above* them, not a reimplementation.
 - ❌ **`datetime.now()`** anywhere outside `clock.py`.
 - ❌ **Floats for money.** Integer paise only.
 - ❌ **Sending anything real.** All customer contact is simulated and logged.
-- ❌ **One giant commit.** Commit history should show two weeks of work.
+- ❌ **One giant commit.** One reviewable change per commit.
 
 ---
 
@@ -466,31 +458,19 @@ Project done when: `git clone && make eval` reproduces the README headline numbe
 
 ---
 
-## 14. The pitch
-
-Memorise this. It is the video's opening and the interview's first answer:
+## 14. Recura in one paragraph
 
 > *"Recura is an agent that treats revenue recovery as a decision problem, not a workflow. It computes the expected value of every possible intervention, refuses to act when the math says don't, executes only within a policy contract it can't modify, and reports what it recovered against a randomised control group."*
 
-Every clause is pointable-to in the repo. That is the whole trick.
-
-### Video structure (5 min, hard)
-
-| Time | Content |
-|---|---|
-| 0:00–1:00 | Problem, with a real number |
-| 1:00–2:30 | Live batch run — 2,000 events, ledger filling |
-| 2:30–4:00 | Metrics table **and failure cases** |
-| 4:00–5:00 | Architecture: policy gate, why no framework |
-
-Nobody else will spend 90 seconds admitting what didn't work. That is the moment they decide to call you in.
+Every clause is pointable-to in the repo. Keep it that way: a claim the code cannot show
+does not go in the README.
 
 ---
 
-## 15. After the submission (added 2026-11-16)
+## 15. Beyond the benchmark (added 2026-11-16)
 
-The buildathon deadline has passed. The repo is now also the base for taking Recura to
-real merchants, and three things were added for that. None of them may change a
+The repo is the base for taking Recura to real merchants, and these were added for
+that. None of them may change a
 benchmark number: `make eval` output must stay byte-identical.
 
 - **`Agent.preview()`** — the first decision for an event plus the contract's verdict,

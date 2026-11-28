@@ -31,7 +31,7 @@ get a writable ledger. Both are asserted by tests, including one that reopens th
 
 **Every decision is traceable to its reasoning.** Each entry carries the full `Decision`
 — including `considered`, the expected value of *every* candidate the agent weighed and
-rejected. That is how a reviewer verifies the decision was reasoned rather than hardcoded.
+rejected. That is how an auditor verifies the decision was reasoned rather than hardcoded.
 
 **A blocked action is evidence, not an error.** Blocks are recorded with rule id and
 human-readable reason. 6,256 in the reported run.
@@ -55,4 +55,4 @@ contributor and every migration being careful.
 than a hackathon needs, and the immutability guarantee would still need enforcing.
 
 **Hash-chained entries.** Detects tampering rather than preventing it, and adds
-verification the reviewer would have to run. Triggers refuse the write outright.
+verification an auditor would have to run. Triggers refuse the write outright.

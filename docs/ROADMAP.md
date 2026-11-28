@@ -55,7 +55,8 @@ What is left:
 - **PayU** and **NPCI's own UPI list**: neither could be read from an official source.
 - **Dedicated webhook adapters** for gateways whose signing differs from the neutral
   format (Cashfree, PhonePe, Adyen's HMAC over named fields), so they can post directly.
-- **Card and netbanking codes** for Cashfree.
+- **Card and netbanking codes** for Cashfree, if it publishes them: as of 2026-11-28 its
+  docs carry only the UPI table.
 - **Markets beyond India**, without which global gateways only decide on INR payments.
 
 ### 3. Harden the contract check for more than one sender

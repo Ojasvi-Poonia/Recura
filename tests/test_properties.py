@@ -158,7 +158,7 @@ def test_an_unconsented_channel_is_never_used(event):
 @given(event=risk_events())
 @SLOW
 def test_the_chosen_action_was_always_priced_and_logged(event):
-    """section 4: `considered` is not optional - it is how a panel checks the reasoning."""
+    """section 4: `considered` is not optional - it is how anyone checks the reasoning."""
     agent = Agent(model=PropensityModel(), rng=np.random.default_rng(0),
                   llm_provider=NullProvider(), executor=SimulatedProvider(),
                   allow_network=False)

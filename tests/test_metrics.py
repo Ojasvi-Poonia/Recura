@@ -115,7 +115,7 @@ def test_live_stream_observer_never_raises_into_the_run():
 
 # --------------------------------------------------------------------------------------
 # Per-surface segmentation and stopping rules. The problem statement names three surfaces
-# and asks for stopping rules, so both are load-bearing for the submission.
+# and stopping rules must be shown to fire, so both are load-bearing for the results.
 # --------------------------------------------------------------------------------------
 
 
@@ -179,7 +179,7 @@ def test_a_validity_check_result_is_json_serializable():
 
     numpy comparisons return np.bool_, which json.dumps refuses. That crashed the
     command AFTER it had printed ALL CHECKS PASSED - so it exited 1 while claiming
-    success, and the committed validity.json silently stopped being updated. A reviewer
+    success, and the committed validity.json silently stopped being updated. A user
     following the quickstart saw "Error 1" on the third command.
     """
     import json

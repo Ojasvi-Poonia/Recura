@@ -341,7 +341,7 @@ def main() -> None:
         blocked_count = 0
         for event in events[: args.limit]:
             # What it would do is whatever survives the POLICY GATE. Printing the raw
-            # decision advertised actions the contract would refuse, on the judge's own
+            # decision advertised actions the contract would refuse, on the merchant's own
             # data, under a heading that says what the agent WOULD do.
             decision, verdict = agent.preview(event, event.observed_at)
 

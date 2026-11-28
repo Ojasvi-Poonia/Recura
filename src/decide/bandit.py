@@ -4,7 +4,7 @@ One posterior per (failure_class x action_type) cell. Thompson sampling balances
 exploration against exploitation: early on the posteriors are wide, so the agent tries
 things; as evidence accumulates they narrow and it exploits.
 
-TWO DESIGN DECISIONS A PANEL WILL PROBE:
+TWO DESIGN DECISIONS WORTH QUESTIONING:
 
 1. **Uninformative priors, deliberately.** We could seed each cell with the published
    baseline recovery rates from eval/CALIBRATION.md - a real merchant would, and it

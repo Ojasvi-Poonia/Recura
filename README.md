@@ -5,9 +5,10 @@ failed payments, abandoned checkouts and overdue invoices, prices every possible
 intervention in money, acts only when the arithmetic supports it, and reports what it
 recovered against a randomised control group.
 
-Built for the Razorpay AI Buildathon, Track 03 (AI Revenue Recovery), and developed
-further since. [Try it on your own failures](#try-it-on-your-own-failures) in about two
-minutes; nothing in this repository sends a message or moves money.
+It reads failures from Razorpay, Stripe, Cashfree, PhonePe, Juspay, Adyen, Braintree and
+Checkout.com, and from any other system through one signed format.
+[Try it on your own failures](#try-it-on-your-own-failures) in about two minutes; nothing
+in this repository sends a message or moves money.
 
 ---
 
@@ -153,14 +154,12 @@ not tuned to your customers, and the benchmark itself never sees them.
 
 ---
 
-## Coverage against the brief
+## What it covers
 
-Track 03 lists seven example directions. The spec for this project deliberately warns
-against attempting all of them — *"one failure class done rigorously beats seven done
-shallowly"* — so the test applied here is not "is there code for it" but **"is it exercised,
-with a number, in the committed run"**.
+The test applied here is not "is there code for it" but **"is it exercised, with a number,
+in the committed run"**.
 
-| Direction | Where it lives | Exercised in `make eval` |
+| Use case | Where it lives | Exercised in `make eval` |
 |---|---|---|
 | Payment degradation → root cause → action | 115 real Razorpay reason codes → `FailureClass` | 4,447 treated, **+7.93pp** |
 | Checkout drop-off recovery | `source_type="checkout"`, no error object on 59% | 1,634 treated, **+5.45pp** |
@@ -170,15 +169,13 @@ with a number, in the committed run"**.
 | Hinglish voice recovery | DLT templates, `make voice` | 5 rendered audio files |
 | Promise-to-pay tracker | 48h window, escalation on breach | **19 promises broken** |
 
-All four surfaces clear zero independently. The four directions with their own holdout are
+All four surfaces clear zero independently. The four use cases with their own holdout are
 measured; the other three are demonstrated but not independently A/B tested, and we would
 rather say so than imply seven measured results.
 
 ---
 
-## The problem statement names three surfaces. Here is each one separately.
-
-> *"...from payment failures and checkout abandonment to overdue receivables."*
+## Each surface, measured separately
 
 A single pooled number lets a strong surface carry a weak one. Each surface below is
 compared against **its own** randomised holdout:
@@ -206,8 +203,6 @@ surface is significant now, but it is the one where a real integration would gai
 from Razorpay's own checkout telemetry (drop-off step, whether a method was ever selected).
 
 ## Stopping rules, as measured
-
-> *"...with compliant escalation, stopping rules, and an audit trail."*
 
 Stopping rules are only real if they fire. Every treated episode ends for exactly one
 recorded reason, and the census is part of `make eval`:
