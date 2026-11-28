@@ -71,7 +71,7 @@ taxonomy understood. It says on the page that it is a triage and not a forecast.
 | Juspay | `PSP=juspay` | its 3 failure statuses; order status objects |
 | Adyen | `PSP=adyen` | all 41 refusal reasons |
 | Braintree | `PSP=braintree` | all 110 decline codes and the 2109–2999 range |
-| Checkout.com | `PSP=checkout` | all 189 soft, hard and risk codes |
+| Checkout.com | `PSP=checkout` | all 189 soft, hard and risk codes; API payment objects |
 | anything else | none | a CSV with `event_id`, `amount`, `failed_at`; see [`docs/PSP_PROFILES.md`](docs/PSP_PROFILES.md) |
 
 Live webhooks are received from Razorpay and Stripe directly, and from any other system

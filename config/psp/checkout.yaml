@@ -7,11 +7,24 @@
 #       transcribed into data/psp_codes/checkout_response_codes.csv. Where the page
 #       prints a second line with no code, it is joined onto the code above with " / ".
 #
+# SOURCES for the payment fields, read 2026-11-28:
+#   https://www.checkout.com/docs/payments/manage-payments/get-payment-details
+#   https://www.checkout.com/docs/payments/manage-payments/get-a-list-of-payments
+#       field names: id, requested_on, amount, currency, source.type, status
+#       ("Declined" in the list example, with approved: false)
+#   https://www.checkout.com/docs/payments/accept-payments/format-the-amount-value
+#       "For all other currencies, the `amount` you specify is divided by 100" - INR is
+#       not in the zero- or three-decimal lists, so amounts are in paise.
+#
 # LIMITS, stated rather than discovered:
 #   - 10xxx are approvals and 50xxx are payout and refund declines: neither is a failed
 #     attempt to take the customer's money, so neither is transcribed.
-#   - Checkout.com's payment export field names were NOT checked against its docs, so
-#     `columns` names only the code field. The neutral format needs no column mapping.
+#   - The columns are the API payment object's (GET /payments, GET /payments/{id}). The
+#     Payments Report CSV is NOT supported: its docs list "Successful authorizations,
+#     Voids, Captures" and no Action Type for a decline, and they do not say whether its
+#     Amount column is in minor or major units.
+#   - The payment examples carry no customer id, and no response_code field was seen in
+#     them; `response_code` is kept for exports and the neutral format that carry one.
 #   - A few 20xxx codes are not failures (20009 request in progress, 20118 pending,
 #     20110 authorization completed). They are translated to pending, and to paid, so
 #     that an export which includes them never opens an episode on a payment that
@@ -22,8 +35,16 @@ amount_unit: minor
 published_codes: data/psp_codes/checkout_response_codes.csv
 
 columns:
+  event_id: [id]
+  amount: [amount]
+  currency: [currency]
+  failed_at: [requested_on]
+  method: [source.type]
   error_reason: [response_code]
   error_description: [response_summary]
+
+keep_where:
+  status: [declined]
 
 translate:
   insufficient_funds: ["20051"]

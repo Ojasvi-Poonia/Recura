@@ -20,18 +20,19 @@ taxonomy maps, and a test enforces it.
 |---|---|---|---|---|
 | Razorpay | `/webhooks/razorpay` | all 115 published reasons (the pivot itself) | razorpay.com/docs, 2026-08-26 | |
 | Stripe | `/webhooks/stripe` | 50 card decline codes + 4 Radar outcomes | docs.stripe.com, 2026-11-16 and 2026-11-26 | local-payment-method decline codes |
-| Cashfree | via `/webhooks/recura` | 152 UPI codes | cashfree.com/docs upi-error-codes, 2026-11-26 | no card or netbanking table could be read |
+| Cashfree | via `/webhooks/recura` | 152 UPI codes | cashfree.com/docs upi-error-codes, 2026-11-26 | Cashfree publishes no card or netbanking failure table (its docs index checked 2026-11-28; the UPI page is the only one) |
 | PhonePe | via `/webhooks/recura` | 127 error codes (172 rows) | developer.phonepe.com common-errors, 2026-11-26 and 2026-11-28 | refund-stage rows (not customer failures) |
 | Juspay | via `/webhooks/recura` | 3 failure statuses | juspay.io transaction-status, 2026-11-26 | Juspay publishes no table of the bank codes it passes through; those are kept, not translated |
 | Adyen | via `/webhooks/recura` | 41 refusal reasons | docs.adyen.com refusal-reasons, 2026-11-26 | raw acquirer responses |
-| Braintree | via `/webhooks/recura` | 110 decline codes + the 2109–2999 range | developer.paypal.com/braintree declines, 2026-11-26 | settlement declines (not customer failures); export field names unchecked |
-| Checkout.com | via `/webhooks/recura` | 189 soft, hard and risk codes | checkout.com/docs api-response-codes, 2026-11-26 | approvals and payout declines (not customer failures); export field names unchecked |
+| Braintree | via `/webhooks/recura` | 110 decline codes + the 2109–2999 range | developer.paypal.com/braintree declines, 2026-11-26 | settlement declines (not customer failures); export columns: no Braintree page documents the CSV, and the API `status` values could only be read in summary, so no export mapping yet |
+| Checkout.com | via `/webhooks/recura` | 189 soft, hard and risk codes | checkout.com/docs api-response-codes, 2026-11-26 | approvals and payout declines (not customer failures); the Payments Report CSV (lists no declines, amount unit unstated). API payment objects import, `PSP=checkout` |
 
 `tests/test_psp.py` reads each profile's transcribed code list and fails if any published
 code has no translation, or if a profile translates a code the gateway never published.
 
 **Not covered, because nothing official could be read:** PayU India (its error tables are
-loaded at runtime from a third-party GitHub account, not from payu.in), and NPCI's own UPI
+loaded at runtime from a third-party GitHub account, not from payu.in; rechecked
+2026-11-28 on docs.payu.in, including `payu-errors-v2.md`, with the same result), and NPCI's own UPI
 error and response codes (npci.org.in pages render empty to a fetch). Cashfree's and
 PhonePe's tables carry the NPCI UPI codes merchants actually see.
 
