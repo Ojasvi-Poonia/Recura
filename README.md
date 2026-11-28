@@ -62,11 +62,22 @@ from the customer at all, which failures are your own integration bugs, what the
 would do first, what the policy contract would refuse, and how much of the file the
 taxonomy understood. It says on the page that it is a triage and not a forecast.
 
-| Gateway | Profile | Reads |
+| Gateway | Profile | Codes translated, from its own docs |
 |---|---|---|
-| Razorpay | `PSP=razorpay` | payment entities as `GET /v1/payments` returns them; all 115 published reasons |
-| Stripe | `PSP=stripe` | Charge objects; all 50 published card decline codes |
-| anything else | none | a CSV with `event_id`, `amount`, `failed_at` — see [`docs/PSP_PROFILES.md`](docs/PSP_PROFILES.md) |
+| Razorpay | `PSP=razorpay` | all 115 published reasons; payment entities as `GET /v1/payments` returns them |
+| Stripe | `PSP=stripe` | all 50 card decline codes; Charge objects as exported |
+| Cashfree | `PSP=cashfree` | all 152 UPI codes; Get Payments objects |
+| PhonePe | `PSP=phonepe` | 61 error codes; v2 order status objects |
+| Juspay | `PSP=juspay` | its 3 failure statuses; order status objects |
+| Adyen | `PSP=adyen` | all 41 refusal reasons |
+| Braintree | `PSP=braintree` | all 110 decline codes and the 2109–2999 range |
+| Checkout.com | `PSP=checkout` | all 189 soft, hard and risk codes |
+| anything else | none | a CSV with `event_id`, `amount`, `failed_at`; see [`docs/PSP_PROFILES.md`](docs/PSP_PROFILES.md) |
+
+Live webhooks are received from Razorpay and Stripe directly, and from any other system
+through one signed neutral format that names its gateway's profile. One failure gets the
+same diagnosis whichever gateway sent it. What each table covers, what could not be read
+(PayU, NPCI's own list), and how to add a gateway: [`docs/GATEWAYS.md`](docs/GATEWAYS.md).
 
 A profile is one YAML file. It may not invent: a test fails if it translates a code to a
 reason the taxonomy does not map, and a code it does not list is counted as unrecognised
@@ -628,3 +639,8 @@ which exercises the integration against Razorpay's live test-mode API.
 
 Nothing is ever sent to a real customer, and no real payment is ever made. Test-mode
 keys only — a live Razorpay key is refused at construction.
+
+## Licence
+
+[Apache-2.0](LICENSE). Use it, change it, ship it; keep the notice. See [`NOTICE`](NOTICE)
+for the note on gateway trademarks and transcribed error codes.

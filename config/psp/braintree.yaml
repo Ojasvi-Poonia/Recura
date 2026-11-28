@@ -1,0 +1,88 @@
+# Braintree processor response codes, forwarded through the neutral webhook format with
+# "gateway": "braintree", or read from an export that carries the code.
+#
+# SOURCE, read 2026-11-26:
+#   https://developer.paypal.com/braintree/articles/control-panel/transactions/declines
+#       every authorization decline code, transcribed with its soft/hard type into
+#       data/psp_codes/braintree_processor_responses.csv
+#
+# LIMITS, stated rather than discovered:
+#   - Only the decline codes were read. Braintree's transaction export field names were
+#     NOT checked against its docs, so `columns` names only the code field; map the
+#     rest of an export with the importer's own column names, or send through the
+#     neutral format, which needs no column mapping at all.
+#   - The page's settlement decline codes (4001-4027) describe a settlement, not an
+#     attempt to take the customer's money, and are not mapped.
+#   - Braintree's soft/hard label is kept in the CSV. The taxonomy decides retry from
+#     the reason, and where the two could disagree the reason chosen is the cautious one.
+
+name: Braintree
+amount_unit: major
+published_codes: data/psp_codes/braintree_processor_responses.csv
+
+columns:
+  error_reason: [processor_response_code]
+  error_description: [processor_response_text]
+
+ranges:
+  - {from: 2109, to: 2999, reason: payment_declined}     # "Processor Declined", soft
+
+translate:
+  insufficient_funds: ["2001"]
+  credit_limit_exceeded: ["2002"]
+  transaction_frequency_limit_exceeded: ["2003"]
+  transaction_limit_exceeded: ["2086", "2097"]
+  transaction_daily_count_exceeded: ["2098"]
+
+  authentication_failed: ["2099", "2101"]
+  incorrect_pin: ["2102"]
+  pin_attempts_exceeded: ["2103"]
+  incorrect_cvv: ["2010"]
+  incorrect_card_details: ["2059", "2060"]
+  incorrect_card_expiry_date: ["2006"]
+  card_number_invalid: ["2005", "2008", "2009"]
+  verification_failed: ["2092"]
+
+  card_expired: ["2004"]
+  card_type_invalid: ["2029", "2051"]
+  bank_account_invalid: ["2007"]
+  debit_instrument_blocked: ["2057", "2075", "2108"]
+  debit_instrument_inactive: ["2022", "2107"]
+  debit_declined: ["2074", "2093"]
+  mandate_not_active: ["2017", "2018", "2070"]
+  emi_plan_unavailable: ["2050"]
+  user_not_eligible: ["2076"]
+  international_transaction_not_allowed: ["2082"]
+
+  # Lost, stolen, fraud, violations, and Braintree's own "do not retry".
+  payment_risk_check_failed: ["2012", "2013", "2014", "2020", "2021", "2043", "2047",
+                              "2053", "2077"]
+
+  issuer_technical_error: ["2105"]
+  gateway_technical_error: ["2031", "3000"]
+  duplicate_request: ["2016", "2069"]
+
+  payment_declined: ["2000", "2011", "2015", "2019", "2034", "2038", "2041", "2044",
+                     "2046", "2085", "2104", "2106"]
+
+  order_already_paid: ["2094"]     # "PayPal payment has already been completed"
+
+  # -- the merchant's account or request ------------------------------------------------
+  merchant_not_activated: ["2025", "2026", "2028", "2030", "2040", "2042", "2045", "2066",
+                           "2068", "2071", "2079", "2080", "2089"]
+  payment_method_not_enabled: ["2023", "2063", "2081"]
+  card_network_not_enabled: ["2024", "2058"]
+  recurring_payment_not_enabled: ["2087", "2100"]
+  invalid_amount: ["2027", "2048", "2062"]
+  invalid_currency: ["2064", "2088", "2091"]
+  invalid_request: ["2032", "2035", "2037", "2039", "2049", "2052", "2055"]
+  input_validation_failed: ["2061", "2073", "2078", "2084"]
+  mismatch_in_transaction_details: ["2033"]
+  order_amount_mismatch: ["2054"]
+  record_not_found: ["2036"]
+  mcc_amount_limit_exceeded: ["2056"]
+  capture_failed: ["2067"]
+  refund_limit_crossed: ["2065", "2090", "2095"]
+  invalid_email: ["2072"]
+  invalid_mobile_number: ["2083"]
+  invalid_user_details: ["2096"]

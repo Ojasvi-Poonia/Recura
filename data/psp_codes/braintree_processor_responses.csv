@@ -1,0 +1,112 @@
+code,text,decline_type
+2000,Do Not Honor,Soft
+2001,Insufficient Funds,Soft
+2002,Limit Exceeded,Soft
+2003,Cardholder's Activity Limit Exceeded,Soft
+2004,Expired Card,Hard
+2005,Invalid Credit Card Number,Hard
+2006,Invalid Expiration Date,Hard
+2007,No Account,Hard
+2008,Card Account Length Error,Hard
+2009,No Such Issuer,Hard
+2010,Card Issuer Declined CVV,Hard
+2011,Voice Authorization Required,Hard
+2012,Processor Declined – Possible Lost Card,Hard
+2013,Processor Declined – Possible Stolen Card,Hard
+2014,Processor Declined – Fraud Suspected,Hard
+2015,Transaction Not Allowed,Hard
+2016,Duplicate Transaction,Soft
+2017,Cardholder Stopped Billing,Hard
+2018,Cardholder Stopped All Billing,Hard
+2019,Invalid Transaction,Hard
+2020,Violation,Hard
+2021,Security Violation,Hard
+2022,Declined – Updated Cardholder Available,Hard
+2023,Processor Does Not Support This Feature,Hard
+2024,Card Type Not Enabled,Hard
+2025,Set Up Error – Merchant,Soft
+2026,Invalid Merchant ID,Soft
+2027,Set Up Error – Amount,Hard
+2028,Set Up Error – Hierarchy,Hard
+2029,Set Up Error – Card,Hard
+2030,Set Up Error – Terminal,Hard
+2031,Encryption Error,Hard
+2032,Surcharge Not Permitted,Hard
+2033,Inconsistent Data,Hard
+2034,No Action Taken,Soft
+2035,Partial Approval For Amount In Group III Version,Soft
+2036,Authorization could not be found,Hard
+2037,Already Reversed,Hard
+2038,Processor Declined,Soft
+2039,Invalid Authorization Code,Hard
+2040,Invalid Store,Soft
+2041,Declined – Call For Approval,Hard
+2042,Invalid Client ID,Soft
+2043,"Error – Do Not Retry, Call Issuer",Hard
+2044,Declined – Call Issuer,Hard
+2045,Invalid Merchant Number,Hard
+2046,Declined,Soft
+2047,Call Issuer. Pick Up Card,Hard
+2048,Invalid Amount,Soft
+2049,Invalid SKU Number,Hard
+2050,Invalid Credit Plan,Hard
+2051,Credit Card Number does not match method of payment,Hard
+2052,Invalid level III Purchase,Soft
+2053,Card reported as lost or stolen,Hard
+2054,Reversal amount does not match authorization amount,Hard
+2055,Invalid Transaction Division Number,Hard
+2056,Transaction amount exceeds the transaction division limit,Hard
+2057,Issuer or Cardholder has put a restriction on the card,Soft
+2058,Merchant not Mastercard SecureCode enabled,Hard
+2059,Address Verification Failed,Hard
+2060,Address Verification and Card Security Code Failed,Hard
+2061,Invalid Transaction Data,Hard
+2062,Invalid Tax Amount,Soft
+2063,PayPal Business Account preference resulted in the transaction failing,Hard
+2064,Invalid Currency Code,Hard
+2065,Refund Time Limit Exceeded,Hard
+2066,PayPal Business Account Restricted,Hard
+2067,Authorization Expired,Hard
+2068,PayPal Business Account Locked or Closed,Hard
+2069,PayPal Blocking Duplicate Order IDs,Hard
+2070,PayPal Buyer Revoked Pre-Approved Payment Authorization,Hard
+2071,PayPal Payee Account Invalid Or Does Not Have a Confirmed Email,Hard
+2072,PayPal Payee Email Incorrectly Formatted,Hard
+2073,PayPal Validation Error,Hard
+2074,"Funding Instrument In The PayPal Account Was Declined By The Processor Or Bank, Or It Can't Be Used For This Payment",Hard
+2075,Payer Account Is Locked Or Closed,Hard
+2076,Payer Cannot Pay For This Transaction With PayPal,Hard
+2077,Transaction Refused Due To PayPal Risk Model,Hard
+2078,Invalid Secure Payment Data,Hard
+2079,PayPal Merchant Account Configuration Error,Hard
+2080,Invalid user credentials,Hard
+2081,PayPal pending payments are not supported,Hard
+2082,PayPal Domestic Transaction Required,Hard
+2083,PayPal Phone Number Required,Hard
+2084,PayPal Tax Info Required,Hard
+2085,PayPal Payee Blocked Transaction,Hard
+2086,PayPal Transaction Limit Exceeded,Hard
+2087,PayPal reference transactions not enabled for your account,Hard
+2088,Currency not enabled for your PayPal seller account,Hard
+2089,PayPal payee email permission denied for this request,Hard
+2090,PayPal or Venmo account not configured to refund more than settled amount,Hard
+2091,Currency of this transaction must match currency of your PayPal account,Hard
+2092,No Data Found - Try Another Verification Method,Soft
+2093,PayPal payment method is invalid,Hard
+2094,PayPal payment has already been completed,Hard
+2095,PayPal refund is not allowed after partial refund,Hard
+2096,PayPal buyer account can't be the same as the seller account,Hard
+2097,PayPal authorization amount limit exceeded,Hard
+2098,PayPal authorization count limit exceeded,Hard
+2099,Cardholder Authentication Required,Soft
+2100,PayPal channel initiated billing not enabled for your account,Hard
+2101,Additional authorization required,Soft
+2102,Incorrect PIN,Soft
+2103,PIN try exceeded,Soft
+2104,Offline Issuer Declined,Soft
+2105,Cannot Authorize at this time (Life cycle),Soft
+2106,Cannot Authorize at this time (Policy),Soft
+2107,Card Not Activated,Hard
+2108,Closed Card,Hard
+2109-2999,Processor Declined,Soft
+3000,Processor Network Unavailable – Try Again,Soft

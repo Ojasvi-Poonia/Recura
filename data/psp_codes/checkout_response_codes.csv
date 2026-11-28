@@ -1,0 +1,190 @@
+code,description
+20001,Refer to card issuer / Contact card issuer
+20002,Refer to card issuer - Special conditions
+20003,Invalid merchant or service provider
+20004,Card should be captured
+20005,Declined - Do not honour
+20006,Error / Invalid request parameters
+20009,Request in progress
+20012,Invalid transaction
+20013,Invalid value/amount
+20014,Invalid account number (no such number)
+20015,Transaction cannot be processed through debit network
+20016,Card not initialised
+20017,Customer cancellation
+20018,Customer dispute
+20019,Re-enter transaction / Transaction has expired
+20020,Invalid response
+20021,No action taken (unable to back out prior transaction)
+20022,Suspected malfunction
+20023,Unacceptable transaction fee
+20024,File update not supported by the receiver
+20025,Unable to locate record on file / Account number is missing from the inquiry
+20026,Duplicate file update record
+20027,File update field edit error
+20028,File is temporarily unavailable
+20029,File update not successful
+20030,Format error
+20031,Bank not supported by Switch
+20032,Completed partially
+20033,Previous scheme transaction ID invalid
+20038,Allowable PIN tries exceeded
+20039,No credit account
+20040,Requested function not supported
+20042,No universal value/amount
+20044,No investment account
+20045,The Issuer does not support fallback transactions of hybrid-card
+20046,Bank decline
+20051,Insufficient funds
+20052,No current (checking) account
+20053,No savings account
+20054,Expired card
+20055,Incorrect PIN / PIN validation not possible
+20056,No card record
+20057,Transaction not permitted to cardholder / Domestic debit transaction not allowed (Regional use only)
+20058,Transaction not permitted to terminal
+20059,Suspected fraud
+20060,Card acceptor contact acquirer
+20061,Activity amount limit exceeded
+20062,Restricted card
+20063,Security violation
+20064,Original value incorrect
+20065,Exceeds Withdrawal Frequency Limit
+20066,Card acceptor call acquirer security
+20067,Hard capture - Pick up card at ATM
+20068,Response received too late / Timeout / Internal error
+20070,PIN required
+20072,Account not yet activated
+20075,Allowable PIN-entry tries exceeded / PIN validation not possible
+20078,Blocked at first use - transaction from new or replacement card that is not properly unblocked
+20081,Card is local use only
+20082,"No security model / PIN cryptographic error found (error found by VIC security module during PIN decryption) / Negative CAM, dCVV, iCVV, or CVV results"
+20083,No accounts
+20084,No PBF
+20085,PBF update error
+20086,ATM malfunction / Invalid authorization type
+20087,Bad track data (invalid CVV and/or expiry date)
+20088,Unable to dispense/process
+20089,Administration error
+20090,Cut-off in progress
+20091,Issuer unavailable or switch is inoperative
+20092,Destination cannot be found for routing
+20093,Transaction cannot be completed; violation of law
+20094,Duplicate transmission / invoice
+20095,Reconcile error
+20096,System malfunction
+20097,Reconciliation totals reset
+20098,MAC error
+20099,Other / Unidentified responses
+20197,The ATM/POS terminal number has not been registered
+2005C,Transaction not supported / blocked by issuer
+2006P,Cardholder ID verification failed
+2009G,Blocked by cardholder / contact cardholder
+200A4,"Transaction with defect, contact issuer / The requests were not received."
+200A5,The original transactions are rejected.
+200A6,"UnionPay forwarded the original request, but did not receive a response from the issuer."
+200E0,Unauthorised access
+200E2,Signature verification failure
+200E3,System busy. Try again later.
+200N0,Force STIP
+200N7,Decline for CVV2 failure
+200P1,Over daily limit
+200P9,Limit exceeded. Enter a lesser value.
+200R1,Issuer initiated a stop payment (revocation order) for this authorization
+200R3,Issuer initiated a stop payment (revocation order) for all authorizations
+200S4,PTLF full
+200T2,Invalid transaction date
+200T3,Card not supported
+200T5,CAF status = 0 or 9
+20100,Invalid expiry date format
+20101,No Account / No Customer (Token is incorrect or invalid)
+20102,Invalid merchant / wallet ID
+20103,Card type / payment method not supported
+20104,Gateway reject - Invalid transaction
+20105,Gateway reject - Violation
+20106,Unsupported currency
+20107,Billing address is missing
+20108,Declined - Updated cardholder available
+20109,"Transaction already reversed (voided) / Previous message located for a repeat or reversal, but repeat or reversal data is inconsistent with the original message / Capture is larger than initial authorized value"
+20110,Authorization completed
+20111,Transaction already reversed
+20112,Merchant not Mastercard SecureCode enabled
+20113,Invalid property
+20114,Token is incorrect
+20115,Missing / Invalid lifetime
+20116,Invalid encoding
+20117,Invalid API version
+20118,Transaction pending
+20119,Invalid batch data and/or batch data is missing
+20120,Invalid customer/user
+20121,Transaction limit for merchant/terminal exceeded
+20122,Mastercard installments not supported
+20123,"Missing basic data: zip, addr, member"
+20124,"Missing CVV value, required for ecommerce transaction"
+20150,Card not 3D Secure (3DS) enabled
+20151,Cardholder failed 3DS authentication
+20152,Initial 3DS transaction not completed within 15 minutes
+20153,3DS system malfunction
+20154,3DS authentication required
+20155,3DS authentication service provided invalid authentication result
+20156,Requested function not supported by the acquirer
+20157,Invalid merchant configurations - Contact Support
+20158,Refund validity period has expired
+20159,ACS Malfunction
+20179,Lifecycle
+20182,Policy
+20183,Security
+20193,Invalid country code
+20199,Mandate approval pending
+30004,Pick up card (No fraud)
+30007,Pick up card - Special conditions
+30015,No such issuer
+30016,Issuer does not allow online gambling payout
+30017,Issuer does not allow original credit transaction
+30018,Issuer does not allow money transfer payout
+30019,Issuer does not allow non-money transfer payout
+30020,Invalid amount
+30021,Total amount limit reached
+30022,Total transaction count limit reached
+30033,Expired card - Pick up
+30034,Suspected fraud - Pick up
+30035,Contact acquirer - Pick up
+30036,Restricted card - Pick up
+30037,Call acquirer security - Pick up
+30038,Allowable PIN tries exceeded - Pick up
+30041,Lost card - Pick up
+30043,Stolen card - Pick up
+30044,Transaction rejected - AMLD5
+30045,Invalid payout fund transfer type
+30046,Closed account
+30401,Capture amount greater than allowed
+30402,Overcapture not allowed for partial capture
+30403,Overcapture not allowed for partial authorization
+30404,Sub-merchant ID missing
+30405,Invalid order description format
+41101,Risk Blocked Transaction
+41201,Decline list - Card number
+41202,Decline list - BIN
+41203,Decline list - Email address
+41204,Decline list - Phone
+41205,Decline list - Payment IP
+41206,Decline list - Email domain
+41301,Fraud score exceeds threshold
+42101,Risk Blocked Transaction
+42201,Decline list - Card number
+42202,Decline list - BIN
+42203,Decline list - Email address
+42204,Decline list - Phone
+42205,Decline list - Payment IP
+42206,Decline list - Email domain
+42301,Fraud score exceeds threshold
+43101,Potential fraud risk
+43102,Risk blocked transaction – {Rule group name}
+43201,Decline list - Card number
+43202,Decline list - BIN
+43203,Decline list - Email address
+43204,Decline list - Phone
+43205,Decline list - Payment IP
+43206,Decline list - Email domain
+43301,Fraud score exceeds threshold
+43401,3DS authentication required

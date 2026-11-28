@@ -1,0 +1,9 @@
+Recura
+Copyright 2026 Ojasvi Poonia
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Payment gateway names (Razorpay, Stripe and others) are trademarks of their owners and
+are used only to identify the systems Recura reads from. Error-code tables under data/
+and config/psp/ are transcribed from each gateway's public documentation, cited with the
+date checked; the gateways do not endorse this project.

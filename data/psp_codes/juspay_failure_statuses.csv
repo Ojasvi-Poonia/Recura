@@ -1,0 +1,4 @@
+status,status_id,description
+AUTHENTICATION_FAILED,26,User did not complete authentication
+AUTHORIZATION_FAILED,27,"User completed authentication, but the bank refused the transaction."
+JUSPAY_DECLINED,22,User input is not accepted by the underlying PG

@@ -1,0 +1,90 @@
+# PhonePe Payment Gateway, as returned by the Standard Checkout v2 Order Status API
+# (GET /checkout/v2/order/{merchantOrderId}/status?details=true), or forwarded through
+# the neutral webhook format with "gateway": "phonepe".
+#
+#   make audit FILE=phonepe_orders.json PSP=phonepe
+#
+# SOURCES, read 2026-11-26:
+#   https://developer.phonepe.com/payment-gateway/error-codes/common-errors
+#       the error table, transcribed into data/psp_codes/phonepe.csv
+#   https://developer.phonepe.com/payment-gateway/website-integration/standard-checkout/api-integration/api-reference/order-status
+#       field names: orderId, merchantOrderId, state, amount (paisa), errorCode,
+#       detailedErrorCode, paymentDetails[].{timestamp, paymentMode, state}
+#
+# PhonePe returns two codes: a normalised `errorCode` (INSUFFICIENT_BALANCE) and a
+# `detailedErrorCode` (Z9). This profile translates the normalised one, which PhonePe
+# defines for every row; the detailed codes are kept in the CSV for reference.
+#
+# LIMITS, stated rather than discovered:
+#   - About the last third of PhonePe's table (from MERCHANT_CONFIG_NOT_FOUND onwards)
+#     could only be read as a summary, not verbatim, so it is NOT transcribed. Those
+#     codes pass through as unrecognised and are handled as UNKNOWN.
+#   - TXN_BLOCKED covers both NPCI risk declines and merchant onboarding blocks
+#     (URL, IP, KYC). It is read as a risk decline: never retried, which is the safe
+#     side for both. TXN_NOT_ALLOWED is similarly broad.
+
+name: PhonePe
+amount_unit: minor     # "Order amount in paisa"
+published_codes: data/psp_codes/phonepe.csv
+
+columns:
+  event_id: [merchantOrderId, orderId]
+  amount: [amount]
+  currency: [currency]
+  failed_at: [paymentDetails.0.timestamp, expireAt]
+  method: [paymentDetails.0.paymentMode]
+  error_reason: [errorCode, paymentDetails.0.errorCode]
+  error_code: [detailedErrorCode, paymentDetails.0.detailedErrorCode]
+
+keep_where:
+  state: [failed]
+
+translate:
+  insufficient_funds: [INSUFFICIENT_BALANCE]
+  transaction_limit_exceeded: [TXN_LIMIT_BREACHED, TRANSACTION_LIMIT_EXCEEDED]
+  transaction_frequency_limit_exceeded: [TXN_FREQ_LIMIT_BREACHED]
+
+  incorrect_pin: [INVALID_MPIN]
+  incorrect_otp: [WRONG_PIN]            # PhonePe: "didn't enter the OTP or entered an incorrect one"
+  pin_attempts_exceeded: [MPIN_LIMIT_BREACHED, MAX_AUTH_EXCEEDED]
+  pin_not_set: [MPIN_NOT_SET]
+  authentication_failed: [AUTHENTICATION_FAILED]
+  payment_cancelled: [TXN_CANCELLED]
+  payment_session_expired: [TXN_NOT_COMPLETED]
+  payment_timed_out: [CANCELLED_BY_USER, AUTH_TIMEOUT]
+  invalid_vpa: [INVALID_VPA]
+  card_number_invalid: [INVALID_CARD_NUMBER, INVALID_CARD]
+  incorrect_cvv: [INVALID_CVV_EXPIRY]
+  incorrect_card_details: [INVALID_DETAILS, ADDRESS_MISMATCH, INVALID_FIELDS]
+  incorrect_cardholder_name: [INVALID_CARD_NAME]
+
+  card_expired: [CARD_EXPIRED]
+  card_declined: [BUSINESS_RISK_RULES]
+  card_type_invalid: [INVALID_CARD_TYPE, CARD_BIN_NOT_SUPPORTED]
+  card_not_enrolled: [ONLINE_TRANSACTIONS_DISABLED]
+  international_transaction_not_allowed: [INTERNATIONAL_TXN_NOT_ALLOWED]
+  debit_instrument_blocked: [ACCOUNT_BLOCKED, CARD_BLOCKED]
+  debit_instrument_inactive: [ACCOUNT_INACTIVE]
+  bank_account_invalid: [ACCOUNT_DOES_NOT_EXIST]
+  transaction_on_vpa_restricted: [ACCOUNT_NOT_ELIGIBLE, TXN_NOT_ALLOWED]
+  invalid_device: [DEVICE_FINGERPRINT_MISMATCH]
+  debit_declined: [UNSUPPORTED_PAYMENT_MODE]
+  payment_declined: [TRANSACTION_DECLINED]
+
+  payment_risk_check_failed: [TXN_BLOCKED]
+
+  bank_technical_error: [BANK_TECHNICAL_ISSUE, BANK_NOT_ABLE_TO_PROCESS, TECHNICAL_ISSUE,
+                         BANK_ERROR, TECHNICAL_ISSUE_BANK, HASH_MISMATCH,
+                         AUTHORIZATION_FAILED]
+  request_timed_out: [CONNECTION_TIMEOUT, TRANSACTION_TIME_OUT]
+  duplicate_request: [DUPLICATE_TRANSACTION]
+  gateway_technical_error: [TXN_NOT_FOUND, TRANSACTION_DECLINED_PG, PROCESSOR_ERROR,
+                            INVALID_TXN_ID, TXN_FAILED, BANK_MERCHANT_CONFIG]
+
+  # -- the merchant's request or account ----------------------------------------------
+  record_not_found: [REQUEST_NOT_FOUND]
+  invalid_request: [INVALID_REQUEST, MERCHANT_ERROR]
+  invalid_user_details: [INVALID_DETAILS_MERCHANT]
+  order_amount_mismatch: [TXN_AMOUNT_MISMATCH]
+  invalid_amount: [INVALID_AMOUNT]
+  refund_limit_crossed: [REFUND_BREACHED]

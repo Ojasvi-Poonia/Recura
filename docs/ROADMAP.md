@@ -17,6 +17,7 @@ Dated 2026-11-16.
 | Contract check for other systems | `POST /policy/check` | Counts contacts from its own record and the caller's, whichever is stricter |
 | Contact record, judged against the contract | `POST /policy/contacts`, `make contact-export` | Single tenant; an allowed check holds the slot in one server process |
 | Razorpay test-mode integration | `make tier1` | Verified against the live test API |
+| Gateways: Razorpay, Stripe, Cashfree, PhonePe, Juspay, Adyen, Braintree, Checkout.com | `/webhooks/{gateway}`, `config/psp/` | Every published code translated, by test; only INR decided on |
 
 ## What is not
 
@@ -47,8 +48,15 @@ Stated plainly, because each one changes what the benchmark number means.
 
 ### 2. More gateways
 
-Cashfree, PayU, Juspay, PhonePe, and NPCI's UPI response codes, each transcribed from its
-published list rather than recalled. See [`PSP_PROFILES.md`](PSP_PROFILES.md).
+Done for Cashfree, PhonePe, Juspay, Adyen, Braintree and Checkout.com, with Stripe
+webhooks and a neutral signed format for everything else ([`GATEWAYS.md`](GATEWAYS.md)).
+What is left:
+
+- **PayU** and **NPCI's own UPI list**: neither could be read from an official source.
+- **Dedicated webhook adapters** for gateways whose signing differs from the neutral
+  format (Cashfree, PhonePe, Adyen's HMAC over named fields), so they can post directly.
+- **Card and netbanking codes** for Cashfree, and the rest of PhonePe's table.
+- **Markets beyond India**, without which global gateways only decide on INR payments.
 
 ### 3. Harden the contract check for more than one sender
 

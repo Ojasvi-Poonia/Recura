@@ -1,0 +1,67 @@
+# Adyen payments, as returned by the /payments API or an AUTHORISATION webhook item,
+# or forwarded through the neutral webhook format with "gateway": "adyen".
+#
+#   make audit FILE=adyen_payments.json PSP=adyen
+#
+# SOURCES, read 2026-11-26:
+#   https://docs.adyen.com/development-resources/refusal-reasons
+#       every refusal reason, transcribed into data/psp_codes/adyen_refusal_reasons.csv.
+#       Four long descriptions (20, 22, 27, 42) end in "[...]": the code and name are
+#       complete, the prose is cut. Code 0 is left out: Adyen returns it
+#       beside resultCode Authorised and says to ignore it.
+#   https://docs.adyen.com/development-resources/webhooks/webhook-types and the
+#   AUTHORISATION webhook reference: pspReference, merchantReference, amount.value
+#   (minor units), amount.currency, eventDate, success, reason
+#
+# LIMITS, stated rather than discovered:
+#   - The numeric refusalReasonCode is what this translates. An AUTHORISATION webhook
+#     carries only the `reason` text; send the code through the neutral format, or
+#     enable it in Adyen's additional data, to have it read.
+#   - Adyen's raw acquirer responses (refusalReasonRaw) are not mapped.
+#   - India is the only verified market here, so only INR payments are decided on.
+
+name: Adyen
+amount_unit: minor
+published_codes: data/psp_codes/adyen_refusal_reasons.csv
+
+columns:
+  event_id: [pspReference, merchantReference]
+  amount: [amount.value]
+  currency: [amount.currency]
+  failed_at: [eventDate]
+  method: [paymentMethod]
+  error_reason: [refusalReasonCode, additionalData.refusalReasonCode]
+  error_description: [refusalReason, reason]
+
+keep_where:
+  success: ["false"]
+  resultCode: [refused, error, cancelled]
+
+translate:
+  insufficient_funds: ["12"]
+  transaction_limit_exceeded: ["28"]
+  transaction_daily_count_exceeded: ["29"]
+
+  authentication_failed: ["11", "33", "36", "38", "41"]
+  incorrect_pin: ["17"]
+  pin_attempts_exceeded: ["18"]
+  incorrect_cvv: ["24"]
+  incorrect_card_details: ["32"]
+  card_number_invalid: ["8"]
+  payment_cancelled: ["15", "16", "37"]
+
+  card_expired: ["6"]
+  card_type_invalid: ["10", "34", "35"]
+  debit_instrument_blocked: ["5", "25"]
+  mandate_not_active: ["26", "50"]
+
+  # Fraud, and Adyen's own excessive-retry block: both say "do not retry".
+  payment_risk_check_failed: ["14", "20", "22", "31", "46"]
+
+  issuer_technical_error: ["9", "19", "39", "40", "42"]
+  gateway_technical_error: ["4"]
+
+  payment_declined: ["2", "3", "23", "27"]
+
+  invalid_amount: ["7"]
+  invalid_request: ["21"]
