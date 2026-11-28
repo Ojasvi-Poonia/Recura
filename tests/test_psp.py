@@ -92,6 +92,26 @@ def test_phonepe_rows_that_read_as_technical_are_not_all_treated_as_retryable():
     assert mapped("TXN_ALREADY_PROCESSED").recoverability is Recoverability.TERMINAL
 
 
+def test_checkout_payment_list_imports_declines_and_skips_captures(tmp_path):
+    """Shaped like the GET /payments example in Checkout.com's docs: amount in paise,
+    requested_on with seven fractional digits, status "Declined" or "Captured"."""
+    declined = {"id": "pay_1", "requested_on": "2026-04-21T13:39:44.3167397Z",
+                "source": {"type": "card"}, "amount": 249900, "currency": "INR",
+                "status": "Declined", "approved": False, "response_code": "20051"}
+    captured = {**declined, "id": "pay_2", "status": "Captured", "approved": True,
+                "response_code": "10000"}
+
+    events, rejected, skipped = load_events(write_json(tmp_path, [declined, captured]),
+                                            "m", False, psp="checkout")
+
+    assert (rejected, skipped) == ((), 1)
+    event = events[0]
+    assert event.event_id == "pay_1"
+    assert event.amount_paise == 249900
+    assert event.method == "card"
+    assert classify(event.razorpay_error).failure_class is FailureClass.FUNDS
+
+
 def test_a_code_translated_twice_is_refused(tmp_path, monkeypatch):
     (tmp_path / "twice.yaml").write_text(
         "name: Twice\ntranslate:\n  insufficient_funds: [X1]\n  card_expired: [X1]\n")
