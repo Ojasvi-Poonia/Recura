@@ -10,7 +10,7 @@ drawn ONCE at generation time and stored in `LatentState.draws`. Resolution is t
 pure function of (latent, action, time) with no RNG at all, so outcomes are identical
 regardless of processing order, parallelism, or how many decisions an episode takes.
 
-Every multiplier below carries a comment justifying it. A panel will ask (section 5).
+Every multiplier below carries a comment justifying it, because each one moves the result.
 """
 
 from __future__ import annotations

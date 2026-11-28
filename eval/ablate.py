@@ -10,7 +10,7 @@ is to publish that.
     4 no LLM             rules only          -> what the model actually contributes
 
 Section 8: "Publish result 4 honestly even if unflattering. If the LLM only adds 12%
-over rules, say 12%." Being the one applicant who measured an uncomfortable number is
+over rules, say 12%." Measuring and publishing an uncomfortable number is
 what makes the comfortable ones believable.
 
     make ablate

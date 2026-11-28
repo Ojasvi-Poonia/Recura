@@ -1,6 +1,6 @@
 """Load `.env` into the process environment.
 
-The README tells a reviewer to `cp .env.example .env` and put their key in it. Nothing in
+The README tells a user to `cp .env.example .env` and put their key in it. Nothing in
 the codebase read that file, so following the documented instruction produced a `.env`
 that did nothing and a `make tier1` that reported the key as missing while it sat on disk.
 

@@ -1,7 +1,7 @@
 """Context multipliers applied to the sampled propensity (spec §5).
 
-Section 5: "Keep the multipliers in one file with a comment justifying each. A panel
-will ask." This is that file.
+Section 5: "Keep the multipliers in one file with a comment justifying each." Each one
+moves the result, so each is justified here.
 
 IMPORTANT - these are the AGENT'S BELIEFS about how the world works. They are not the
 world. The simulator's true response model (eval/latents.py) uses different values, and

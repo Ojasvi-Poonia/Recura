@@ -61,7 +61,7 @@ def check_auth(client, key_id) -> dict:
 
 
 def check_downtimes(client) -> dict:
-    """The signal almost no applicant knows exists, parsed from the live endpoint."""
+    """A signal few integrations use, parsed from the live endpoint."""
     print(f"\n{RULE}\n  2  DOWNTIME API — live signals into the timing decision\n{RULE}")
     resp = client.get("/payments/downtimes")
     items = resp.json().get("items", []) if resp.status_code == 200 else []

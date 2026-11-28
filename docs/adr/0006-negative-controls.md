@@ -5,7 +5,7 @@
 ## Context
 
 Every number this project reports comes from comparing two arms of a **synthetic** cohort
-we wrote ourselves. That is a structurally suspicious arrangement, and a reviewer is right
+we wrote ourselves. That is a structurally suspicious arrangement, and anyone is right
 to treat it as such. Asserting "our evaluation is sound" is not evidence.
 
 The failure mode is not fraud. It is that a subtle asymmetry between arms produces a

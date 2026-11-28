@@ -226,7 +226,7 @@ def fixture_model_id(fixtures_dir: Path = FIXTURES_DIR) -> str | None:
 
     Cache keys are model-scoped, so replay must key against the model that WROTE the
     fixtures - not against whatever provider happens to be configured locally. Without
-    this, a reviewer with no API key computes keys against "null", misses every
+    this, a user with no API key computes keys against "null", misses every
     fixture, and silently gets rules-only numbers with nothing in the output saying so.
     """
     path = fixtures_dir / MANIFEST_NAME

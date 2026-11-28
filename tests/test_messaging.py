@@ -1,4 +1,4 @@
-"""DLT template compliance and Hinglish rendering (Track 03: Hinglish voice recovery)."""
+"""DLT template compliance and Hinglish rendering for voice recovery."""
 
 import pytest
 

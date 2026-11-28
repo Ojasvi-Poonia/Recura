@@ -313,7 +313,7 @@ def test_no_action_is_unaffected_by_the_horizon():
                     ).expected_value_paise == 0
 
 
-# --- B2B receivables (Track 03: "overdue receivables", "B2B receivables chaser") ----
+# --- B2B receivables: overdue invoices and the receivables chaser ----------------
 
 def _receivable(days_overdue=45, amount=2_000_000, channels=(Channel.SMS,)):
     from datetime import timedelta

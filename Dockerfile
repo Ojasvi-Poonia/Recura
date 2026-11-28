@@ -45,7 +45,7 @@ RUN test -n "$(ls fixtures/*.json 2>/dev/null)" || ( \
       echo "rules-only path. Run 'make fixtures' and commit them before building." && \
       exit 1 )
 
-# Prove the image works at build time, not on the reviewer's machine.
+# Prove the image works at build time, not on the user's machine.
 RUN make seed && python -m pytest -q
 
 CMD ["make", "eval"]

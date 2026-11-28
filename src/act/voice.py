@@ -1,4 +1,4 @@
-"""Render a recovery message to speech (Track 03: "Hinglish voice recovery").
+"""Render a recovery message to speech, for Hinglish voice recovery.
 
 Voice matters in India for a reason that is easy to miss from a desk: a large share of
 payers are more comfortable being spoken to than reading an SMS, and Hinglish is the

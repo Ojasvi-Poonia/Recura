@@ -65,7 +65,7 @@ def test_stated_retry_delays_are_positive():
 
 
 def test_ambiguous_calls_carry_a_rationale():
-    """Judgment calls a panel will question must be justified in the table."""
+    """Judgment calls that are open to question must be justified in the table."""
     for reason in ("card_declined", "authorisation_declined_by_psp", "order_already_paid"):
         assert len(m.MAPPING[reason].note) > 40, f"{reason} needs a rationale"
 
@@ -73,7 +73,7 @@ def test_ambiguous_calls_carry_a_rationale():
 def test_checkout_abandonment_is_not_unknown():
     """A dropped checkout carries no Razorpay error - nothing reached the gateway.
 
-    "Checkout abandonment" is a named Track 03 direction; classing it UNKNOWN would
+    "Checkout abandonment" is a recovery surface of its own; classing it UNKNOWN would
     discard real information about a customer who demonstrably had intent.
     """
     got = m.classify(None, source_type="checkout")

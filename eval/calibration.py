@@ -1,4 +1,4 @@
-"""Is the model's confidence trustworthy? (Track 03: "determines the right intervention")
+"""Is the model's confidence trustworthy enough to choose the right intervention?
 
 The diagnosis layer does not return a label - it returns a probability distribution
 over failure classes, and the expected-value layer marginalises over it. That is only
@@ -129,7 +129,7 @@ def main() -> None:
     # Prefer the model that WROTE the committed fixtures over whatever provider happens
     # to be configured. `make calibration` is documented as a no-API-key reproduction
     # step, and resolving a live provider first made it exit with "no fixtures found for
-    # model 'null'" on any clean clone - the exact machine a judge would run it on.
+    # model 'null'" on any clean clone - the exact machine a new user would run it on.
     model_id = fixture_model_id()
     if model_id is None:
         provider = resolve_provider()

@@ -91,7 +91,7 @@ def test_blocked_action_is_recorded_as_evidence(ledger):
 
 
 def test_decision_rationale_and_considered_are_persisted(ledger):
-    """section 4: logging the runner-up EVs is how a panel verifies reasoning."""
+    """section 4: logging the runner-up EVs is how anyone verifies reasoning."""
     decision = Decision(
         event_id="e1", failure_class=FailureClass.FUNDS,
         recoverability=Recoverability.CUSTOMER_RECOVERABLE,

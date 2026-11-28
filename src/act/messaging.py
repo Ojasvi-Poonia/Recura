@@ -1,4 +1,4 @@
-"""Message rendering under DLT template constraints (Track 03: Hinglish recovery).
+"""Message rendering under DLT template constraints, including Hinglish recovery.
 
 THE POINT OF THIS MODULE
 spec §1 gives the LLM two jobs: root-cause synthesis, and drafting

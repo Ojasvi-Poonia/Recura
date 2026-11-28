@@ -354,7 +354,7 @@ def test_checkout_and_receivable_events_do_not_consult_the_model():
 
 
 def test_fixtures_replay_without_any_provider_configured(tmp_path, monkeypatch):
-    """REGRESSION: a reviewer with no API key must get the SAME numbers as the README.
+    """REGRESSION: a user with no API key must get the SAME numbers as the README.
 
     Cache keys are model-scoped. Before the manifest existed, an unconfigured
     environment resolved to NullProvider, computed keys against the model id "null",
